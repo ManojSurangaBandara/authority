@@ -319,9 +319,15 @@ return [
                     'active' => [
                         'buses*',
                     ],
-
                 ],
-                
+                [
+                    'text' => 'Bus Routes',
+                    'url' => 'bus-routes',
+                    'icon' => 'fas fa-fw fa-road',
+                    'active' => [
+                        'bus-routes*',
+                    ],
+                ],
 
             ],
         ],
@@ -367,7 +373,7 @@ return [
 
     'plugins' => [
         'Datatables' => [
-            'active' => false,
+            'active' => true,
             'files' => [
                 [
                     'type' => 'js',
