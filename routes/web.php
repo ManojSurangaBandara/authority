@@ -7,6 +7,7 @@ use App\Http\Controllers\BusRouteController;
 use App\Http\Controllers\DriverController;
 use App\Http\Controllers\EscortController;
 use App\Http\Controllers\SlcmpInchargeController;
+use App\Http\Controllers\FillingStationController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
@@ -35,6 +36,9 @@ Route::middleware('auth')->group(function () {
     // SLCMP In Charge routes
     Route::resource('slcmp-incharges', SlcmpInchargeController::class);
     Route::get('slcmp-incharges-api/get-details', [SlcmpInchargeController::class, 'getSlcmpInchargeDetails'])->name('slcmp-incharges.get-details');
+    
+    // Filling Station routes
+    Route::resource('filling-stations', FillingStationController::class);
 });
 
 Route::get('/logout', function () {

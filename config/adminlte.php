@@ -352,6 +352,14 @@ return [
                         'slcmp-incharges*',
                     ],
                 ],
+                [
+                    'text' => 'Filling Stations',
+                    'url' => 'filling-stations',
+                    'icon' => 'fas fa-fw fa-gas-pump',
+                    'active' => [
+                        'filling-stations*',
+                    ],
+                ],
 
             ],
         ],
