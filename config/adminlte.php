@@ -344,6 +344,14 @@ return [
                         'escorts*',
                     ],
                 ],
+                [
+                    'text' => 'SLCMP In Charges',
+                    'url' => 'slcmp-incharges',
+                    'icon' => 'fas fa-fw fa-user-shield',
+                    'active' => [
+                        'slcmp-incharges*',
+                    ],
+                ],
 
             ],
         ],
