@@ -336,6 +336,14 @@ return [
                         'drivers*',
                     ],
                 ],
+                [
+                    'text' => 'Escorts',
+                    'url' => 'escorts',
+                    'icon' => 'fas fa-fw fa-user',
+                    'active' => [
+                        'escorts*',
+                    ],
+                ],
 
             ],
         ],

@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BusController;
 use App\Http\Controllers\BusRouteController;
 use App\Http\Controllers\DriverController;
+use App\Http\Controllers\EscortController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
@@ -25,6 +26,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('bus-routes', BusRouteController::class);
     Route::resource('drivers', DriverController::class);
     Route::get('drivers-api/get-details', [DriverController::class, 'getDriverDetails'])->name('drivers.get-details');
+    
+    // Escort routes
+    Route::resource('escorts', EscortController::class);
+    Route::get('escorts-api/get-details', [EscortController::class, 'getEscortDetails'])->name('escorts.get-details');
 });
 
 Route::get('/logout', function () {
