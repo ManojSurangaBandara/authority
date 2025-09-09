@@ -328,6 +328,14 @@ return [
                         'bus-routes*',
                     ],
                 ],
+                [
+                    'text' => 'Drivers',
+                    'url' => 'drivers',
+                    'icon' => 'fas fa-fw fa-user',
+                    'active' => [
+                        'drivers*',
+                    ],
+                ],
 
             ],
         ],
