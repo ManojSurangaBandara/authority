@@ -24,6 +24,9 @@ class BusDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addIndexColumn()
+            ->addColumn('type.name', function ($row) {
+                return $row->type ? $row->type->name : 'N/A';
+            })
             ->addColumn('action', function ($row) {
                 $viewBtn = '<a href="' . route('buses.show', $row->id) . '" class="btn btn-xs btn-info" title="View"><i class="fas fa-eye"></i></a>';
                 $editBtn = '<a href="' . route('buses.edit', $row->id) . '" class="btn btn-xs btn-primary mx-1" title="Edit"><i class="fas fa-edit"></i></a>';
@@ -48,7 +51,7 @@ class BusDataTable extends DataTable
      */
     public function query(Bus $model): QueryBuilder
     {
-        return $model->newQuery();
+        return $model->with('type')->newQuery();
     }
 
     /**
@@ -79,10 +82,10 @@ class BusDataTable extends DataTable
     {
         return [
             Column::make('DT_RowIndex')->title('#')->searchable(false)->orderable(false),
-            Column::make('no'),
-            Column::make('name'),
-            Column::make('type_id'),
-            Column::make('no_of_seats'),
+            Column::make('no')->title('No'),
+            Column::make('name')->title('Name'),
+            Column::make('type.name')->title('Type'),
+            Column::make('no_of_seats')->title('No of Seats'),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)

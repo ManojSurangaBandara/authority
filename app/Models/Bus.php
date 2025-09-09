@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Bus extends Model
 {
+    protected $table = 'buses';
+
     protected $fillable = [
         'no',
         'name',
@@ -13,8 +15,8 @@ class Bus extends Model
         'no_of_seats',
     ];
 
-    // public function type()
-    // {
-    //     return $this->belongsTo(BusType::class, 'type_id');
-    // }
+    public function type()
+    {
+        return $this->belongsTo(BusType::class, 'type_id');
+    }
 }

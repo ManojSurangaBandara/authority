@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\DataTables\BusDataTable;
 use App\Models\Bus;
+use App\Models\BusType;
+
 
 class BusController extends Controller
 {
@@ -22,7 +24,8 @@ class BusController extends Controller
      */
     public function create()
     {
-        return view('buses.create');
+        $busTypes = BusType::all();
+        return view('buses.create', compact('busTypes'));
     }
 
     /**
@@ -48,7 +51,7 @@ class BusController extends Controller
      */
     public function show(string $id)
     {
-        $bus = Bus::findOrFail($id);
+        $bus = Bus::with('type')->findOrFail($id);
         return view('buses.show', compact('bus'));
     }
 
@@ -58,7 +61,8 @@ class BusController extends Controller
     public function edit(string $id)
     {
         $bus = Bus::findOrFail($id);
-        return view('buses.edit', compact('bus'));
+        $busTypes = BusType::all();
+        return view('buses.edit', compact('bus', 'busTypes'));
     }
 
     /**

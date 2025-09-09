@@ -27,8 +27,9 @@
                                     <label for="">Bus Type: </label>
                                     <select name="type_id" id="type_id" class="form-control" required>
                                         <option value="">Select Bus Type</option>
-                                        <option value="1">Army</option>
-                                        <option value="2">Civil</option>
+                                        @foreach ($busTypes as $busType)
+                                            <option value="{{ $busType->id }}">{{ $busType->name }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
 

@@ -30,8 +30,9 @@
                                     <label for="">Bus Type: </label>
                                     <select name="type_id" id="type_id" class="form-control" required>
                                         <option value="">Select Bus Type</option>
-                                        <option value="1" {{ $bus->type_id == 1 ? 'selected' : '' }}>Army</option>
-                                        <option value="2" {{ $bus->type_id == 2 ? 'selected' : '' }}>Civil</option>
+                                        @foreach($busTypes as $type)
+                                            <option value="{{ $type->id }}" {{ $bus->type_id == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
 

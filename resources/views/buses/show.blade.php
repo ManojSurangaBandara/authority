@@ -28,13 +28,7 @@
                                     <tr>
                                         <th>Bus Type</th>
                                         <td>
-                                            @if ($bus->type_id == 1)
-                                                Army
-                                            @elseif($bus->type_id == 2)
-                                                Civil
-                                            @else
-                                                Unknown
-                                            @endif
+                                            {{ $bus->type ? $bus->type->name : 'Unknown' }}
                                         </td>
                                     </tr>
                                     <tr>
