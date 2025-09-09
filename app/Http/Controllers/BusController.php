@@ -40,7 +40,7 @@ class BusController extends Controller
         Bus::create($request->all());
 
         return redirect()->route('buses.index')
-                         ->with('success', 'Bus created successfully.');
+            ->with('success', 'Bus created successfully.');
     }
 
     /**
@@ -69,7 +69,7 @@ class BusController extends Controller
         $bus = Bus::findOrFail($id);
 
         $request->validate([
-            'no' => 'required|max:20|unique:buses,no,',
+            'no' => 'required|max:20|unique:buses,no,' . $id,
             'name' => 'required|max:50',
             'type_id' => 'required|integer|min:1',
             'no_of_seats' => 'required|integer|min:1',
@@ -78,7 +78,7 @@ class BusController extends Controller
         $bus->update($request->all());
 
         return redirect()->route('buses.index')
-                         ->with('success', 'Bus updated successfully.');
+            ->with('success', 'Bus updated successfully.');
     }
 
     /**
@@ -90,6 +90,6 @@ class BusController extends Controller
         $bus->delete();
 
         return redirect()->route('buses.index')
-                         ->with('success', 'Bus deleted successfully.');
+            ->with('success', 'Bus deleted successfully.');
     }
 }
