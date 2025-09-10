@@ -8,8 +8,8 @@ use App\Http\Controllers\DriverController;
 use App\Http\Controllers\EscortController;
 use App\Http\Controllers\SlcmpInchargeController;
 use App\Http\Controllers\FillingStationController;
-use App\Http\Controllers\PersonController;
-use App\Http\Controllers\MaritalStatusController;
+use App\Http\Controllers\EstablishmentController;
+
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
@@ -42,12 +42,10 @@ Route::middleware('auth')->group(function () {
     // Filling Station routes
     Route::resource('filling-stations', FillingStationController::class);
 
-    // Person routes
-    Route::resource('persons', PersonController::class);
-    Route::get('persons-api/get-details', [PersonController::class, 'getPersonDetails'])->name('persons.get-details');
+    // Establishment routes
+    Route::resource('establishment', EstablishmentController::class);
 
-    // Marital Status routes (view-only)
-    Route::resource('marital-statuses', MaritalStatusController::class)->only(['index', 'show']);
+
 });
 
 Route::get('/logout', function () {
