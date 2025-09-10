@@ -368,15 +368,32 @@ return [
                         'persons*',
                     ],
                 ],
-                // [
-                //     'text' => 'Marital Statuses',
-                //     'url' => 'marital-statuses',
-                //     'icon' => 'fas fa-fw fa-heart',
-                //     'active' => [
-                //         'marital-statuses*',
-                //     ],
-                // ],
+                [
+                    'text' => 'Marital Statuses',
+                    'url' => 'marital-statuses',
+                    'icon' => 'fas fa-fw fa-heart',
+                    'active' => [
+                        'marital-statuses*',
+                    ],
+                ],
+                [
+                    'text' => 'Bus Pass Statuses',
+                    'url' => 'bus-pass-statuses',
+                    'icon' => 'fas fa-fw fa-tags',
+                    'active' => [
+                        'bus-pass-statuses*',
+                    ],
+                ],
 
+            ],
+        ],
+
+        [
+            'text' => 'Bus Pass Applications',
+            'url' => 'bus-pass-applications',
+            'icon' => 'fas fa-fw fa-id-card',
+            'active' => [
+                'bus-pass-applications*',
             ],
         ],
 

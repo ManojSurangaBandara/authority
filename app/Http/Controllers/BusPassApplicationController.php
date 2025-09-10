@@ -1,0 +1,266 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\DataTables\BusPassApplicationDataTable;
+use App\Models\BusPassApplication;
+use App\Models\MaritalStatus;
+use App\Models\BusRoute;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+
+class BusPassApplicationController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(BusPassApplicationDataTable $dataTable)
+    {
+        return $dataTable->render('bus-pass-applications.index');
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        $maritalStatuses = MaritalStatus::all();
+        $busRoutes = BusRoute::all();
+        
+        return view('bus-pass-applications.create', compact('maritalStatuses', 'busRoutes'));
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $validationRules = [
+            'regiment_no' => 'required|string|max:20',
+            'rank' => 'required|string|max:50',
+            'name' => 'required|string|max:100',
+            'unit' => 'required|string|max:100',
+            'nic' => 'required|string|max:15',
+            'army_id' => 'required|string|max:50',
+            'permanent_address' => 'required|string',
+            'telephone_no' => 'required|string|max:20',
+            'grama_seva_division' => 'required|string|max:100',
+            'nearest_police_station' => 'required|string|max:100',
+            'branch_directorate' => 'required|string|max:100',
+            'marital_status' => 'required|in:single,married',
+            'approval_living_out' => 'required|in:yes,no',
+            'obtain_sltb_season' => 'required|in:yes,no',
+            'date_arrival_ahq' => 'required|date',
+            'grama_niladari_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'person_image' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
+            'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel',
+            'rent_allowance_order' => $request->bus_pass_type === 'daily_travel' ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'declaration_1' => 'required|in:yes',
+            'declaration_2' => 'required|in:yes',
+        ];
+
+        // Add conditional validation for weekend/monthly travel
+        if ($request->bus_pass_type === 'weekend_monthly_travel') {
+            $validationRules['living_in_bus'] = 'required|string|max:100';
+            $validationRules['destination_location_ahq'] = 'required|string|max:100';
+            $validationRules['weekend_bus_name'] = 'required|string|max:100';
+            $validationRules['weekend_destination'] = 'required|string|max:200';
+        }
+
+        $request->validate($validationRules);
+
+        // Handle file uploads
+        $data = $request->all();
+        
+        if ($request->hasFile('grama_niladari_certificate')) {
+            $data['grama_niladari_certificate'] = $request->file('grama_niladari_certificate')->store('certificates', 'public');
+        }
+        
+        if ($request->hasFile('person_image')) {
+            $data['person_image'] = $request->file('person_image')->store('person_images', 'public');
+        }
+        
+        if ($request->hasFile('rent_allowance_order')) {
+            $data['rent_allowance_order'] = $request->file('rent_allowance_order')->store('rent_allowances', 'public');
+        }
+
+        $data['created_by'] = Auth::user()->name ?? 'System';
+        $data['status'] = 'pending_subject_clerk';
+
+        BusPassApplication::create($data);
+
+        return redirect()->route('bus-pass-applications.index')
+            ->with('success', 'Bus pass application submitted successfully.');
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        $application = BusPassApplication::findOrFail($id);
+        return view('bus-pass-applications.show', compact('application'));
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(string $id)
+    {
+        $application = BusPassApplication::findOrFail($id);
+        $maritalStatuses = MaritalStatus::all();
+        $busRoutes = BusRoute::all();
+        
+        return view('bus-pass-applications.edit', compact('application', 'maritalStatuses', 'busRoutes'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
+    {
+        $application = BusPassApplication::findOrFail($id);
+
+        $validationRules = [
+            'regiment_no' => 'required|string|max:20',
+            'rank' => 'required|string|max:50',
+            'name' => 'required|string|max:100',
+            'unit' => 'required|string|max:100',
+            'nic' => 'required|string|max:15',
+            'army_id' => 'required|string|max:50',
+            'permanent_address' => 'required|string',
+            'telephone_no' => 'required|string|max:20',
+            'grama_seva_division' => 'required|string|max:100',
+            'nearest_police_station' => 'required|string|max:100',
+            'branch_directorate' => 'required|string|max:100',
+            'marital_status' => 'required|in:single,married',
+            'approval_living_out' => 'required|in:yes,no',
+            'obtain_sltb_season' => 'required|in:yes,no',
+            'date_arrival_ahq' => 'required|date',
+            'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel',
+            'rent_allowance_order' => $request->bus_pass_type === 'daily_travel' && !$application->rent_allowance_order ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'declaration_1' => 'required|in:yes',
+            'declaration_2' => 'required|in:yes',
+        ];
+
+        // Add conditional validation for weekend/monthly travel
+        if ($request->bus_pass_type === 'weekend_monthly_travel') {
+            $validationRules['living_in_bus'] = 'required|string|max:100';
+            $validationRules['destination_location_ahq'] = 'required|string|max:100';
+            $validationRules['weekend_bus_name'] = 'required|string|max:100';
+            $validationRules['weekend_destination'] = 'required|string|max:200';
+        }
+
+        $request->validate($validationRules);
+
+        $data = $request->all();
+        
+        // Handle file uploads
+        if ($request->hasFile('grama_niladari_certificate')) {
+            if ($application->grama_niladari_certificate) {
+                Storage::disk('public')->delete($application->grama_niladari_certificate);
+            }
+            $data['grama_niladari_certificate'] = $request->file('grama_niladari_certificate')->store('certificates', 'public');
+        }
+        
+        if ($request->hasFile('person_image')) {
+            if ($application->person_image) {
+                Storage::disk('public')->delete($application->person_image);
+            }
+            $data['person_image'] = $request->file('person_image')->store('person_images', 'public');
+        }
+        
+        if ($request->hasFile('rent_allowance_order')) {
+            if ($application->rent_allowance_order) {
+                Storage::disk('public')->delete($application->rent_allowance_order);
+            }
+            $data['rent_allowance_order'] = $request->file('rent_allowance_order')->store('rent_allowances', 'public');
+        }
+
+        $application->update($data);
+
+        return redirect()->route('bus-pass-applications.index')
+            ->with('success', 'Bus pass application updated successfully.');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        $application = BusPassApplication::findOrFail($id);
+        
+        // Delete associated files
+        if ($application->grama_niladari_certificate) {
+            Storage::disk('public')->delete($application->grama_niladari_certificate);
+        }
+        if ($application->person_image) {
+            Storage::disk('public')->delete($application->person_image);
+        }
+        if ($application->rent_allowance_order) {
+            Storage::disk('public')->delete($application->rent_allowance_order);
+        }
+        
+        $application->delete();
+
+        return redirect()->route('bus-pass-applications.index')
+            ->with('success', 'Bus pass application deleted successfully.');
+    }
+
+    /**
+     * Get person details from API based on regiment number
+     */
+    public function getPersonDetails(Request $request)
+    {
+        $regimentNo = $request->input('regiment_no');
+
+        if (empty($regimentNo)) {
+            return response()->json(['success' => false, 'message' => 'Regiment number is required'], 400);
+        }
+
+        try {
+            // Call the actual Army API endpoint
+            $apiToken = '1189d8dde195a36a9c4a721a390a74e6';
+            $apiUrl = "https://str.army.lk/api/get_person/?str-token={$apiToken}&service_no={$regimentNo}";
+
+            $response = Http::get($apiUrl);
+
+            if ($response->successful()) {
+                $responseData = json_decode($response->body(), true);
+                
+                if (is_array($responseData) && !empty($responseData)) {
+                    $data = $responseData[0];
+                    
+                    $personData = [
+                        'rank' => $data['rank'] ?? '',
+                        'name' => $data['name'] ?? '',
+                        'unit' => $data['unit'] ?? '',
+                        'nic' => $data['nic'] ?? '',
+                        'army_id' => $data['army_no'] ?? '',
+                        'permanent_address' => $data['permanent_address'] ?? '',
+                        'telephone_no' => $data['telephone_no'] ?? '',
+                        'grama_seva_division' => $data['grama_seva_division'] ?? '',
+                        'nearest_police_station' => $data['nearest_police_station'] ?? ''
+                    ];
+                    
+                    return response()->json([
+                        'success' => true,
+                        'data' => $personData
+                    ]);
+                }
+                
+                return response()->json(['success' => false, 'message' => 'No data found for this regiment number'], 404);
+            }
+            
+            return response()->json(['success' => false, 'message' => 'Failed to fetch data from Army API'], $response->status());
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching person details: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+}

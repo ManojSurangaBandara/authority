@@ -1,0 +1,270 @@
+@extends('adminlte::page')
+
+@section('content')
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-12">
+
+                @if (session('success'))
+                    <div class="alert alert-success">{{ session('success') }}</div>
+                @endif
+                
+                <div class="card mt-3">
+                    <div class="card card-teal">
+                        <div class="card-header">
+                            <i class="nav-icon fas fa-id-card nav-icon"></i> {{ __('Bus Pass Application Details') }}
+                            <div class="float-right">
+                                <span class="badge badge-{{ $application->status === 'approved' ? 'success' : ($application->status === 'rejected' ? 'danger' : 'warning') }}">
+                                    {{ $application->getStatusLabel() }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body">
+            <!-- Personal Information -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h4 class="text-primary border-bottom pb-2">Personal Information</h4>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>Regiment No:</strong><br>
+                    {{ $application->regiment_no }}
+                </div>
+                <div class="col-md-3">
+                    <strong>Rank:</strong><br>
+                    {{ $application->rank }}
+                </div>
+                <div class="col-md-6">
+                    <strong>Name:</strong><br>
+                    {{ $application->name }}
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <strong>Unit:</strong><br>
+                    {{ $application->unit }}
+                </div>
+                <div class="col-md-3">
+                    <strong>NIC:</strong><br>
+                    {{ $application->nic }}
+                </div>
+                <div class="col-md-3">
+                    <strong>Army ID:</strong><br>
+                    {{ $application->army_id }}
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <strong>Permanent Address:</strong><br>
+                    {{ $application->permanent_address }}
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-3">
+                    <strong>Telephone:</strong><br>
+                    {{ $application->telephone_no }}
+                </div>
+                <div class="col-md-6">
+                    <strong>Grama Seva Division:</strong><br>
+                    {{ $application->grama_seva_division }}
+                </div>
+                <div class="col-md-3">
+                    <strong>Police Station:</strong><br>
+                    {{ $application->nearest_police_station }}
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <strong>Branch/Directorate:</strong><br>
+                    {{ $application->branch_directorate }}
+                </div>
+                <div class="col-md-3">
+                    <strong>Marital Status:</strong><br>
+                    {{ ucfirst($application->marital_status) }}
+                </div>
+                <div class="col-md-3">
+                    <strong>Date of Arrival at AHQ:</strong><br>
+                    {{ $application->date_arrival_ahq ? \Carbon\Carbon::parse($application->date_arrival_ahq)->format('d M Y') : 'N/A' }}
+                </div>
+            </div>
+
+            <!-- Application Information -->
+            <div class="row mb-4 mt-5">
+                <div class="col-12">
+                    <h4 class="text-primary border-bottom pb-2">Application Information</h4>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <strong>Approval for Living Out:</strong><br>
+                    <span class="badge badge-{{ $application->approval_living_out === 'yes' ? 'success' : 'danger' }}">
+                        {{ ucfirst($application->approval_living_out) }}
+                    </span>
+                </div>
+                <div class="col-md-4">
+                    <strong>Obtained SLTB Season:</strong><br>
+                    <span class="badge badge-{{ $application->obtain_sltb_season === 'yes' ? 'success' : 'danger' }}">
+                        {{ ucfirst($application->obtain_sltb_season) }}
+                    </span>
+                </div>
+                <div class="col-md-4">
+                    <strong>Bus Pass Type:</strong><br>
+                    <span class="badge badge-info">{{ $application->getTypeLabel() }}</span>
+                </div>
+            </div>
+
+            <!-- Conditional Travel Details -->
+            @if($application->bus_pass_type === 'daily_travel')
+                <div class="row mb-4 mt-5">
+                    <div class="col-12">
+                        <h4 class="text-info border-bottom pb-2">Living out Person - Daily Traveling</h4>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Requested Bus Name:</strong><br>
+                        {{ $application->requested_bus_name ?? 'N/A' }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Destination location from AHQ:</strong><br>
+                        {{ $application->destination_from_ahq ?? 'N/A' }}
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <strong>Rent Allowance Part II Order:</strong><br>
+                        @if($application->rent_allowance_order)
+                            <a href="{{ asset('storage/' . $application->rent_allowance_order) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-file-pdf"></i> View Document
+                            </a>
+                        @else
+                            <span class="text-muted">Not uploaded</span>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
+            @if($application->bus_pass_type === 'weekend_monthly_travel')
+                <div class="row mb-4 mt-5">
+                    <div class="col-12">
+                        <h4 class="text-info border-bottom pb-2">Living in Person - Weekend/Monthly Traveling</h4>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Living in bus:</strong><br>
+                        {{ $application->living_in_bus ?? 'N/A' }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Destination Location from AHQ:</strong><br>
+                        {{ $application->destination_location_ahq ?? 'N/A' }}
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <strong>Weekend Bus Name:</strong><br>
+                        {{ $application->weekend_bus_name ?? 'N/A' }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Destination:</strong><br>
+                        {{ $application->weekend_destination ?? 'N/A' }}
+                    </div>
+                </div>
+            @endif
+
+            <!-- Documents -->
+            <div class="row mb-4 mt-5">
+                <div class="col-12">
+                    <h4 class="text-primary border-bottom pb-2">Documents</h4>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <strong>Grama Niladari Certificate:</strong><br>
+                    @if($application->grama_niladari_certificate)
+                        <a href="{{ asset('storage/' . $application->grama_niladari_certificate) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-file-pdf"></i> View Document
+                        </a>
+                    @else
+                        <span class="text-muted">Not uploaded</span>
+                    @endif
+                </div>
+                <div class="col-md-6">
+                    <strong>Person Image:</strong><br>
+                    @if($application->person_image)
+                        <a href="{{ asset('storage/' . $application->person_image) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-image"></i> View Image
+                        </a>
+                    @else
+                        <span class="text-muted">Not uploaded</span>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Application Metadata -->
+            <div class="row mb-4 mt-5">
+                <div class="col-12">
+                    <h4 class="text-primary border-bottom pb-2">Application Status</h4>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>Created By:</strong><br>
+                    {{ $application->created_by }}
+                </div>
+                <div class="col-md-3">
+                    <strong>Created Date:</strong><br>
+                    {{ $application->created_at->format('d M Y H:i') }}
+                </div>
+                <div class="col-md-3">
+                    <strong>Last Updated:</strong><br>
+                    {{ $application->updated_at->format('d M Y H:i') }}
+                </div>
+                <div class="col-md-3">
+                    <strong>Status:</strong><br>
+                    <span class="badge badge-{{ $application->status === 'approved' ? 'success' : ($application->status === 'rejected' ? 'danger' : 'warning') }}">
+                        {{ $application->getStatusLabel() }}
+                    </span>
+                </div>
+            </div>
+
+            @if($application->remarks)
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <strong>Remarks:</strong><br>
+                        <div class="alert alert-info">
+                            {{ $application->remarks }}
+                        </div>
+                    </div>
+                </div>
+            @endif
+                        </div>
+                        
+                        <div class="card-footer">
+                            <a href="{{ route('bus-pass-applications.edit', $application) }}" class="btn btn-warning">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <a href="{{ route('bus-pass-applications.index') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection

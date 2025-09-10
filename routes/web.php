@@ -10,6 +10,8 @@ use App\Http\Controllers\SlcmpInchargeController;
 use App\Http\Controllers\FillingStationController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\MaritalStatusController;
+use App\Http\Controllers\BusPassApplicationController;
+use App\Http\Controllers\BusPassStatusController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
@@ -48,6 +50,13 @@ Route::middleware('auth')->group(function () {
 
     // Marital Status routes (view-only)
     Route::resource('marital-statuses', MaritalStatusController::class)->only(['index', 'show']);
+
+    // Bus Pass Application routes
+    Route::resource('bus-pass-applications', BusPassApplicationController::class);
+    Route::get('bus-pass-applications-api/get-details', [BusPassApplicationController::class, 'getPersonDetails'])->name('bus-pass-applications.get-details');
+
+    // Bus Pass Status routes (Master Data)
+    Route::resource('bus-pass-statuses', BusPassStatusController::class);
 });
 
 Route::get('/logout', function () {
