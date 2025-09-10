@@ -8,6 +8,7 @@ use App\Http\Controllers\DriverController;
 use App\Http\Controllers\EscortController;
 use App\Http\Controllers\SlcmpInchargeController;
 use App\Http\Controllers\FillingStationController;
+use App\Http\Controllers\PersonController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
@@ -36,9 +37,13 @@ Route::middleware('auth')->group(function () {
     // SLCMP In Charge routes
     Route::resource('slcmp-incharges', SlcmpInchargeController::class);
     Route::get('slcmp-incharges-api/get-details', [SlcmpInchargeController::class, 'getSlcmpInchargeDetails'])->name('slcmp-incharges.get-details');
-    
+
     // Filling Station routes
     Route::resource('filling-stations', FillingStationController::class);
+
+    // Person routes
+    Route::resource('persons', PersonController::class);
+    Route::get('persons-api/get-details', [PersonController::class, 'getPersonDetails'])->name('persons.get-details');
 });
 
 Route::get('/logout', function () {

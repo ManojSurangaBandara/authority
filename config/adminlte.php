@@ -360,6 +360,14 @@ return [
                         'filling-stations*',
                     ],
                 ],
+                [
+                    'text' => 'Persons',
+                    'url' => 'persons',
+                    'icon' => 'fas fa-fw fa-users',
+                    'active' => [
+                        'persons*',
+                    ],
+                ],
 
             ],
         ],
