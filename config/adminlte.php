@@ -368,6 +368,14 @@ return [
                         'persons*',
                     ],
                 ],
+                // [
+                //     'text' => 'Marital Statuses',
+                //     'url' => 'marital-statuses',
+                //     'icon' => 'fas fa-fw fa-heart',
+                //     'active' => [
+                //         'marital-statuses*',
+                //     ],
+                // ],
 
             ],
         ],
