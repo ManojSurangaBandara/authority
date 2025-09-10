@@ -369,8 +369,7 @@ return [
                         'persons*',
                     ],
                 ],
-
-                [
+                 [
                     'text' => 'Establishment',
                     'url' => 'establishment',
                     'icon' => 'fas fa-building',
@@ -378,6 +377,8 @@ return [
                         'establishment*',
                     ],
                 ],
+
+               
 
                 // [
                 //     'text' => 'Marital Statuses',
