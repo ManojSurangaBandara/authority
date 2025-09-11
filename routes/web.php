@@ -10,7 +10,10 @@ use App\Http\Controllers\SlcmpInchargeController;
 use App\Http\Controllers\FillingStationController;
 use App\Http\Controllers\EstablishmentController;
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 use Illuminate\Support\Facades\Auth;
@@ -46,7 +49,11 @@ Route::middleware('auth')->group(function () {
     Route::resource('filling-stations', FillingStationController::class);
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     // Establishment routes
+=======
+    //Establishment routes
+>>>>>>> Stashed changes
 =======
     //Establishment routes
 >>>>>>> Stashed changes

@@ -368,6 +368,7 @@ return [
                         'establishment*',
                     ],
                 ],
+<<<<<<< Updated upstream
 
                 [
                     'text' => 'Persons',
@@ -397,6 +398,8 @@ return [
                 //     ],
                 // ],
 
+=======
+>>>>>>> Stashed changes
 
             ],
 
