@@ -369,14 +369,6 @@ return [
                     ],
                 ],
                 [
-                    'text' => 'Marital Statuses',
-                    'url' => 'marital-statuses',
-                    'icon' => 'fas fa-fw fa-heart',
-                    'active' => [
-                        'marital-statuses*',
-                    ],
-                ],
-                [
                     'text' => 'Bus Pass Statuses',
                     'url' => 'bus-pass-statuses',
                     'icon' => 'fas fa-fw fa-tags',

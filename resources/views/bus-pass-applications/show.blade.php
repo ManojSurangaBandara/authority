@@ -1,7 +1,6 @@
 @extends('adminlte::page')
 
-@section('content')
-    <div class="container mt-5">
+@section('content') 
         <div class="row justify-content-center">
             <div class="col-md-12">
 
@@ -15,8 +14,8 @@
                             <i class="nav-icon fas fa-id-card nav-icon"></i> {{ __('Bus Pass Application Details') }}
                             <div class="float-right">
                                 <span
-                                    class="badge badge-{{ $application->status === 'approved' ? 'success' : ($application->status === 'rejected' ? 'danger' : 'warning') }}">
-                                    {{ $application->getStatusLabel() }}
+                                    class="badge badge-{{ $bus_pass_application->status === 'approved' ? 'success' : ($bus_pass_application->status === 'rejected' ? 'danger' : 'warning') }}">
+                                    {{ $bus_pass_application->getStatusLabel() }}
                                 </span>
                             </div>
                         </div>
@@ -32,52 +31,52 @@
                             <div class="row">
                                 <div class="col-md-3">
                                     <strong>Regiment No:</strong><br>
-                                    {{ $application->person->regiment_no }}
+                                    {{ $bus_pass_application->person->regiment_no }}
                                 </div>
                                 <div class="col-md-3">
                                     <strong>Rank:</strong><br>
-                                    {{ $application->person->rank }}
+                                    {{ $bus_pass_application->person->rank }}
                                 </div>
                                 <div class="col-md-6">
                                     <strong>Name:</strong><br>
-                                    {{ $application->person->name }}
+                                    {{ $bus_pass_application->person->name }}
                                 </div>
                             </div>
 
                             <div class="row mt-3">
                                 <div class="col-md-6">
                                     <strong>Unit:</strong><br>
-                                    {{ $application->person->unit }}
+                                    {{ $bus_pass_application->person->unit }}
                                 </div>
                                 <div class="col-md-3">
                                     <strong>NIC:</strong><br>
-                                    {{ $application->person->nic }}
+                                    {{ $bus_pass_application->person->nic }}
                                 </div>
                                 <div class="col-md-3">
                                     <strong>Army ID:</strong><br>
-                                    {{ $application->person->army_id }}
+                                    {{ $bus_pass_application->person->army_id }}
                                 </div>
                             </div>
 
                             <div class="row mt-3">
                                 <div class="col-md-12">
                                     <strong>Permanent Address:</strong><br>
-                                    {{ $application->person->permanent_address }}
+                                    {{ $bus_pass_application->person->permanent_address }}
                                 </div>
                             </div>
 
                             <div class="row mt-3">
                                 <div class="col-md-4">
                                     <strong>Telephone No:</strong><br>
-                                    {{ $application->person->telephone_no }}
+                                    {{ $bus_pass_application->person->telephone_no }}
                                 </div>
                                 <div class="col-md-4">
                                     <strong>Grama Seva Division:</strong><br>
-                                    {{ $application->person->grama_seva_division }}
+                                    {{ $bus_pass_application->person->grama_seva_division }}
                                 </div>
                                 <div class="col-md-4">
                                     <strong>Nearest Police Station:</strong><br>
-                                    {{ $application->person->nearest_police_station }}
+                                    {{ $bus_pass_application->person->nearest_police_station }}
                                 </div>
                             </div>
                         </div>
@@ -93,35 +92,35 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <strong>Branch/Directorate:</strong><br>
-                                    {{ $application->branch_directorate }}
+                                    {{ $bus_pass_application->branch_directorate }}
                                 </div>
                                 <div class="col-md-3">
                                     <strong>Marital Status:</strong><br>
-                                    {{ ucfirst($application->marital_status) }}
+                                    {{ ucfirst($bus_pass_application->marital_status) }}
                                 </div>
                                 <div class="col-md-3">
                                     <strong>Date of Arrival at AHQ:</strong><br>
-                                    {{ $application->date_arrival_ahq ? \Carbon\Carbon::parse($application->date_arrival_ahq)->format('d M Y') : 'N/A' }}
+                                    {{ $bus_pass_application->date_arrival_ahq ? \Carbon\Carbon::parse($bus_pass_application->date_arrival_ahq)->format('d M Y') : 'N/A' }}
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-4">
                                     <strong>Approval for Living Out:</strong><br>
                                     <span
-                                        class="badge badge-{{ $application->approval_living_out === 'yes' ? 'success' : 'danger' }}">
-                                        {{ ucfirst($application->approval_living_out) }}
+                                        class="badge badge-{{ $bus_pass_application->approval_living_out === 'yes' ? 'success' : 'danger' }}">
+                                        {{ ucfirst($bus_pass_application->approval_living_out) }}
                                     </span>
                                 </div>
                                 <div class="col-md-4">
                                     <strong>Obtained SLTB Season:</strong><br>
                                     <span
-                                        class="badge badge-{{ $application->obtain_sltb_season === 'yes' ? 'success' : 'danger' }}">
-                                        {{ ucfirst($application->obtain_sltb_season) }}
+                                        class="badge badge-{{ $bus_pass_application->obtain_sltb_season === 'yes' ? 'success' : 'danger' }}">
+                                        {{ ucfirst($bus_pass_application->obtain_sltb_season) }}
                                     </span>
                                 </div>
                                 <div class="col-md-4">
                                     <strong>Bus Pass Type:</strong><br>
-                                    <span class="badge badge-info">{{ $application->getTypeLabel() }}</span>
+                                    <span class="badge badge-info">{{ $bus_pass_application->getTypeLabel() }}</span>
                                 </div>
                             </div>
 
@@ -130,7 +129,7 @@
                         <div class="card-body">
 
                             <!-- Conditional Travel Details -->
-                            @if ($application->bus_pass_type === 'daily_travel')
+                            @if ($bus_pass_application->bus_pass_type === 'daily_travel')
                                 <div class="row mb-4 mt-5">
                                     <div class="col-12">
                                         <h4 class="text-info border-bottom pb-2">Living out Person - Daily Traveling</h4>
@@ -140,19 +139,19 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <strong>Requested Bus Name:</strong><br>
-                                        {{ $application->requested_bus_name ?? 'N/A' }}
+                                        {{ $bus_pass_application->requested_bus_name ?? 'N/A' }}
                                     </div>
                                     <div class="col-md-6">
                                         <strong>Destination location from AHQ:</strong><br>
-                                        {{ $application->destination_from_ahq ?? 'N/A' }}
+                                        {{ $bus_pass_application->destination_from_ahq ?? 'N/A' }}
                                     </div>
                                 </div>
 
                                 <div class="row mt-3">
                                     <div class="col-md-6">
                                         <strong>Rent Allowance Part II Order:</strong><br>
-                                        @if ($application->rent_allowance_order)
-                                            <a href="{{ asset('storage/' . $application->rent_allowance_order) }}"
+                                        @if ($bus_pass_application->rent_allowance_order)
+                                            <a href="{{ asset('storage/' . $bus_pass_application->rent_allowance_order) }}"
                                                 target="_blank" class="btn btn-sm btn-outline-primary">
                                                 <i class="fas fa-file-pdf"></i> View Document
                                             </a>
@@ -163,7 +162,7 @@
                                 </div>
                             @endif
 
-                            @if ($application->bus_pass_type === 'weekend_monthly_travel')
+                            @if ($bus_pass_application->bus_pass_type === 'weekend_monthly_travel')
                                 <div class="row mb-4 mt-5">
                                     <div class="col-12">
                                         <h4 class="text-info border-bottom pb-2">Living in Person - Weekend/Monthly
@@ -175,22 +174,22 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <strong>Living in bus:</strong><br>
-                                        {{ $application->living_in_bus ?? 'N/A' }}
+                                        {{ $bus_pass_application->living_in_bus ?? 'N/A' }}
                                     </div>
                                     <div class="col-md-6">
                                         <strong>Destination Location from AHQ:</strong><br>
-                                        {{ $application->destination_location_ahq ?? 'N/A' }}
+                                        {{ $bus_pass_application->destination_location_ahq ?? 'N/A' }}
                                     </div>
                                 </div>
 
                                 <div class="row mt-3">
                                     <div class="col-md-6">
                                         <strong>Weekend Bus Name:</strong><br>
-                                        {{ $application->weekend_bus_name ?? 'N/A' }}
+                                        {{ $bus_pass_application->weekend_bus_name ?? 'N/A' }}
                                     </div>
                                     <div class="col-md-6">
                                         <strong>Destination:</strong><br>
-                                        {{ $application->weekend_destination ?? 'N/A' }}
+                                        {{ $bus_pass_application->weekend_destination ?? 'N/A' }}
                                     </div>
                                 </div>
                             @endif
@@ -208,8 +207,8 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <strong>Grama Niladari Certificate:</strong><br>
-                                    @if ($application->grama_niladari_certificate)
-                                        <a href="{{ asset('storage/' . $application->grama_niladari_certificate) }}"
+                                    @if ($bus_pass_application->grama_niladari_certificate)
+                                        <a href="{{ asset('storage/' . $bus_pass_application->grama_niladari_certificate) }}"
                                             target="_blank" class="btn btn-sm btn-outline-primary">
                                             <i class="fas fa-file-pdf"></i> View Document
                                         </a>
@@ -219,8 +218,8 @@
                                 </div>
                                 <div class="col-md-6">
                                     <strong>Person Image:</strong><br>
-                                    @if ($application->person_image)
-                                        <a href="{{ asset('storage/' . $application->person_image) }}" target="_blank"
+                                    @if ($bus_pass_application->person_image)
+                                        <a href="{{ asset('storage/' . $bus_pass_application->person_image) }}" target="_blank"
                                             class="btn btn-sm btn-outline-primary">
                                             <i class="fas fa-image"></i> View Image
                                         </a>
@@ -244,29 +243,29 @@
                             <div class="row">
                                 <div class="col-md-3">
                                     <strong>Created By:</strong><br>
-                                    {{ $application->created_by }}
+                                    {{ $bus_pass_application->created_by }}
                                 </div>
                                 <div class="col-md-3">
                                     <strong>Created Date:</strong><br>
-                                    {{ $application->created_at->format('d M Y H:i') }}
+                                    {{ $bus_pass_application->created_at->format('d M Y H:i') }}
                                 </div>
                                 <div class="col-md-3">
                                     <strong>Last Updated:</strong><br>
-                                    {{ $application->updated_at->format('d M Y H:i') }}
+                                    {{ $bus_pass_application->updated_at->format('d M Y H:i') }}
                                 </div>
                                 <div class="col-md-3">
                                     <strong>Status:</strong><br>
-                                    {!! $application->status_badge !!}
+                                    {!! $bus_pass_application->status_badge !!}
                                 </div>
                             </div>
                         </div>
 
-                        @if ($application->remarks)
+                        @if ($bus_pass_application->remarks)
                             <div class="row mt-3">
                                 <div class="col-md-12">
                                     <strong>Remarks:</strong><br>
                                     <div class="alert alert-info">
-                                        {{ $application->remarks }}
+                                        {{ $bus_pass_application->remarks }}
                                     </div>
                                 </div>
                             </div>
@@ -274,7 +273,7 @@
                     </div>
 
                     <div class="card-footer">
-                        <a href="{{ route('bus-pass-applications.edit', $application) }}" class="btn btn-warning">
+                        <a href="{{ route('bus-pass-applications.edit', $bus_pass_application) }}" class="btn btn-warning">
                             <i class="fas fa-edit"></i> Edit
                         </a>
                         <a href="{{ route('bus-pass-applications.index') }}" class="btn btn-secondary">

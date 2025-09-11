@@ -9,7 +9,6 @@ use App\Http\Controllers\EscortController;
 use App\Http\Controllers\SlcmpInchargeController;
 use App\Http\Controllers\FillingStationController;
 use App\Http\Controllers\PersonController;
-use App\Http\Controllers\MaritalStatusController;
 use App\Http\Controllers\BusPassApplicationController;
 use App\Http\Controllers\BusPassStatusController;
 use Illuminate\Support\Facades\Auth;
@@ -47,9 +46,6 @@ Route::middleware('auth')->group(function () {
     // Person routes
     Route::resource('persons', PersonController::class);
     Route::get('persons-api/get-details', [PersonController::class, 'getPersonDetails'])->name('persons.get-details');
-
-    // Marital Status routes (view-only)
-    Route::resource('marital-statuses', MaritalStatusController::class)->only(['index', 'show']);
 
     // Bus Pass Application routes
     Route::resource('bus-pass-applications', BusPassApplicationController::class);
