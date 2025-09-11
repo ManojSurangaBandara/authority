@@ -384,6 +384,14 @@ return [
                         'bus-driver-assignments*',
                     ],
                 ],
+                 [
+                    'text' => 'Establishments',
+                    'url' => 'establishment',
+                    'icon' => 'fas fa-building',
+                    'active' => [
+                        'establishment*',
+                    ],
+                ],
 
             ],
         ],

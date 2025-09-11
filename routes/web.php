@@ -12,6 +12,7 @@ use App\Http\Controllers\FillingStationController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\BusPassApplicationController;
 use App\Http\Controllers\BusPassStatusController;
+use App\Http\Controllers\EstablishmentController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
@@ -59,6 +60,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('bus-driver-assignments', BusDriverAssignmentController::class);
     Route::get('bus-driver-assignments-api/get-driver-details', [BusDriverAssignmentController::class, 'getDriverDetails'])->name('bus-driver-assignments.get-driver-details');
     Route::get('bus-driver-assignments-api/get-bus-details', [BusDriverAssignmentController::class, 'getBusDetails'])->name('bus-driver-assignments.get-bus-details');
+
+    // Establishment routes
+    Route::resource('establishment', EstablishmentController::class);
 });
 
 Route::get('/logout', function () {
