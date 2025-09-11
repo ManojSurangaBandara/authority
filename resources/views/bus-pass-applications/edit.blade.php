@@ -15,13 +15,13 @@
                             <i class="nav-icon fas fa-id-card nav-icon"></i> {{ __('Edit Bus Pass Application') }}
                             <div class="float-right">
                                 <span
-                                    class="badge badge-{{ $application->status === 'approved' ? 'success' : ($application->status === 'rejected' ? 'danger' : 'warning') }}">
-                                    {{ $application->getStatusLabel() }}
+                                    class="badge badge-{{ $bus_pass_application->status === 'approved' ? 'success' : ($bus_pass_application->status === 'rejected' ? 'danger' : 'warning') }}">
+                                    {{ $bus_pass_application->getStatusLabel() }}
                                 </span>
                             </div>
                         </div>
 
-                        <form action="{{ route('bus-pass-applications.update', $application) }}" method="POST"
+                        <form action="{{ route('bus-pass-applications.update', $bus_pass_application) }}" method="POST"
                             enctype="multipart/form-data" id="busPassForm">
                             @csrf
                             @method('PUT')
@@ -41,7 +41,7 @@
                                                 <input type="text"
                                                     class="form-control @error('regiment_no') is-invalid @enderror"
                                                     id="regiment_no" name="regiment_no"
-                                                    value="{{ old('regiment_no', $application->person->regiment_no) }}"
+                                                    value="{{ old('regiment_no', $bus_pass_application->person->regiment_no) }}"
                                                     required>
                                                 <div class="input-group-append">
                                                     <button type="button" class="btn btn-info" id="fetch-details">
@@ -59,7 +59,7 @@
                                             <label for="rank">Rank <span class="text-danger">*</span></label>
                                             <input type="text" class="form-control @error('rank') is-invalid @enderror"
                                                 id="rank" name="rank"
-                                                value="{{ old('rank', $application->person->rank) }}" required>
+                                                value="{{ old('rank', $bus_pass_application->person->rank) }}" required>
                                             @error('rank')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
@@ -70,7 +70,7 @@
                                             <label for="name">Name <span class="text-danger">*</span></label>
                                             <input type="text" class="form-control @error('name') is-invalid @enderror"
                                                 id="name" name="name"
-                                                value="{{ old('name', $application->person->name) }}" required>
+                                                value="{{ old('name', $bus_pass_application->person->name) }}" required>
                                             @error('name')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
@@ -84,7 +84,7 @@
                                             <label for="unit">Unit <span class="text-danger">*</span></label>
                                             <input type="text" class="form-control @error('unit') is-invalid @enderror"
                                                 id="unit" name="unit"
-                                                value="{{ old('unit', $application->person->unit) }}" required>
+                                                value="{{ old('unit', $bus_pass_application->person->unit) }}" required>
                                             @error('unit')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
@@ -95,7 +95,7 @@
                                             <label for="nic">NIC <span class="text-danger">*</span></label>
                                             <input type="text" class="form-control @error('nic') is-invalid @enderror"
                                                 id="nic" name="nic"
-                                                value="{{ old('nic', $application->person->nic) }}" required>
+                                                value="{{ old('nic', $bus_pass_application->person->nic) }}" required>
                                             @error('nic')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
@@ -106,7 +106,8 @@
                                             <label for="army_id">Army ID <span class="text-danger">*</span></label>
                                             <input type="text"
                                                 class="form-control @error('army_id') is-invalid @enderror" id="army_id"
-                                                name="army_id" value="{{ old('army_id', $application->person->army_id) }}"
+                                                name="army_id"
+                                                value="{{ old('army_id', $bus_pass_application->person->army_id) }}"
                                                 required>
                                             @error('army_id')
                                                 <span class="invalid-feedback">{{ $message }}</span>
@@ -121,7 +122,7 @@
                                             <label for="permanent_address">Permanent Address <span
                                                     class="text-danger">*</span></label>
                                             <textarea class="form-control @error('permanent_address') is-invalid @enderror" id="permanent_address"
-                                                name="permanent_address" rows="3" required>{{ old('permanent_address', $application->person->permanent_address) }}</textarea>
+                                                name="permanent_address" rows="3" required>{{ old('permanent_address', $bus_pass_application->person->permanent_address) }}</textarea>
                                             @error('permanent_address')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
@@ -137,7 +138,7 @@
                                             <input type="text"
                                                 class="form-control @error('telephone_no') is-invalid @enderror"
                                                 id="telephone_no" name="telephone_no"
-                                                value="{{ old('telephone_no', $application->person->telephone_no) }}"
+                                                value="{{ old('telephone_no', $bus_pass_application->person->telephone_no) }}"
                                                 required>
                                             @error('telephone_no')
                                                 <span class="invalid-feedback">{{ $message }}</span>
@@ -151,7 +152,7 @@
                                             <input type="text"
                                                 class="form-control @error('grama_seva_division') is-invalid @enderror"
                                                 id="grama_seva_division" name="grama_seva_division"
-                                                value="{{ old('grama_seva_division', $application->person->grama_seva_division) }}"
+                                                value="{{ old('grama_seva_division', $bus_pass_application->person->grama_seva_division) }}"
                                                 required>
                                             @error('grama_seva_division')
                                                 <span class="invalid-feedback">{{ $message }}</span>
@@ -165,7 +166,7 @@
                                             <input type="text"
                                                 class="form-control @error('nearest_police_station') is-invalid @enderror"
                                                 id="nearest_police_station" name="nearest_police_station"
-                                                value="{{ old('nearest_police_station', $application->person->nearest_police_station) }}"
+                                                value="{{ old('nearest_police_station', $bus_pass_application->person->nearest_police_station) }}"
                                                 required>
                                             @error('nearest_police_station')
                                                 <span class="invalid-feedback">{{ $message }}</span>
@@ -182,7 +183,7 @@
                                             <input type="text"
                                                 class="form-control @error('branch_directorate') is-invalid @enderror"
                                                 id="branch_directorate" name="branch_directorate"
-                                                value="{{ old('branch_directorate', $application->branch_directorate) }}"
+                                                value="{{ old('branch_directorate', $bus_pass_application->branch_directorate) }}"
                                                 required>
                                             @error('branch_directorate')
                                                 <span class="invalid-feedback">{{ $message }}</span>
@@ -197,10 +198,10 @@
                                                 id="marital_status" name="marital_status" required>
                                                 <option value="">Select Status</option>
                                                 <option value="single"
-                                                    {{ old('marital_status', $application->marital_status) == 'single' ? 'selected' : '' }}>
+                                                    {{ old('marital_status', $bus_pass_application->marital_status) == 'single' ? 'selected' : '' }}>
                                                     Single</option>
                                                 <option value="married"
-                                                    {{ old('marital_status', $application->marital_status) == 'married' ? 'selected' : '' }}>
+                                                    {{ old('marital_status', $bus_pass_application->marital_status) == 'married' ? 'selected' : '' }}>
                                                     Married</option>
                                             </select>
                                             @error('marital_status')
@@ -215,7 +216,7 @@
                                             <input type="date"
                                                 class="form-control @error('date_arrival_ahq') is-invalid @enderror"
                                                 id="date_arrival_ahq" name="date_arrival_ahq"
-                                                value="{{ old('date_arrival_ahq', $application->date_arrival_ahq ? $application->date_arrival_ahq->format('Y-m-d') : '') }}"
+                                                value="{{ old('date_arrival_ahq', $bus_pass_application->date_arrival_ahq ? $bus_pass_application->date_arrival_ahq->format('Y-m-d') : '') }}"
                                                 required>
                                             @error('date_arrival_ahq')
                                                 <span class="invalid-feedback">{{ $message }}</span>
@@ -241,10 +242,10 @@
                                                 id="approval_living_out" name="approval_living_out" required>
                                                 <option value="">Select</option>
                                                 <option value="yes"
-                                                    {{ old('approval_living_out', $application->approval_living_out) == 'yes' ? 'selected' : '' }}>
+                                                    {{ old('approval_living_out', $bus_pass_application->approval_living_out) == 'yes' ? 'selected' : '' }}>
                                                     Yes</option>
                                                 <option value="no"
-                                                    {{ old('approval_living_out', $application->approval_living_out) == 'no' ? 'selected' : '' }}>
+                                                    {{ old('approval_living_out', $bus_pass_application->approval_living_out) == 'no' ? 'selected' : '' }}>
                                                     No</option>
                                             </select>
                                             @error('approval_living_out')
@@ -260,10 +261,10 @@
                                                 id="obtain_sltb_season" name="obtain_sltb_season" required>
                                                 <option value="">Select</option>
                                                 <option value="yes"
-                                                    {{ old('obtain_sltb_season', $application->obtain_sltb_season) == 'yes' ? 'selected' : '' }}>
+                                                    {{ old('obtain_sltb_season', $bus_pass_application->obtain_sltb_season) == 'yes' ? 'selected' : '' }}>
                                                     Yes</option>
                                                 <option value="no"
-                                                    {{ old('obtain_sltb_season', $application->obtain_sltb_season) == 'no' ? 'selected' : '' }}>
+                                                    {{ old('obtain_sltb_season', $bus_pass_application->obtain_sltb_season) == 'no' ? 'selected' : '' }}>
                                                     No</option>
                                             </select>
                                             @error('obtain_sltb_season')
@@ -279,10 +280,10 @@
                                                 id="bus_pass_type" name="bus_pass_type" required>
                                                 <option value="">Select Type</option>
                                                 <option value="daily_travel"
-                                                    {{ old('bus_pass_type', $application->bus_pass_type) == 'daily_travel' ? 'selected' : '' }}>
+                                                    {{ old('bus_pass_type', $bus_pass_application->bus_pass_type) == 'daily_travel' ? 'selected' : '' }}>
                                                     Daily Travel</option>
                                                 <option value="weekend_monthly_travel"
-                                                    {{ old('bus_pass_type', $application->bus_pass_type) == 'weekend_monthly_travel' ? 'selected' : '' }}>
+                                                    {{ old('bus_pass_type', $bus_pass_application->bus_pass_type) == 'weekend_monthly_travel' ? 'selected' : '' }}>
                                                     Weekend/Monthly Travel</option>
                                             </select>
                                             @error('bus_pass_type')
@@ -309,7 +310,7 @@
                                                     @if (isset($busRoutes))
                                                         @foreach ($busRoutes as $route)
                                                             <option value="{{ $route->name }}"
-                                                                {{ old('requested_bus_name', $application->requested_bus_name) == $route->name ? 'selected' : '' }}>
+                                                                {{ old('requested_bus_name', $bus_pass_application->requested_bus_name) == $route->name ? 'selected' : '' }}>
                                                                 {{ $route->name }}</option>
                                                         @endforeach
                                                     @endif
@@ -321,7 +322,7 @@
                                                 <label for="destination_from_ahq">Destination location from AHQ</label>
                                                 <input type="text" class="form-control" id="destination_from_ahq"
                                                     name="destination_from_ahq"
-                                                    value="{{ old('destination_from_ahq', $application->destination_from_ahq) }}">
+                                                    value="{{ old('destination_from_ahq', $bus_pass_application->destination_from_ahq) }}">
                                             </div>
                                         </div>
                                     </div>
@@ -330,9 +331,9 @@
                                             <div class="form-group">
                                                 <label for="rent_allowance_order_daily">Rent Allowance Part II
                                                     Order</label>
-                                                @if ($application->rent_allowance_order)
+                                                @if ($bus_pass_application->rent_allowance_order)
                                                     <div class="mb-2">
-                                                        <a href="{{ asset('storage/' . $application->rent_allowance_order) }}"
+                                                        <a href="{{ asset('storage/' . $bus_pass_application->rent_allowance_order) }}"
                                                             target="_blank" class="btn btn-sm btn-outline-primary">
                                                             <i class="fas fa-file-pdf"></i> View Current
                                                         </a>
@@ -365,40 +366,40 @@
                                                 <select class="form-control" id="living_in_bus" name="living_in_bus">
                                                     <option value="">Select Living in bus</option>
                                                     <option value="Kinnadeniya 1"
-                                                        {{ old('living_in_bus', $application->living_in_bus) == 'Kinnadeniya 1' ? 'selected' : '' }}>
+                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Kinnadeniya 1' ? 'selected' : '' }}>
                                                         Kinnadeniya 1</option>
                                                     <option value="Kinnadeniya 2"
-                                                        {{ old('living_in_bus', $application->living_in_bus) == 'Kinnadeniya 2' ? 'selected' : '' }}>
+                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Kinnadeniya 2' ? 'selected' : '' }}>
                                                         Kinnadeniya 2</option>
                                                     <option value="Kinnadeniya 3"
-                                                        {{ old('living_in_bus', $application->living_in_bus) == 'Kinnadeniya 3' ? 'selected' : '' }}>
+                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Kinnadeniya 3' ? 'selected' : '' }}>
                                                         Kinnadeniya 3</option>
                                                     <option value="Panagoda - Officers"
-                                                        {{ old('living_in_bus', $application->living_in_bus) == 'Panagoda - Officers' ? 'selected' : '' }}>
+                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Panagoda - Officers' ? 'selected' : '' }}>
                                                         Panagoda - Officers</option>
                                                     <option value="Panagoda - Other Ranks"
-                                                        {{ old('living_in_bus', $application->living_in_bus) == 'Panagoda - Other Ranks' ? 'selected' : '' }}>
+                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Panagoda - Other Ranks' ? 'selected' : '' }}>
                                                         Panagoda - Other Ranks</option>
                                                     <option value="Kandalanda"
-                                                        {{ old('living_in_bus', $application->living_in_bus) == 'Kandalanda' ? 'selected' : '' }}>
+                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Kandalanda' ? 'selected' : '' }}>
                                                         Kandalanda</option>
                                                     <option value="Pamankada"
-                                                        {{ old('living_in_bus', $application->living_in_bus) == 'Pamankada' ? 'selected' : '' }}>
+                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Pamankada' ? 'selected' : '' }}>
                                                         Pamankada</option>
                                                     <option value="Maharagama"
-                                                        {{ old('living_in_bus', $application->living_in_bus) == 'Maharagama' ? 'selected' : '' }}>
+                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Maharagama' ? 'selected' : '' }}>
                                                         Maharagama</option>
                                                     <option value="Mathegoda"
-                                                        {{ old('living_in_bus', $application->living_in_bus) == 'Mathegoda' ? 'selected' : '' }}>
+                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Mathegoda' ? 'selected' : '' }}>
                                                         Mathegoda</option>
                                                     <option value="SLEME - Kompanyaweediya"
-                                                        {{ old('living_in_bus', $application->living_in_bus) == 'SLEME - Kompanyaweediya' ? 'selected' : '' }}>
+                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'SLEME - Kompanyaweediya' ? 'selected' : '' }}>
                                                         SLEME - Kompanyaweediya</option>
                                                     <option value="Rathmalaana"
-                                                        {{ old('living_in_bus', $application->living_in_bus) == 'Rathmalaana' ? 'selected' : '' }}>
+                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Rathmalaana' ? 'selected' : '' }}>
                                                         Rathmalaana</option>
                                                     <option value="Other"
-                                                        {{ old('living_in_bus', $application->living_in_bus) == 'Other' ? 'selected' : '' }}>
+                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Other' ? 'selected' : '' }}>
                                                         Other</option>
                                                 </select>
                                             </div>
@@ -410,31 +411,31 @@
                                                     name="destination_location_ahq">
                                                     <option value="">Select Destination Location</option>
                                                     <option value="Panagoda"
-                                                        {{ old('destination_location_ahq', $application->destination_location_ahq) == 'Panagoda' ? 'selected' : '' }}>
+                                                        {{ old('destination_location_ahq', $bus_pass_application->destination_location_ahq) == 'Panagoda' ? 'selected' : '' }}>
                                                         Panagoda</option>
                                                     <option value="Kandalanda"
-                                                        {{ old('destination_location_ahq', $application->destination_location_ahq) == 'Kandalanda' ? 'selected' : '' }}>
+                                                        {{ old('destination_location_ahq', $bus_pass_application->destination_location_ahq) == 'Kandalanda' ? 'selected' : '' }}>
                                                         Kandalanda</option>
                                                     <option value="Maharagama"
-                                                        {{ old('destination_location_ahq', $application->destination_location_ahq) == 'Maharagama' ? 'selected' : '' }}>
+                                                        {{ old('destination_location_ahq', $bus_pass_application->destination_location_ahq) == 'Maharagama' ? 'selected' : '' }}>
                                                         Maharagama</option>
                                                     <option value="Kinnadeniya"
-                                                        {{ old('destination_location_ahq', $application->destination_location_ahq) == 'Kinnadeniya' ? 'selected' : '' }}>
+                                                        {{ old('destination_location_ahq', $bus_pass_application->destination_location_ahq) == 'Kinnadeniya' ? 'selected' : '' }}>
                                                         Kinnadeniya</option>
                                                     <option value="Pamankada"
-                                                        {{ old('destination_location_ahq', $application->destination_location_ahq) == 'Pamankada' ? 'selected' : '' }}>
+                                                        {{ old('destination_location_ahq', $bus_pass_application->destination_location_ahq) == 'Pamankada' ? 'selected' : '' }}>
                                                         Pamankada</option>
                                                     <option value="Mathegoda"
-                                                        {{ old('destination_location_ahq', $application->destination_location_ahq) == 'Mathegoda' ? 'selected' : '' }}>
+                                                        {{ old('destination_location_ahq', $bus_pass_application->destination_location_ahq) == 'Mathegoda' ? 'selected' : '' }}>
                                                         Mathegoda</option>
                                                     <option value="SLEME Workshop"
-                                                        {{ old('destination_location_ahq', $application->destination_location_ahq) == 'SLEME Workshop' ? 'selected' : '' }}>
+                                                        {{ old('destination_location_ahq', $bus_pass_application->destination_location_ahq) == 'SLEME Workshop' ? 'selected' : '' }}>
                                                         SLEME Workshop</option>
                                                     <option value="Rathmalaana"
-                                                        {{ old('destination_location_ahq', $application->destination_location_ahq) == 'Rathmalaana' ? 'selected' : '' }}>
+                                                        {{ old('destination_location_ahq', $bus_pass_application->destination_location_ahq) == 'Rathmalaana' ? 'selected' : '' }}>
                                                         Rathmalaana</option>
                                                     <option value="Other"
-                                                        {{ old('destination_location_ahq', $application->destination_location_ahq) == 'Other' ? 'selected' : '' }}>
+                                                        {{ old('destination_location_ahq', $bus_pass_application->destination_location_ahq) == 'Other' ? 'selected' : '' }}>
                                                         Other</option>
                                                 </select>
                                             </div>
@@ -450,7 +451,7 @@
                                                     @if (isset($busRoutes))
                                                         @foreach ($busRoutes as $route)
                                                             <option value="{{ $route->name }}"
-                                                                {{ old('weekend_bus_name', $application->weekend_bus_name) == $route->name ? 'selected' : '' }}>
+                                                                {{ old('weekend_bus_name', $bus_pass_application->weekend_bus_name) == $route->name ? 'selected' : '' }}>
                                                                 {{ $route->name }}</option>
                                                         @endforeach
                                                     @endif
@@ -462,7 +463,7 @@
                                                 <label for="weekend_destination">Destination</label>
                                                 <input type="text" class="form-control" id="weekend_destination"
                                                     name="weekend_destination"
-                                                    value="{{ old('weekend_destination', $application->weekend_destination) }}">
+                                                    value="{{ old('weekend_destination', $bus_pass_application->weekend_destination) }}">
                                             </div>
                                         </div>
                                     </div>
@@ -479,9 +480,9 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="grama_niladari_certificate">Grama Niladari Certificate</label>
-                                            @if ($application->grama_niladari_certificate)
+                                            @if ($bus_pass_application->grama_niladari_certificate)
                                                 <div class="mb-2">
-                                                    <a href="{{ asset('storage/' . $application->grama_niladari_certificate) }}"
+                                                    <a href="{{ asset('storage/' . $bus_pass_application->grama_niladari_certificate) }}"
                                                         target="_blank" class="btn btn-sm btn-outline-primary">
                                                         <i class="fas fa-file-pdf"></i> View Current
                                                     </a>
@@ -501,9 +502,9 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="person_image">Person Image</label>
-                                            @if ($application->person_image)
+                                            @if ($bus_pass_application->person_image)
                                                 <div class="mb-2">
-                                                    <a href="{{ asset('storage/' . $application->person_image) }}"
+                                                    <a href="{{ asset('storage/' . $bus_pass_application->person_image) }}"
                                                         target="_blank" class="btn btn-sm btn-outline-primary">
                                                         <i class="fas fa-image"></i> View Current
                                                     </a>
@@ -535,7 +536,7 @@
                                                 <input type="checkbox"
                                                     class="form-check-input @error('declaration_1') is-invalid @enderror"
                                                     id="declaration_1" name="declaration_1" value="yes" required
-                                                    {{ old('declaration_1', $application->declaration_1) == 'yes' ? 'checked' : '' }}>
+                                                    {{ old('declaration_1', $bus_pass_application->declaration_1) == 'yes' ? 'checked' : '' }}>
                                                 <label class="form-check-label" for="declaration_1">
                                                     I declare that the information provided above is true and correct to the
                                                     best of my knowledge. <span class="text-danger">*</span>
@@ -555,7 +556,7 @@
                                                 <input type="checkbox"
                                                     class="form-check-input @error('declaration_2') is-invalid @enderror"
                                                     id="declaration_2" name="declaration_2" value="yes" required
-                                                    {{ old('declaration_2', $application->declaration_2) == 'yes' ? 'checked' : '' }}>
+                                                    {{ old('declaration_2', $bus_pass_application->declaration_2) == 'yes' ? 'checked' : '' }}>
                                                 <label class="form-check-label" for="declaration_2">
                                                     I understand that any false information may result in the rejection of
                                                     this application and/or disciplinary action. <span
@@ -574,7 +575,8 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-save"></i> Update Application
                                 </button>
-                                <a href="{{ route('bus-pass-applications.show', $application) }}" class="btn btn-info">
+                                <a href="{{ route('bus-pass-applications.show', $bus_pass_application) }}"
+                                    class="btn btn-info">
                                     <i class="fas fa-eye"></i> View
                                 </a>
                                 <a href="{{ route('bus-pass-applications.index') }}" class="btn btn-secondary">
@@ -648,7 +650,7 @@
                             // alert('Person details loaded successfully!');
                         } else {
                             alert('No data found for this regiment number: ' + response
-                            .message);
+                                .message);
                         }
                     },
                     error: function(xhr) {

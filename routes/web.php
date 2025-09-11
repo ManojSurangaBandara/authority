@@ -3,13 +3,13 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BusController;
+use App\Http\Controllers\BusDriverAssignmentController;
 use App\Http\Controllers\BusRouteController;
 use App\Http\Controllers\DriverController;
 use App\Http\Controllers\EscortController;
 use App\Http\Controllers\SlcmpInchargeController;
 use App\Http\Controllers\FillingStationController;
 use App\Http\Controllers\PersonController;
-use App\Http\Controllers\MaritalStatusController;
 use App\Http\Controllers\BusPassApplicationController;
 use App\Http\Controllers\BusPassStatusController;
 use Illuminate\Support\Facades\Auth;
@@ -48,15 +48,17 @@ Route::middleware('auth')->group(function () {
     Route::resource('persons', PersonController::class);
     Route::get('persons-api/get-details', [PersonController::class, 'getPersonDetails'])->name('persons.get-details');
 
-    // Marital Status routes (view-only)
-    Route::resource('marital-statuses', MaritalStatusController::class)->only(['index', 'show']);
-
     // Bus Pass Application routes
     Route::resource('bus-pass-applications', BusPassApplicationController::class);
     Route::get('bus-pass-applications-api/get-details', [BusPassApplicationController::class, 'getPersonDetails'])->name('bus-pass-applications.get-details');
 
     // Bus Pass Status routes (Master Data)
     Route::resource('bus-pass-statuses', BusPassStatusController::class);
+
+    // Bus Driver Assignment routes
+    Route::resource('bus-driver-assignments', BusDriverAssignmentController::class);
+    Route::get('bus-driver-assignments-api/get-driver-details', [BusDriverAssignmentController::class, 'getDriverDetails'])->name('bus-driver-assignments.get-driver-details');
+    Route::get('bus-driver-assignments-api/get-bus-details', [BusDriverAssignmentController::class, 'getBusDetails'])->name('bus-driver-assignments.get-bus-details');
 });
 
 Route::get('/logout', function () {

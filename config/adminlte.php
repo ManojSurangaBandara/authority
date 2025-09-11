@@ -369,19 +369,19 @@ return [
                     ],
                 ],
                 [
-                    'text' => 'Marital Statuses',
-                    'url' => 'marital-statuses',
-                    'icon' => 'fas fa-fw fa-heart',
-                    'active' => [
-                        'marital-statuses*',
-                    ],
-                ],
-                [
                     'text' => 'Bus Pass Statuses',
                     'url' => 'bus-pass-statuses',
                     'icon' => 'fas fa-fw fa-tags',
                     'active' => [
                         'bus-pass-statuses*',
+                    ],
+                ],
+                [
+                    'text' => 'Bus Driver Assignments',
+                    'url' => 'bus-driver-assignments',
+                    'icon' => 'fas fa-fw fa-user-tie',
+                    'active' => [
+                        'bus-driver-assignments*',
                     ],
                 ],
 
