@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BusController;
+use App\Http\Controllers\BusDriverAssignmentController;
 use App\Http\Controllers\BusRouteController;
 use App\Http\Controllers\DriverController;
 use App\Http\Controllers\EscortController;
@@ -53,6 +54,11 @@ Route::middleware('auth')->group(function () {
 
     // Bus Pass Status routes (Master Data)
     Route::resource('bus-pass-statuses', BusPassStatusController::class);
+
+    // Bus Driver Assignment routes
+    Route::resource('bus-driver-assignments', BusDriverAssignmentController::class);
+    Route::get('bus-driver-assignments-api/get-driver-details', [BusDriverAssignmentController::class, 'getDriverDetails'])->name('bus-driver-assignments.get-driver-details');
+    Route::get('bus-driver-assignments-api/get-bus-details', [BusDriverAssignmentController::class, 'getBusDetails'])->name('bus-driver-assignments.get-bus-details');
 });
 
 Route::get('/logout', function () {

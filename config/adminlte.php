@@ -376,6 +376,14 @@ return [
                         'bus-pass-statuses*',
                     ],
                 ],
+                [
+                    'text' => 'Bus Driver Assignments',
+                    'url' => 'bus-driver-assignments',
+                    'icon' => 'fas fa-fw fa-user-tie',
+                    'active' => [
+                        'bus-driver-assignments*',
+                    ],
+                ],
 
             ],
         ],

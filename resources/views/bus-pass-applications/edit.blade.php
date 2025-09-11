@@ -106,7 +106,8 @@
                                             <label for="army_id">Army ID <span class="text-danger">*</span></label>
                                             <input type="text"
                                                 class="form-control @error('army_id') is-invalid @enderror" id="army_id"
-                                                name="army_id" value="{{ old('army_id', $bus_pass_application->person->army_id) }}"
+                                                name="army_id"
+                                                value="{{ old('army_id', $bus_pass_application->person->army_id) }}"
                                                 required>
                                             @error('army_id')
                                                 <span class="invalid-feedback">{{ $message }}</span>
@@ -196,8 +197,12 @@
                                             <select class="form-control @error('marital_status') is-invalid @enderror"
                                                 id="marital_status" name="marital_status" required>
                                                 <option value="">Select Status</option>
-                                                <option value="single" {{ old('marital_status', $bus_pass_application->marital_status) == 'single' ? 'selected' : '' }}>Single</option>
-                                                <option value="married" {{ old('marital_status', $bus_pass_application->marital_status) == 'married' ? 'selected' : '' }}>Married</option>
+                                                <option value="single"
+                                                    {{ old('marital_status', $bus_pass_application->marital_status) == 'single' ? 'selected' : '' }}>
+                                                    Single</option>
+                                                <option value="married"
+                                                    {{ old('marital_status', $bus_pass_application->marital_status) == 'married' ? 'selected' : '' }}>
+                                                    Married</option>
                                             </select>
                                             @error('marital_status')
                                                 <span class="invalid-feedback">{{ $message }}</span>
@@ -570,7 +575,8 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-save"></i> Update Application
                                 </button>
-                                <a href="{{ route('bus-pass-applications.show', $bus_pass_application) }}" class="btn btn-info">
+                                <a href="{{ route('bus-pass-applications.show', $bus_pass_application) }}"
+                                    class="btn btn-info">
                                     <i class="fas fa-eye"></i> View
                                 </a>
                                 <a href="{{ route('bus-pass-applications.index') }}" class="btn btn-secondary">
@@ -644,7 +650,7 @@
                             // alert('Person details loaded successfully!');
                         } else {
                             alert('No data found for this regiment number: ' + response
-                            .message);
+                                .message);
                         }
                     },
                     error: function(xhr) {
