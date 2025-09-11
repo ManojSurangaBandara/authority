@@ -8,6 +8,7 @@ use App\DataTables\BusPassApplicationDataTable;
 use App\Models\BusPassApplication;
 use App\Models\MaritalStatus;
 use App\Models\BusRoute;
+use App\Models\Person;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -29,7 +30,7 @@ class BusPassApplicationController extends Controller
     {
         $maritalStatuses = MaritalStatus::all();
         $busRoutes = BusRoute::all();
-        
+
         return view('bus-pass-applications.create', compact('maritalStatuses', 'busRoutes'));
     }
 
@@ -72,23 +73,68 @@ class BusPassApplicationController extends Controller
 
         $request->validate($validationRules);
 
+        // Check if person exists by regiment number
+        $person = Person::where('regiment_no', $request->regiment_no)->first();
+
+        if (!$person) {
+            // Create new person if doesn't exist
+            $person = Person::create([
+                'regiment_no' => $request->regiment_no,
+                'rank' => $request->rank,
+                'name' => $request->name,
+                'unit' => $request->unit,
+                'nic' => $request->nic,
+                'army_id' => $request->army_id,
+                'permanent_address' => $request->permanent_address,
+                'telephone_no' => $request->telephone_no,
+                'grama_seva_division' => $request->grama_seva_division,
+                'nearest_police_station' => $request->nearest_police_station,
+            ]);
+        }
+
         // Handle file uploads
-        $data = $request->all();
-        
+        $data = [];
+
         if ($request->hasFile('grama_niladari_certificate')) {
             $data['grama_niladari_certificate'] = $request->file('grama_niladari_certificate')->store('certificates', 'public');
         }
-        
+
         if ($request->hasFile('person_image')) {
             $data['person_image'] = $request->file('person_image')->store('person_images', 'public');
         }
-        
+
         if ($request->hasFile('rent_allowance_order')) {
             $data['rent_allowance_order'] = $request->file('rent_allowance_order')->store('rent_allowances', 'public');
         }
 
+        // Prepare application data (excluding person fields)
+        $data['person_id'] = $person->id;
+        $data['branch_directorate'] = $request->branch_directorate;
+        $data['marital_status'] = $request->marital_status;
+        $data['approval_living_out'] = $request->approval_living_out;
+        $data['obtain_sltb_season'] = $request->obtain_sltb_season;
+        $data['date_arrival_ahq'] = $request->date_arrival_ahq;
+        $data['bus_pass_type'] = $request->bus_pass_type;
+        $data['declaration_1'] = $request->declaration_1;
+        $data['declaration_2'] = $request->declaration_2;
         $data['created_by'] = Auth::user()->name ?? 'System';
         $data['status'] = 'pending_subject_clerk';
+
+        // Add conditional fields for weekend/monthly travel
+        if ($request->bus_pass_type === 'weekend_monthly_travel') {
+            $data['living_in_bus'] = $request->living_in_bus;
+            $data['destination_location_ahq'] = $request->destination_location_ahq;
+            $data['weekend_bus_name'] = $request->weekend_bus_name;
+            $data['weekend_destination'] = $request->weekend_destination;
+        }
+
+        // Add daily travel fields if present
+        if ($request->has('requested_bus_name')) {
+            $data['requested_bus_name'] = $request->requested_bus_name;
+        }
+        if ($request->has('destination_from_ahq')) {
+            $data['destination_from_ahq'] = $request->destination_from_ahq;
+        }
 
         BusPassApplication::create($data);
 
@@ -101,7 +147,9 @@ class BusPassApplicationController extends Controller
      */
     public function show(string $id)
     {
-        $application = BusPassApplication::findOrFail($id);
+        // Find the application by ID not to confused with peron table id
+
+        $application = BusPassApplication::with('person')->findOrFail($id);
         return view('bus-pass-applications.show', compact('application'));
     }
 
@@ -110,10 +158,10 @@ class BusPassApplicationController extends Controller
      */
     public function edit(string $id)
     {
-        $application = BusPassApplication::findOrFail($id);
+        $application = BusPassApplication::with('person')->findOrFail($id);
         $maritalStatuses = MaritalStatus::all();
         $busRoutes = BusRoute::all();
-        
+
         return view('bus-pass-applications.edit', compact('application', 'maritalStatuses', 'busRoutes'));
     }
 
@@ -122,7 +170,7 @@ class BusPassApplicationController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $application = BusPassApplication::findOrFail($id);
+        $application = BusPassApplication::with('person')->findOrFail($id);
 
         $validationRules = [
             'regiment_no' => 'required|string|max:20',
@@ -156,8 +204,23 @@ class BusPassApplicationController extends Controller
 
         $request->validate($validationRules);
 
-        $data = $request->all();
-        
+        // Update person data
+        $application->person->update([
+            'regiment_no' => $request->regiment_no,
+            'rank' => $request->rank,
+            'name' => $request->name,
+            'unit' => $request->unit,
+            'nic' => $request->nic,
+            'army_id' => $request->army_id,
+            'permanent_address' => $request->permanent_address,
+            'telephone_no' => $request->telephone_no,
+            'grama_seva_division' => $request->grama_seva_division,
+            'nearest_police_station' => $request->nearest_police_station,
+        ]);
+
+        // Prepare application data (excluding person fields)
+        $data = [];
+
         // Handle file uploads
         if ($request->hasFile('grama_niladari_certificate')) {
             if ($application->grama_niladari_certificate) {
@@ -165,19 +228,45 @@ class BusPassApplicationController extends Controller
             }
             $data['grama_niladari_certificate'] = $request->file('grama_niladari_certificate')->store('certificates', 'public');
         }
-        
+
         if ($request->hasFile('person_image')) {
             if ($application->person_image) {
                 Storage::disk('public')->delete($application->person_image);
             }
             $data['person_image'] = $request->file('person_image')->store('person_images', 'public');
         }
-        
+
         if ($request->hasFile('rent_allowance_order')) {
             if ($application->rent_allowance_order) {
                 Storage::disk('public')->delete($application->rent_allowance_order);
             }
             $data['rent_allowance_order'] = $request->file('rent_allowance_order')->store('rent_allowances', 'public');
+        }
+
+        // Add application-specific fields
+        $data['branch_directorate'] = $request->branch_directorate;
+        $data['marital_status'] = $request->marital_status;
+        $data['approval_living_out'] = $request->approval_living_out;
+        $data['obtain_sltb_season'] = $request->obtain_sltb_season;
+        $data['date_arrival_ahq'] = $request->date_arrival_ahq;
+        $data['bus_pass_type'] = $request->bus_pass_type;
+        $data['declaration_1'] = $request->declaration_1;
+        $data['declaration_2'] = $request->declaration_2;
+
+        // Add conditional fields for weekend/monthly travel
+        if ($request->bus_pass_type === 'weekend_monthly_travel') {
+            $data['living_in_bus'] = $request->living_in_bus;
+            $data['destination_location_ahq'] = $request->destination_location_ahq;
+            $data['weekend_bus_name'] = $request->weekend_bus_name;
+            $data['weekend_destination'] = $request->weekend_destination;
+        }
+
+        // Add daily travel fields if present
+        if ($request->has('requested_bus_name')) {
+            $data['requested_bus_name'] = $request->requested_bus_name;
+        }
+        if ($request->has('destination_from_ahq')) {
+            $data['destination_from_ahq'] = $request->destination_from_ahq;
         }
 
         $application->update($data);
@@ -192,7 +281,7 @@ class BusPassApplicationController extends Controller
     public function destroy(string $id)
     {
         $application = BusPassApplication::findOrFail($id);
-        
+
         // Delete associated files
         if ($application->grama_niladari_certificate) {
             Storage::disk('public')->delete($application->grama_niladari_certificate);
@@ -203,7 +292,7 @@ class BusPassApplicationController extends Controller
         if ($application->rent_allowance_order) {
             Storage::disk('public')->delete($application->rent_allowance_order);
         }
-        
+
         $application->delete();
 
         return redirect()->route('bus-pass-applications.index')
@@ -230,10 +319,10 @@ class BusPassApplicationController extends Controller
 
             if ($response->successful()) {
                 $responseData = json_decode($response->body(), true);
-                
+
                 if (is_array($responseData) && !empty($responseData)) {
                     $data = $responseData[0];
-                    
+
                     $personData = [
                         'rank' => $data['rank'] ?? '',
                         'name' => $data['name'] ?? '',
@@ -245,16 +334,16 @@ class BusPassApplicationController extends Controller
                         'grama_seva_division' => $data['grama_seva_division'] ?? '',
                         'nearest_police_station' => $data['nearest_police_station'] ?? ''
                     ];
-                    
+
                     return response()->json([
                         'success' => true,
                         'data' => $personData
                     ]);
                 }
-                
+
                 return response()->json(['success' => false, 'message' => 'No data found for this regiment number'], 404);
             }
-            
+
             return response()->json(['success' => false, 'message' => 'Failed to fetch data from Army API'], $response->status());
         } catch (\Exception $e) {
             return response()->json([

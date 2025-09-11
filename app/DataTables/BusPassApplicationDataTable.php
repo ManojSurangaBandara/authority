@@ -56,7 +56,7 @@ class BusPassApplicationDataTable extends DataTable
      */
     public function query(BusPassApplication $model): QueryBuilder
     {
-        return $model->newQuery()->orderBy('created_at', 'desc');
+        return $model->newQuery()->with('person')->orderBy('bus_pass_applications.created_at', 'desc');
     }
 
     /**
@@ -68,7 +68,6 @@ class BusPassApplicationDataTable extends DataTable
             ->setTableId('bus-pass-application-table')
             ->columns($this->getColumns())
             ->minifiedAjax()
-            ->orderBy(1)
             ->selectStyleSingle()
             ->buttons([
                 Button::make('excel'),
@@ -87,9 +86,9 @@ class BusPassApplicationDataTable extends DataTable
     {
         return [
             Column::make('DT_RowIndex')->title('#')->searchable(false)->orderable(false),
-            Column::make('regiment_no')->title('Regiment No'),
-            Column::make('name')->title('Name'),
-            Column::make('rank')->title('Rank'),
+            Column::make('person.regiment_no')->title('Regiment No')->name('person.regiment_no'),
+            Column::make('person.name')->title('Name')->name('person.name'),
+            Column::make('person.rank')->title('Rank')->name('person.rank'),
             Column::make('branch_directorate')->title('Branch/Directorate'),
             Column::make('type_label')->title('Pass Type')->searchable(false),
             Column::make('status_badge')->title('Status')->searchable(false)->orderable(false),

@@ -7,16 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class BusPassApplication extends Model
 {
     protected $fillable = [
-        'regiment_no',
-        'rank',
-        'name',
-        'unit',
-        'nic',
-        'army_id',
-        'permanent_address',
-        'telephone_no',
-        'grama_seva_division',
-        'nearest_police_station',
+        'person_id',
         'branch_directorate',
         'marital_status',
         'approval_living_out',
@@ -61,6 +52,12 @@ class BusPassApplication extends Model
     public function statusData()
     {
         return $this->belongsTo(BusPassStatus::class, 'status', 'code');
+    }
+
+    // Relationship with Person
+    public function person()
+    {
+        return $this->belongsTo(Person::class);
     }
 
     // Status label accessor
@@ -129,7 +126,7 @@ class BusPassApplication extends Model
             'approved_by_director' => 'primary',
             'approved' => 'success',
         ];
-        
+
         $class = $badges[$this->status] ?? 'secondary';
         return '<span class="badge badge-' . $class . '">' . $this->status_label . '</span>';
     }

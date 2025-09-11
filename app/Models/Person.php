@@ -20,4 +20,10 @@ class Person extends Model
         'grama_seva_division',
         'nearest_police_station',
     ];
+
+    // Relationship with BusPassApplication
+    public function busPassApplications()
+    {
+        return $this->hasMany(BusPassApplication::class);
+    }
 }
