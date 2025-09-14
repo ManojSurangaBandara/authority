@@ -6,6 +6,7 @@ use App\Http\Controllers\BusController;
 use App\Http\Controllers\BusDriverAssignmentController;
 use App\Http\Controllers\BusEscortAssignmentController;
 use App\Http\Controllers\SlcmpInchargeAssignmentController;
+use App\Http\Controllers\BusFillingStationAssignmentController;
 use App\Http\Controllers\BusRouteController;
 use App\Http\Controllers\DriverController;
 use App\Http\Controllers\EscortController;
@@ -71,6 +72,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('slcmp-incharge-assignments', SlcmpInchargeAssignmentController::class);
     Route::get('slcmp-incharge-assignments-api/get-slcmp-details', [SlcmpInchargeAssignmentController::class, 'getSlcmpDetails'])->name('slcmp-incharge-assignments.get-slcmp-details');
     Route::get('slcmp-incharge-assignments-api/get-bus-details', [SlcmpInchargeAssignmentController::class, 'getBusDetails'])->name('slcmp-incharge-assignments.get-bus-details');
+
+    // Bus Filling Station Assignment routes
+    Route::resource('bus-filling-station-assignments', BusFillingStationAssignmentController::class);
+    Route::get('bus-filling-station-assignments-api/get-bus-details', [BusFillingStationAssignmentController::class, 'getBusDetails'])->name('bus-filling-station-assignments.get-bus-details');
 });
 
 Route::get('/logout', function () {

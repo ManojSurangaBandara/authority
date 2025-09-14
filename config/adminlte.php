@@ -400,6 +400,14 @@ return [
                         'slcmp-incharge-assignments*',
                     ],
                 ],
+                [
+                    'text' => 'Bus Filling Station Assignments',
+                    'url' => 'bus-filling-station-assignments',
+                    'icon' => 'fas fa-fw fa-gas-pump',
+                    'active' => [
+                        'bus-filling-station-assignments*',
+                    ],
+                ],
 
             ],
         ],
