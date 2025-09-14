@@ -392,6 +392,14 @@ return [
                         'bus-escort-assignments*',
                     ],
                 ],
+                [
+                    'text' => 'SLCMP In-charge Assignments',
+                    'url' => 'slcmp-incharge-assignments',
+                    'icon' => 'fas fa-fw fa-shield-alt',
+                    'active' => [
+                        'slcmp-incharge-assignments*',
+                    ],
+                ],
 
             ],
         ],
