@@ -15,6 +15,7 @@ use App\Http\Controllers\FillingStationController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\BusPassApplicationController;
 use App\Http\Controllers\BusPassStatusController;
+use App\Http\Controllers\EstablishmentController;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
@@ -76,6 +77,8 @@ Route::middleware('auth')->group(function () {
     // Bus Filling Station Assignment routes
     Route::resource('bus-filling-station-assignments', BusFillingStationAssignmentController::class);
     Route::get('bus-filling-station-assignments-api/get-bus-details', [BusFillingStationAssignmentController::class, 'getBusDetails'])->name('bus-filling-station-assignments.get-bus-details');
+    // Establishment routes
+    Route::resource('establishment', EstablishmentController::class);
 });
 
 Route::get('/logout', function () {
