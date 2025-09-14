@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\DataTables\BusEscortAssignmentDataTable;
 use App\Models\BusEscortAssignment;
 use App\Models\BusRoute;
+use App\Models\Escort;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
@@ -57,12 +58,40 @@ class BusEscortAssignmentController extends Controller
             }
         }
 
-        $validatedData['created_by'] = Auth::user()->name ?? 'System';
+        // Check if escort exists by regiment number
+        $escort = Escort::where('regiment_no', $request->escort_regiment_no)->first();
 
-        BusEscortAssignment::create($validatedData);
+        if (!$escort) {
+            // Create new escort if doesn't exist
+            $escort = Escort::create([
+                'regiment_no' => $request->escort_regiment_no,
+                'rank' => $request->escort_rank,
+                'name' => $request->escort_name,
+                'contact_no' => $request->escort_contact_no,
+            ]);
+        } else {
+            // Update existing escort information
+            $escort->update([
+                'rank' => $request->escort_rank,
+                'name' => $request->escort_name,
+                'contact_no' => $request->escort_contact_no,
+            ]);
+        }
+
+        // Create assignment with escort_id instead of individual fields
+        $assignmentData = [
+            'bus_route_id' => $validatedData['bus_route_id'],
+            'escort_id' => $escort->id,
+            'assigned_date' => $validatedData['assigned_date'],
+            'end_date' => $validatedData['end_date'],
+            'status' => $validatedData['status'],
+            'created_by' => Auth::user()->name ?? 'System'
+        ];
+
+        BusEscortAssignment::create($assignmentData);
 
         return redirect()->route('bus-escort-assignments.index')
-            ->with('success', 'Bus escort assignment created successfully.');
+            ->with('success', 'Bus escort assignment created successfully. Escort information has been ' . ($escort->wasRecentlyCreated ? 'created' : 'updated') . ' in the system.');
     }
 
     /**
@@ -114,10 +143,39 @@ class BusEscortAssignmentController extends Controller
             }
         }
 
-        $bus_escort_assignment->update($validatedData);
+        // Update or create escort information
+        $escort = Escort::where('regiment_no', $request->escort_regiment_no)->first();
+
+        if (!$escort) {
+            // Create new escort if doesn't exist
+            $escort = Escort::create([
+                'regiment_no' => $request->escort_regiment_no,
+                'rank' => $request->escort_rank,
+                'name' => $request->escort_name,
+                'contact_no' => $request->escort_contact_no,
+            ]);
+        } else {
+            // Update existing escort information
+            $escort->update([
+                'rank' => $request->escort_rank,
+                'name' => $request->escort_name,
+                'contact_no' => $request->escort_contact_no,
+            ]);
+        }
+
+        // Update assignment with escort_id instead of individual fields
+        $assignmentData = [
+            'bus_route_id' => $validatedData['bus_route_id'],
+            'escort_id' => $escort->id,
+            'assigned_date' => $validatedData['assigned_date'],
+            'end_date' => $validatedData['end_date'],
+            'status' => $validatedData['status']
+        ];
+
+        $bus_escort_assignment->update($assignmentData);
 
         return redirect()->route('bus-escort-assignments.index')
-            ->with('success', 'Bus escort assignment updated successfully.');
+            ->with('success', 'Bus escort assignment updated successfully. Escort information has been updated in the system.');
     }
 
     /**

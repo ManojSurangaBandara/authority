@@ -11,10 +11,7 @@ class BusEscortAssignment extends Model
 
     protected $fillable = [
         'bus_route_id',
-        'escort_regiment_no',
-        'escort_rank',
-        'escort_name',
-        'escort_contact_no',
+        'escort_id',
         'assigned_date',
         'end_date',
         'status',
@@ -36,6 +33,14 @@ class BusEscortAssignment extends Model
     public function busRoute()
     {
         return $this->belongsTo(BusRoute::class, 'bus_route_id');
+    }
+
+    /**
+     * Relationship with Escort
+     */
+    public function escort()
+    {
+        return $this->belongsTo(Escort::class, 'escort_id');
     }
 
     public function getStatusBadgeAttribute()

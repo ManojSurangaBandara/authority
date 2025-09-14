@@ -11,10 +11,7 @@ class SlcmpInchargeAssignment extends Model
 
     protected $fillable = [
         'bus_route_id',
-        'slcmp_regiment_no',
-        'slcmp_rank',
-        'slcmp_name',
-        'slcmp_contact_no',
+        'slcmp_incharge_id',
         'assigned_date',
         'end_date',
         'status',
@@ -36,6 +33,14 @@ class SlcmpInchargeAssignment extends Model
     public function busRoute()
     {
         return $this->belongsTo(BusRoute::class, 'bus_route_id');
+    }
+
+    /**
+     * Relationship with SlcmpIncharge
+     */
+    public function slcmpIncharge()
+    {
+        return $this->belongsTo(SlcmpIncharge::class, 'slcmp_incharge_id');
     }
 
     public function getStatusBadgeAttribute()

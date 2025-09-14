@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\DataTables\SlcmpInchargeAssignmentDataTable;
 use App\Models\SlcmpInchargeAssignment;
 use App\Models\BusRoute;
+use App\Models\SlcmpIncharge;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
@@ -57,12 +58,40 @@ class SlcmpInchargeAssignmentController extends Controller
             }
         }
 
-        $validatedData['created_by'] = Auth::user()->name ?? 'System';
+        // Check if SLCMP in-charge exists by regiment number
+        $slcmpIncharge = SlcmpIncharge::where('regiment_no', $request->slcmp_regiment_no)->first();
 
-        SlcmpInchargeAssignment::create($validatedData);
+        if (!$slcmpIncharge) {
+            // Create new SLCMP in-charge if doesn't exist
+            $slcmpIncharge = SlcmpIncharge::create([
+                'regiment_no' => $request->slcmp_regiment_no,
+                'rank' => $request->slcmp_rank,
+                'name' => $request->slcmp_name,
+                'contact_no' => $request->slcmp_contact_no,
+            ]);
+        } else {
+            // Update existing SLCMP in-charge information
+            $slcmpIncharge->update([
+                'rank' => $request->slcmp_rank,
+                'name' => $request->slcmp_name,
+                'contact_no' => $request->slcmp_contact_no,
+            ]);
+        }
+
+        // Create assignment with slcmp_incharge_id instead of individual fields
+        $assignmentData = [
+            'bus_route_id' => $validatedData['bus_route_id'],
+            'slcmp_incharge_id' => $slcmpIncharge->id,
+            'assigned_date' => $validatedData['assigned_date'],
+            'end_date' => $validatedData['end_date'],
+            'status' => $validatedData['status'],
+            'created_by' => Auth::user()->name ?? 'System'
+        ];
+
+        SlcmpInchargeAssignment::create($assignmentData);
 
         return redirect()->route('slcmp-incharge-assignments.index')
-            ->with('success', 'SLCMP in-charge assignment created successfully.');
+            ->with('success', 'SLCMP in-charge assignment created successfully. SLCMP in-charge information has been ' . ($slcmpIncharge->wasRecentlyCreated ? 'created' : 'updated') . ' in the system.');
     }
 
     /**
@@ -115,10 +144,39 @@ class SlcmpInchargeAssignmentController extends Controller
             }
         }
 
-        $slcmp_incharge_assignment->update($validatedData);
+        // Update or create SLCMP in-charge information
+        $slcmpIncharge = SlcmpIncharge::where('regiment_no', $request->slcmp_regiment_no)->first();
+
+        if (!$slcmpIncharge) {
+            // Create new SLCMP in-charge if doesn't exist
+            $slcmpIncharge = SlcmpIncharge::create([
+                'regiment_no' => $request->slcmp_regiment_no,
+                'rank' => $request->slcmp_rank,
+                'name' => $request->slcmp_name,
+                'contact_no' => $request->slcmp_contact_no,
+            ]);
+        } else {
+            // Update existing SLCMP in-charge information
+            $slcmpIncharge->update([
+                'rank' => $request->slcmp_rank,
+                'name' => $request->slcmp_name,
+                'contact_no' => $request->slcmp_contact_no,
+            ]);
+        }
+
+        // Update assignment with slcmp_incharge_id instead of individual fields
+        $assignmentData = [
+            'bus_route_id' => $validatedData['bus_route_id'],
+            'slcmp_incharge_id' => $slcmpIncharge->id,
+            'assigned_date' => $validatedData['assigned_date'],
+            'end_date' => $validatedData['end_date'],
+            'status' => $validatedData['status']
+        ];
+
+        $slcmp_incharge_assignment->update($assignmentData);
 
         return redirect()->route('slcmp-incharge-assignments.index')
-            ->with('success', 'SLCMP in-charge assignment updated successfully.');
+            ->with('success', 'SLCMP in-charge assignment updated successfully. SLCMP in-charge information has been ' . ($slcmpIncharge->wasRecentlyCreated ? 'created' : 'updated') . ' in the system.');
     }
 
     /**

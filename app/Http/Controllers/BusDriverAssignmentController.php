@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\DataTables\BusDriverAssignmentDataTable;
 use App\Models\BusDriverAssignment;
 use App\Models\BusRoute;
+use App\Models\Driver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
@@ -57,12 +58,40 @@ class BusDriverAssignmentController extends Controller
             }
         }
 
-        $validatedData['created_by'] = Auth::user()->name ?? 'System';
+        // Check if driver exists by regiment number
+        $driver = Driver::where('regiment_no', $request->driver_regiment_no)->first();
 
-        BusDriverAssignment::create($validatedData);
+        if (!$driver) {
+            // Create new driver if doesn't exist
+            $driver = Driver::create([
+                'regiment_no' => $request->driver_regiment_no,
+                'rank' => $request->driver_rank,
+                'name' => $request->driver_name,
+                'contact_no' => $request->driver_contact_no,
+            ]);
+        } else {
+            // Update existing driver information
+            $driver->update([
+                'rank' => $request->driver_rank,
+                'name' => $request->driver_name,
+                'contact_no' => $request->driver_contact_no,
+            ]);
+        }
+
+        // Create assignment with driver_id instead of individual fields
+        $assignmentData = [
+            'bus_route_id' => $validatedData['bus_route_id'],
+            'driver_id' => $driver->id,
+            'assigned_date' => $validatedData['assigned_date'],
+            'end_date' => $validatedData['end_date'],
+            'status' => $validatedData['status'],
+            'created_by' => Auth::user()->name ?? 'System'
+        ];
+
+        BusDriverAssignment::create($assignmentData);
 
         return redirect()->route('bus-driver-assignments.index')
-            ->with('success', 'Bus driver assignment created successfully.');
+            ->with('success', 'Bus driver assignment created successfully. Driver information has been ' . ($driver->wasRecentlyCreated ? 'created' : 'updated') . ' in the system.');
     }
 
     /**
@@ -112,10 +141,39 @@ class BusDriverAssignmentController extends Controller
             }
         }
 
-        $bus_driver_assignment->update($validatedData);
+        // Update or create driver information
+        $driver = Driver::where('regiment_no', $request->driver_regiment_no)->first();
+
+        if (!$driver) {
+            // Create new driver if doesn't exist
+            $driver = Driver::create([
+                'regiment_no' => $request->driver_regiment_no,
+                'rank' => $request->driver_rank,
+                'name' => $request->driver_name,
+                'contact_no' => $request->driver_contact_no,
+            ]);
+        } else {
+            // Update existing driver information
+            $driver->update([
+                'rank' => $request->driver_rank,
+                'name' => $request->driver_name,
+                'contact_no' => $request->driver_contact_no,
+            ]);
+        }
+
+        // Update assignment with driver_id instead of individual fields
+        $assignmentData = [
+            'bus_route_id' => $validatedData['bus_route_id'],
+            'driver_id' => $driver->id,
+            'assigned_date' => $validatedData['assigned_date'],
+            'end_date' => $validatedData['end_date'],
+            'status' => $validatedData['status']
+        ];
+
+        $bus_driver_assignment->update($assignmentData);
 
         return redirect()->route('bus-driver-assignments.index')
-            ->with('success', 'Bus driver assignment updated successfully.');
+            ->with('success', 'Bus driver assignment updated successfully. Driver information has been updated in the system.');
     }
 
     /**
