@@ -384,6 +384,14 @@ return [
                         'bus-driver-assignments*',
                     ],
                 ],
+                [
+                    'text' => 'Bus Escort Assignments',
+                    'url' => 'bus-escort-assignments',
+                    'icon' => 'fas fa-fw fa-user-shield',
+                    'active' => [
+                        'bus-escort-assignments*',
+                    ],
+                ],
 
             ],
         ],

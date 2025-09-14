@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BusController;
 use App\Http\Controllers\BusDriverAssignmentController;
+use App\Http\Controllers\BusEscortAssignmentController;
 use App\Http\Controllers\BusRouteController;
 use App\Http\Controllers\DriverController;
 use App\Http\Controllers\EscortController;
@@ -59,6 +60,11 @@ Route::middleware('auth')->group(function () {
     Route::resource('bus-driver-assignments', BusDriverAssignmentController::class);
     Route::get('bus-driver-assignments-api/get-driver-details', [BusDriverAssignmentController::class, 'getDriverDetails'])->name('bus-driver-assignments.get-driver-details');
     Route::get('bus-driver-assignments-api/get-bus-details', [BusDriverAssignmentController::class, 'getBusDetails'])->name('bus-driver-assignments.get-bus-details');
+
+    // Bus Escort Assignment routes
+    Route::resource('bus-escort-assignments', BusEscortAssignmentController::class);
+    Route::get('bus-escort-assignments-api/get-escort-details', [BusEscortAssignmentController::class, 'getEscortDetails'])->name('bus-escort-assignments.get-escort-details');
+    Route::get('bus-escort-assignments-api/get-bus-details', [BusEscortAssignmentController::class, 'getBusDetails'])->name('bus-escort-assignments.get-bus-details');
 });
 
 Route::get('/logout', function () {
