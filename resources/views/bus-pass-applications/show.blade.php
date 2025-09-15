@@ -91,8 +91,8 @@
 
                         <div class="row">
                             <div class="col-md-6">
-                                <strong>Branch/Directorate:</strong><br>
-                                {{ $bus_pass_application->branch_directorate }}
+                                <strong>Establishment</strong><br>
+                                {{ $bus_pass_application->establishment ? $bus_pass_application->establishment->name : 'N/A' }}
                             </div>
                             <div class="col-md-3">
                                 <strong>Marital Status:</strong><br>

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\DataTables\BusPassApplicationDataTable;
 use App\Models\BusPassApplication;
 use App\Models\BusRoute;
+use App\Models\Establishment;
 use App\Models\Person;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
@@ -28,8 +29,11 @@ class BusPassApplicationController extends Controller
     public function create()
     {
         $busRoutes = BusRoute::all();
+        $establishment = Establishment::orderBy('name')->get();
 
-        return view('bus-pass-applications.create', compact('busRoutes'));
+        return view('bus-pass-applications.create', compact('busRoutes','establishment'));
+       
+        
     }
 
     /**
@@ -59,6 +63,7 @@ class BusPassApplicationController extends Controller
             'rent_allowance_order' => $request->bus_pass_type === 'daily_travel' ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'declaration_1' => 'required|in:yes',
             'declaration_2' => 'required|in:yes',
+            
         ];
 
         // Add conditional validation for weekend/monthly travel
