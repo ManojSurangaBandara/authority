@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Establishment;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\Request;
+use Spatie\Permission\Models\Role;
 
 class RegisterController extends Controller
 {
@@ -41,6 +44,19 @@ class RegisterController extends Controller
     }
 
     /**
+     * Show the application registration form.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function showRegistrationForm()
+    {
+        $roles = Role::all();
+        $establishments = Establishment::where('is_active', true)->get();
+        
+        return view('auth.register', compact('roles', 'establishments'));
+    }
+
+    /**
      * Get a validator for an incoming registration request.
      *
      * @param  array  $data
@@ -52,6 +68,10 @@ class RegisterController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'role' => ['required', 'exists:roles,name'],
+            'establishment_id' => ['required', 'exists:establishments,id'],
+            'service_number' => ['nullable', 'string', 'max:50'],
+            'rank' => ['nullable', 'string', 'max:50'],
         ]);
     }
 
@@ -63,10 +83,18 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-        return User::create([
+        $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
+            'establishment_id' => $data['establishment_id'],
+            'service_number' => $data['service_number'] ?? null,
+            'rank' => $data['rank'] ?? null,
         ]);
+
+        // Assign the selected role to the user
+        $user->assignRole($data['role']);
+
+        return $user;
     }
 }
