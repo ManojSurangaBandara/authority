@@ -9,10 +9,7 @@ class BusDriverAssignment extends Model
 {
     protected $fillable = [
         'bus_route_id',
-        'driver_regiment_no',
-        'driver_rank',
-        'driver_name',
-        'driver_contact_no',
+        'driver_id',
         'assigned_date',
         'end_date',
         'status',
@@ -30,6 +27,14 @@ class BusDriverAssignment extends Model
     public function busRoute()
     {
         return $this->belongsTo(BusRoute::class, 'bus_route_id');
+    }
+
+    /**
+     * Relationship with Driver
+     */
+    public function driver()
+    {
+        return $this->belongsTo(Driver::class, 'driver_id');
     }
 
     /**

@@ -3,22 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\DataTables\BusDriverAssignmentDataTable;
-use App\Models\BusDriverAssignment;
+use App\DataTables\SlcmpInchargeAssignmentDataTable;
+use App\Models\SlcmpInchargeAssignment;
 use App\Models\BusRoute;
-use App\Models\Driver;
+use App\Models\SlcmpIncharge;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
 
-class BusDriverAssignmentController extends Controller
+class SlcmpInchargeAssignmentController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(BusDriverAssignmentDataTable $dataTable)
+    public function index(SlcmpInchargeAssignmentDataTable $dataTable)
     {
-        return $dataTable->render('bus-driver-assignments.index');
+        return $dataTable->render('slcmp-incharge-assignments.index');
     }
 
     /**
@@ -26,8 +26,8 @@ class BusDriverAssignmentController extends Controller
      */
     public function create()
     {
-        $busRoutes = BusRoute::with('bus')->get();
-        return view('bus-driver-assignments.create', compact('busRoutes'));
+        $busRoutes = BusRoute::with('bus.type')->get();
+        return view('slcmp-incharge-assignments.create', compact('busRoutes'));
     }
 
     /**
@@ -37,10 +37,10 @@ class BusDriverAssignmentController extends Controller
     {
         $validatedData = $request->validate([
             'bus_route_id' => 'required|exists:bus_routes,id',
-            'driver_regiment_no' => 'required|string|max:50',
-            'driver_rank' => 'required|string|max:100',
-            'driver_name' => 'required|string|max:200',
-            'driver_contact_no' => 'required|string|max:20',
+            'slcmp_regiment_no' => 'required|string|max:50',
+            'slcmp_rank' => 'required|string|max:100',
+            'slcmp_name' => 'required|string|max:200',
+            'slcmp_contact_no' => 'required|string|max:20',
             'assigned_date' => 'required|date',
             'end_date' => 'nullable|date|after:assigned_date',
             'status' => 'required|in:active,inactive',
@@ -48,81 +48,84 @@ class BusDriverAssignmentController extends Controller
 
         // Check if there's already an active assignment for this route
         if ($validatedData['status'] === 'active') {
-            $existingAssignment = BusDriverAssignment::where('bus_route_id', $validatedData['bus_route_id'])
+            $existingAssignment = SlcmpInchargeAssignment::where('bus_route_id', $validatedData['bus_route_id'])
                 ->where('status', 'active')
                 ->first();
 
             if ($existingAssignment) {
-                return back()->withErrors(['bus_route_id' => 'This bus route already has an active driver assignment.'])
+                return back()->withErrors(['bus_route_id' => 'This bus route already has an active SLCMP assignment.'])
                     ->withInput();
             }
         }
 
-        // Check if driver exists by regiment number
-        $driver = Driver::where('regiment_no', $request->driver_regiment_no)->first();
+        // Check if SLCMP in-charge exists by regiment number
+        $slcmpIncharge = SlcmpIncharge::where('regiment_no', $request->slcmp_regiment_no)->first();
 
-        if (!$driver) {
-            // Create new driver if doesn't exist
-            $driver = Driver::create([
-                'regiment_no' => $request->driver_regiment_no,
-                'rank' => $request->driver_rank,
-                'name' => $request->driver_name,
-                'contact_no' => $request->driver_contact_no,
+        if (!$slcmpIncharge) {
+            // Create new SLCMP in-charge if doesn't exist
+            $slcmpIncharge = SlcmpIncharge::create([
+                'regiment_no' => $request->slcmp_regiment_no,
+                'rank' => $request->slcmp_rank,
+                'name' => $request->slcmp_name,
+                'contact_no' => $request->slcmp_contact_no,
             ]);
         } else {
-            // Update existing driver information
-            $driver->update([
-                'rank' => $request->driver_rank,
-                'name' => $request->driver_name,
-                'contact_no' => $request->driver_contact_no,
+            // Update existing SLCMP in-charge information
+            $slcmpIncharge->update([
+                'rank' => $request->slcmp_rank,
+                'name' => $request->slcmp_name,
+                'contact_no' => $request->slcmp_contact_no,
             ]);
         }
 
-        // Create assignment with driver_id instead of individual fields
+        // Create assignment with slcmp_incharge_id instead of individual fields
         $assignmentData = [
             'bus_route_id' => $validatedData['bus_route_id'],
-            'driver_id' => $driver->id,
+            'slcmp_incharge_id' => $slcmpIncharge->id,
             'assigned_date' => $validatedData['assigned_date'],
             'end_date' => $validatedData['end_date'],
             'status' => $validatedData['status'],
             'created_by' => Auth::user()->name ?? 'System'
         ];
 
-        BusDriverAssignment::create($assignmentData);
+        SlcmpInchargeAssignment::create($assignmentData);
 
-        return redirect()->route('bus-driver-assignments.index')
-            ->with('success', 'Bus driver assignment created successfully. Driver information has been ' . ($driver->wasRecentlyCreated ? 'created' : 'updated') . ' in the system.');
+        return redirect()->route('slcmp-incharge-assignments.index')
+            ->with('success', 'SLCMP in-charge assignment created successfully. SLCMP in-charge information has been ' . ($slcmpIncharge->wasRecentlyCreated ? 'created' : 'updated') . ' in the system.');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(BusDriverAssignment $bus_driver_assignment)
+    public function show(SlcmpInchargeAssignment $slcmp_incharge_assignment)
     {
-        $bus_driver_assignment->load(['busRoute.bus']);
-        return view('bus-driver-assignments.show', compact('bus_driver_assignment'));
+        $slcmp_incharge_assignment->load(['busRoute.bus.type']);
+        $slcmpInchargeAssignment = $slcmp_incharge_assignment;
+        return view('slcmp-incharge-assignments.show', compact('slcmpInchargeAssignment'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(BusDriverAssignment $bus_driver_assignment)
+    public function edit(SlcmpInchargeAssignment $slcmp_incharge_assignment)
     {
-        $busRoutes = BusRoute::with('bus')->get();
-        return view('bus-driver-assignments.edit', compact('bus_driver_assignment', 'busRoutes'));
+        $busRoutes = BusRoute::with('bus.type')->get();
+        $slcmp_incharge_assignment->load(['busRoute.bus.type']);
+        $slcmpInchargeAssignment = $slcmp_incharge_assignment;
+        return view('slcmp-incharge-assignments.edit', compact('slcmpInchargeAssignment', 'busRoutes'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, BusDriverAssignment $bus_driver_assignment)
+    public function update(Request $request, SlcmpInchargeAssignment $slcmp_incharge_assignment)
     {
         $validatedData = $request->validate([
             'bus_route_id' => 'required|exists:bus_routes,id',
-            'driver_regiment_no' => 'required|string|max:50',
-            'driver_rank' => 'required|string|max:100',
-            'driver_name' => 'required|string|max:200',
-            'driver_contact_no' => 'required|string|max:20',
+            'slcmp_regiment_no' => 'required|string|max:50',
+            'slcmp_rank' => 'required|string|max:100',
+            'slcmp_name' => 'required|string|max:200',
+            'slcmp_contact_no' => 'required|string|max:20',
             'assigned_date' => 'required|date',
             'end_date' => 'nullable|date|after:assigned_date',
             'status' => 'required|in:active,inactive',
@@ -130,67 +133,67 @@ class BusDriverAssignmentController extends Controller
 
         // Check if there's already an active assignment for this route (excluding current assignment)
         if ($validatedData['status'] === 'active') {
-            $existingAssignment = BusDriverAssignment::where('bus_route_id', $validatedData['bus_route_id'])
+            $existingAssignment = SlcmpInchargeAssignment::where('bus_route_id', $validatedData['bus_route_id'])
                 ->where('status', 'active')
-                ->where('id', '!=', $bus_driver_assignment->id)
+                ->where('id', '!=', $slcmp_incharge_assignment->id)
                 ->first();
 
             if ($existingAssignment) {
-                return back()->withErrors(['bus_route_id' => 'This bus route already has an active driver assignment.'])
+                return back()->withErrors(['bus_route_id' => 'This bus route already has an active SLCMP assignment.'])
                     ->withInput();
             }
         }
 
-        // Update or create driver information
-        $driver = Driver::where('regiment_no', $request->driver_regiment_no)->first();
+        // Update or create SLCMP in-charge information
+        $slcmpIncharge = SlcmpIncharge::where('regiment_no', $request->slcmp_regiment_no)->first();
 
-        if (!$driver) {
-            // Create new driver if doesn't exist
-            $driver = Driver::create([
-                'regiment_no' => $request->driver_regiment_no,
-                'rank' => $request->driver_rank,
-                'name' => $request->driver_name,
-                'contact_no' => $request->driver_contact_no,
+        if (!$slcmpIncharge) {
+            // Create new SLCMP in-charge if doesn't exist
+            $slcmpIncharge = SlcmpIncharge::create([
+                'regiment_no' => $request->slcmp_regiment_no,
+                'rank' => $request->slcmp_rank,
+                'name' => $request->slcmp_name,
+                'contact_no' => $request->slcmp_contact_no,
             ]);
         } else {
-            // Update existing driver information
-            $driver->update([
-                'rank' => $request->driver_rank,
-                'name' => $request->driver_name,
-                'contact_no' => $request->driver_contact_no,
+            // Update existing SLCMP in-charge information
+            $slcmpIncharge->update([
+                'rank' => $request->slcmp_rank,
+                'name' => $request->slcmp_name,
+                'contact_no' => $request->slcmp_contact_no,
             ]);
         }
 
-        // Update assignment with driver_id instead of individual fields
+        // Update assignment with slcmp_incharge_id instead of individual fields
         $assignmentData = [
             'bus_route_id' => $validatedData['bus_route_id'],
-            'driver_id' => $driver->id,
+            'slcmp_incharge_id' => $slcmpIncharge->id,
             'assigned_date' => $validatedData['assigned_date'],
             'end_date' => $validatedData['end_date'],
             'status' => $validatedData['status']
         ];
 
-        $bus_driver_assignment->update($assignmentData);
+        $slcmp_incharge_assignment->update($assignmentData);
 
-        return redirect()->route('bus-driver-assignments.index')
-            ->with('success', 'Bus driver assignment updated successfully. Driver information has been updated in the system.');
+        return redirect()->route('slcmp-incharge-assignments.index')
+            ->with('success', 'SLCMP in-charge assignment updated successfully. SLCMP in-charge information has been ' . ($slcmpIncharge->wasRecentlyCreated ? 'created' : 'updated') . ' in the system.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(BusDriverAssignment $bus_driver_assignment)
+    public function destroy(SlcmpInchargeAssignment $slcmp_incharge_assignment)
     {
-        $bus_driver_assignment->delete();
+        $slcmp_incharge_assignment->delete();
 
-        return redirect()->route('bus-driver-assignments.index')
-            ->with('success', 'Bus driver assignment deleted successfully.');
+        return redirect()->route('slcmp-incharge-assignments.index')
+            ->with('success', 'SLCMP in-charge assignment deleted successfully.');
     }
 
     /**
-     * Get driver details from Strength Management System API
+     * Get SLCMP details from Strength Management System API
      */
-    public function getDriverDetails(Request $request)
+    public function getSlcmpDetails(Request $request)
     {
         $regimentNo = $request->input('regiment_no');
 
@@ -215,7 +218,7 @@ class BusDriverAssignmentController extends Controller
                     $data = $responseData[0];
 
                     // Map API response fields to our application fields
-                    $driverData = [
+                    $slcmpData = [
                         'rank' => $data['rank'] ?? '',
                         'name' => $data['name'] ?? '',
                         // Since contact_no is not directly available in the API response,
@@ -225,7 +228,7 @@ class BusDriverAssignmentController extends Controller
 
                     return response()->json([
                         'success' => true,
-                        'data' => $driverData
+                        'data' => $slcmpData
                     ]);
                 }
 
@@ -236,7 +239,7 @@ class BusDriverAssignmentController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error fetching driver details: ' . $e->getMessage()
+                'message' => 'Error fetching SLCMP details: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -250,7 +253,7 @@ class BusDriverAssignmentController extends Controller
             'bus_route_id' => 'required|exists:bus_routes,id'
         ]);
 
-        $busRoute = BusRoute::with('bus')->find($request->bus_route_id);
+        $busRoute = BusRoute::with('bus.type')->find($request->bus_route_id);
 
         if ($busRoute && $busRoute->bus) {
             return response()->json([

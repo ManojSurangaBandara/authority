@@ -392,6 +392,30 @@ return [
                         'establishment*',
                     ],
                 ],
+                [
+                    'text' => 'Bus Escort Assignments',
+                    'url' => 'bus-escort-assignments',
+                    'icon' => 'fas fa-fw fa-user-shield',
+                    'active' => [
+                        'bus-escort-assignments*',
+                    ],
+                ],
+                [
+                    'text' => 'SLCMP In-charge Assignments',
+                    'url' => 'slcmp-incharge-assignments',
+                    'icon' => 'fas fa-fw fa-shield-alt',
+                    'active' => [
+                        'slcmp-incharge-assignments*',
+                    ],
+                ],
+                [
+                    'text' => 'Bus Filling Station Assignments',
+                    'url' => 'bus-filling-station-assignments',
+                    'icon' => 'fas fa-fw fa-gas-pump',
+                    'active' => [
+                        'bus-filling-station-assignments*',
+                    ],
+                ],
 
             ],
         ],

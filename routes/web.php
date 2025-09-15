@@ -4,6 +4,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BusController;
 use App\Http\Controllers\BusDriverAssignmentController;
+use App\Http\Controllers\BusEscortAssignmentController;
+use App\Http\Controllers\SlcmpInchargeAssignmentController;
+use App\Http\Controllers\BusFillingStationAssignmentController;
 use App\Http\Controllers\BusRouteController;
 use App\Http\Controllers\DriverController;
 use App\Http\Controllers\EscortController;
@@ -61,6 +64,19 @@ Route::middleware('auth')->group(function () {
     Route::get('bus-driver-assignments-api/get-driver-details', [BusDriverAssignmentController::class, 'getDriverDetails'])->name('bus-driver-assignments.get-driver-details');
     Route::get('bus-driver-assignments-api/get-bus-details', [BusDriverAssignmentController::class, 'getBusDetails'])->name('bus-driver-assignments.get-bus-details');
 
+    // Bus Escort Assignment routes
+    Route::resource('bus-escort-assignments', BusEscortAssignmentController::class);
+    Route::get('bus-escort-assignments-api/get-escort-details', [BusEscortAssignmentController::class, 'getEscortDetails'])->name('bus-escort-assignments.get-escort-details');
+    Route::get('bus-escort-assignments-api/get-bus-details', [BusEscortAssignmentController::class, 'getBusDetails'])->name('bus-escort-assignments.get-bus-details');
+
+    // SLCMP In-charge Assignment routes
+    Route::resource('slcmp-incharge-assignments', SlcmpInchargeAssignmentController::class);
+    Route::get('slcmp-incharge-assignments-api/get-slcmp-details', [SlcmpInchargeAssignmentController::class, 'getSlcmpDetails'])->name('slcmp-incharge-assignments.get-slcmp-details');
+    Route::get('slcmp-incharge-assignments-api/get-bus-details', [SlcmpInchargeAssignmentController::class, 'getBusDetails'])->name('slcmp-incharge-assignments.get-bus-details');
+
+    // Bus Filling Station Assignment routes
+    Route::resource('bus-filling-station-assignments', BusFillingStationAssignmentController::class);
+    Route::get('bus-filling-station-assignments-api/get-bus-details', [BusFillingStationAssignmentController::class, 'getBusDetails'])->name('bus-filling-station-assignments.get-bus-details');
     // Establishment routes
     Route::resource('establishment', EstablishmentController::class);
 });

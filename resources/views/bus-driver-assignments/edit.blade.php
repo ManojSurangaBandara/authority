@@ -22,7 +22,7 @@
                         <i class="fas fa-edit"></i> Edit Bus Driver Assignment
                     </h3>
                     <div class="card-tools">
-                        <a href="{{ route('bus-driver-assignments.index') }}" class="btn btn-light btn-sm">
+                        <a href="{{ route('bus-driver-assignments.index') }}" class="btn btn-dark btn-sm">
                             <i class="fas fa-arrow-left"></i> Back to List
                         </a>
                     </div>
