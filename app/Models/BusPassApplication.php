@@ -60,6 +60,12 @@ class BusPassApplication extends Model
         return $this->belongsTo(Person::class);
     }
 
+    // Relationship with approval history
+    public function approvalHistory()
+    {
+        return $this->hasMany(BusPassApprovalHistory::class)->ordered();
+    }
+
     // Status label accessor
     public function getStatusLabelAttribute()
     {

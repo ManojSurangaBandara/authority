@@ -15,8 +15,12 @@ use App\Http\Controllers\FillingStationController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\BusPassApplicationController;
 use App\Http\Controllers\BusPassStatusController;
+use App\Http\Controllers\BusPassApprovalController;
 use App\Http\Controllers\EstablishmentController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\RoleController;
 use Illuminate\Support\Facades\Auth;
+// use App\Http\Controllers\ReportController;
 
 Route::get('/', function () {
     return view('auth.login');
@@ -59,6 +63,11 @@ Route::middleware('auth')->group(function () {
     // Bus Pass Status routes (Master Data)
     Route::resource('bus-pass-statuses', BusPassStatusController::class);
 
+    // Bus Pass Approval routes
+    Route::get('bus-pass-approvals', [BusPassApprovalController::class, 'index'])->name('bus-pass-approvals.index');
+    Route::post('bus-pass-approvals/{application}/approve', [BusPassApprovalController::class, 'approve'])->name('bus-pass-approvals.approve');
+    Route::post('bus-pass-approvals/{application}/reject', [BusPassApprovalController::class, 'reject'])->name('bus-pass-approvals.reject');
+
     // Bus Driver Assignment routes
     Route::resource('bus-driver-assignments', BusDriverAssignmentController::class);
     Route::get('bus-driver-assignments-api/get-driver-details', [BusDriverAssignmentController::class, 'getDriverDetails'])->name('bus-driver-assignments.get-driver-details');
@@ -77,8 +86,25 @@ Route::middleware('auth')->group(function () {
     // Bus Filling Station Assignment routes
     Route::resource('bus-filling-station-assignments', BusFillingStationAssignmentController::class);
     Route::get('bus-filling-station-assignments-api/get-bus-details', [BusFillingStationAssignmentController::class, 'getBusDetails'])->name('bus-filling-station-assignments.get-bus-details');
+
     // Establishment routes
     Route::resource('establishment', EstablishmentController::class);
+
+    // User Management routes (System Administrator only)
+    Route::middleware('role:System Administrator (DMOV)')->group(function () {
+        Route::resource('users', UserController::class);
+        Route::patch('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
+        Route::patch('users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
+
+        // Role Management routes
+        Route::resource('roles', RoleController::class);
+        Route::get('roles/{role}/permissions', [RoleController::class, 'permissions'])->name('roles.permissions');
+        Route::patch('roles/{role}/permissions', [RoleController::class, 'updatePermissions'])->name('roles.update-permissions');
+        Route::get('roles-hierarchy', [RoleController::class, 'hierarchy'])->name('roles.hierarchy');
+    });
+
+    // Route::get('rejected-applications', [ReportController::class, 'index'])->name('rejected-applications.index');
+
 });
 
 Route::get('/logout', function () {

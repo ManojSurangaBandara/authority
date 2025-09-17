@@ -429,6 +429,70 @@ return [
             ],
         ],
 
+        [
+            'text' => 'Bus Pass Approvals',
+            'url' => 'bus-pass-approvals',
+            'icon' => 'fas fa-fw fa-check-circle',
+            'active' => [
+                'bus-pass-approvals*',
+            ],
+        ],
+
+        // System Administration (System Administrator only)
+        [
+            'text' => 'System Administration',
+            'icon' => 'fas fa-fw fa-cogs',
+            'can' => 'system_admin_access',
+            'submenu' => [
+                [
+                    'text' => 'User Management',
+                    'url' => 'users',
+                    'icon' => 'fas fa-fw fa-users',
+                    'can' => 'manage_user_accounts',
+                    'active' => [
+                        'users*',
+                    ],
+                ],
+                [
+                    'text' => 'Role Management',
+                    'url' => 'roles',
+                    'icon' => 'fas fa-fw fa-user-shield',
+                    'can' => 'system_admin_access',
+                    'active' => [
+                        'roles*',
+                    ],
+                ],
+                [
+                    'text' => 'Role Hierarchy',
+                    'url' => 'roles-hierarchy',
+                    'icon' => 'fas fa-fw fa-sitemap',
+                    'can' => 'system_admin_access',
+                    'active' => [
+                        'roles-hierarchy*',
+                    ],
+                ],
+            ],
+
+        ],
+        // [
+        //     'text' => 'Reports',
+        //     'icon' => 'fas fa-fw fa-cogs',
+        //     // 'can' => 'system_admin_access',
+        //     'submenu' => [
+        //         [
+        //             'text' => 'Rejected Applications',
+        //             'url' => 'rejected-applications',
+        //             'icon' => 'fas fa-fw fa-users',
+        //             // 'can' => 'manage_user_accounts',
+        //             'active' => [
+        //                 'rejected-applications*',
+        //             ],
+        //         ],
+
+        //     ],
+
+        // ],
+
 
 
 
