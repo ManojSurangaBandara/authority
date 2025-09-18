@@ -4,13 +4,15 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -21,6 +23,12 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'establishment_id',
+        'service_number',
+        'rank',
+        'contact_no',
+        'is_active',
+        'last_login_at',
     ];
 
     /**
@@ -43,6 +51,69 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
+            'last_login_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Get the establishment (branch/directorate)
+     */
+    public function establishment(): BelongsTo
+    {
+        return $this->belongsTo(Establishment::class);
+    }
+
+    /**
+     * Check if user is from branch/directorate
+     */
+    public function isBranchUser(): bool
+    {
+        return $this->hasAnyRole([
+            'Bus Pass Subject Clerk (Branch)',
+            'Staff Officer (Branch)',
+            'Director (Branch)'
+        ]);
+    }
+
+    /**
+     * Check if user is from movement
+     */
+    public function isMovementUser(): bool
+    {
+        return $this->hasAnyRole([
+            'Subject Clerk (DMOV)',
+            'Staff Officer 2 (DMOV)',
+            'Staff Officer 1 (DMOV)',
+            'Col Mov (DMOV)',
+            'Director (DMOV)',
+            'Bus Escort (DMOV)'
+        ]);
+    }
+
+    /**
+     * Get user's hierarchy level for approval workflow
+     */
+    public function getHierarchyLevel(): int
+    {
+        if ($this->hasRole('Bus Pass Subject Clerk (Branch)')) return 1;
+        if ($this->hasRole('Staff Officer (Branch)')) return 2;
+        if ($this->hasRole('Director (Branch)')) return 3;
+        if ($this->hasRole('Subject Clerk (DMOV)')) return 4;
+        if ($this->hasRole('Staff Officer 2 (DMOV)')) return 5;
+        if ($this->hasRole('Staff Officer 1 (DMOV)')) return 6;
+        if ($this->hasRole('Col Mov (DMOV)')) return 7;
+        if ($this->hasRole('Director (DMOV)')) return 8;
+        if ($this->hasRole('Bus Escort (DMOV)')) return 9;
+        
+        return 0;
+    }
+
+    /**
+     * Update last login timestamp
+     */
+    public function updateLastLogin(): void
+    {
+        $this->update(['last_login_at' => now()]);
     }
 }

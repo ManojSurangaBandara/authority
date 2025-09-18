@@ -21,5 +21,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call(BusTypeSeeder::class);
+        $this->call(SystemAdministratorSeeder::class);
+        $this->call(AdminUserSeeder::class);
     }
 }

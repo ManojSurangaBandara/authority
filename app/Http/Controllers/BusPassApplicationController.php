@@ -12,6 +12,7 @@ use App\Models\Person;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class BusPassApplicationController extends Controller
 {
@@ -32,13 +33,13 @@ class BusPassApplicationController extends Controller
         $establishment = Establishment::orderBy('name')->get();
 
         return view('bus-pass-applications.create', compact('busRoutes','establishment'));
-       
-        
+
+
     }
 
     /**
      * Store a newly created resource in storage.
-     */
+    */
     public function store(Request $request)
     {
         $validationRules = [
@@ -52,7 +53,7 @@ class BusPassApplicationController extends Controller
             'telephone_no' => 'required|string|max:20',
             'grama_seva_division' => 'required|string|max:100',
             'nearest_police_station' => 'required|string|max:100',
-            'branch_directorate' => 'required|string|max:100',
+            'establishment_id' => 'required|exists:establishments,id',
             'marital_status' => 'required|in:single,married',
             'approval_living_out' => 'required|in:yes,no',
             'obtain_sltb_season' => 'required|in:yes,no',
@@ -63,7 +64,7 @@ class BusPassApplicationController extends Controller
             'rent_allowance_order' => $request->bus_pass_type === 'daily_travel' ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'declaration_1' => 'required|in:yes',
             'declaration_2' => 'required|in:yes',
-            
+
         ];
 
         // Add conditional validation for weekend/monthly travel
@@ -75,6 +76,12 @@ class BusPassApplicationController extends Controller
         }
 
         $request->validate($validationRules);
+
+        // Debug: Log successful validation
+        Log::info('Validation passed for bus pass application', [
+            'regiment_no' => $request->regiment_no,
+            'establishment_id' => $request->establishment_id
+        ]);
 
         // Check if person exists by regiment number
         $person = Person::where('regiment_no', $request->regiment_no)->first();
@@ -95,6 +102,8 @@ class BusPassApplicationController extends Controller
             ]);
         }
 
+
+
         // Handle file uploads
         $data = [];
 
@@ -112,7 +121,10 @@ class BusPassApplicationController extends Controller
 
         // Prepare application data (excluding person fields)
         $data['person_id'] = $person->id;
-        $data['branch_directorate'] = $request->branch_directorate;
+        $data['establishment_id'] = $request->establishment_id;
+        // Set branch_directorate to establishment name for now (since form doesn't have this field)
+        $establishment = Establishment::find($request->establishment_id);
+        $data['branch_directorate'] = $establishment ? $establishment->name : 'Unknown';
         $data['marital_status'] = $request->marital_status;
         $data['approval_living_out'] = $request->approval_living_out;
         $data['obtain_sltb_season'] = $request->obtain_sltb_season;
@@ -139,10 +151,22 @@ class BusPassApplicationController extends Controller
             $data['destination_from_ahq'] = $request->destination_from_ahq;
         }
 
-        BusPassApplication::create($data);
-
-        return redirect()->route('bus-pass-applications.index')
-            ->with('success', 'Bus pass application submitted successfully.');
+        try {
+            BusPassApplication::create($data);
+            Log::info('Bus pass application created successfully', ['person_id' => $person->id]);
+            
+            return redirect()->route('bus-pass-applications.index')
+                ->with('success', 'Bus pass application submitted successfully.');
+        } catch (\Exception $e) {
+            Log::error('Failed to create bus pass application', [
+                'error' => $e->getMessage(),
+                'data' => $data
+            ]);
+            
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['error' => 'Failed to create application: ' . $e->getMessage()]);
+        }
     }
 
     /**
@@ -161,8 +185,9 @@ class BusPassApplicationController extends Controller
     public function edit(BusPassApplication $bus_pass_application)
     {
         $busRoutes = BusRoute::all();
+        $establishment = Establishment::orderBy('name')->get();
 
-        return view('bus-pass-applications.edit', compact('bus_pass_application', 'busRoutes'));
+        return view('bus-pass-applications.edit', compact('bus_pass_application', 'busRoutes', 'establishment'));
     }
 
     /**
@@ -182,7 +207,7 @@ class BusPassApplicationController extends Controller
             'telephone_no' => 'required|string|max:20',
             'grama_seva_division' => 'required|string|max:100',
             'nearest_police_station' => 'required|string|max:100',
-            'branch_directorate' => 'required|string|max:100',
+            'establishment_id' => 'required|exists:establishments,id',
             'marital_status' => 'required|in:single,married',
             'approval_living_out' => 'required|in:yes,no',
             'obtain_sltb_season' => 'required|in:yes,no',
@@ -202,6 +227,13 @@ class BusPassApplicationController extends Controller
         }
 
         $request->validate($validationRules);
+
+        // Debug: Log successful validation
+        Log::info('Update validation passed for bus pass application', [
+            'id' => $bus_pass_application->id,
+            'regiment_no' => $request->regiment_no,
+            'establishment_id' => $request->establishment_id
+        ]);
 
         // Update person data
         $bus_pass_application->person->update([
@@ -243,7 +275,10 @@ class BusPassApplicationController extends Controller
         }
 
         // Add application-specific fields
-        $data['branch_directorate'] = $request->branch_directorate;
+        $data['establishment_id'] = $request->establishment_id;
+        // Set branch_directorate to establishment name for now (since form doesn't have this field)
+        $establishment = Establishment::find($request->establishment_id);
+        $data['branch_directorate'] = $establishment ? $establishment->name : 'Unknown';
         $data['marital_status'] = $request->marital_status;
         $data['approval_living_out'] = $request->approval_living_out;
         $data['obtain_sltb_season'] = $request->obtain_sltb_season;
@@ -268,10 +303,23 @@ class BusPassApplicationController extends Controller
             $data['destination_from_ahq'] = $request->destination_from_ahq;
         }
 
-        $bus_pass_application->update($data);
-
-        return redirect()->route('bus-pass-applications.index')
-            ->with('success', 'Bus pass application updated successfully.');
+        try {
+            $bus_pass_application->update($data);
+            Log::info('Bus pass application updated successfully', ['id' => $bus_pass_application->id]);
+            
+            return redirect()->route('bus-pass-applications.index')
+                ->with('success', 'Bus pass application updated successfully.');
+        } catch (\Exception $e) {
+            Log::error('Failed to update bus pass application', [
+                'id' => $bus_pass_application->id,
+                'error' => $e->getMessage(),
+                'data' => $data
+            ]);
+            
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['error' => 'Failed to update application: ' . $e->getMessage()]);
+        }
     }
 
     /**

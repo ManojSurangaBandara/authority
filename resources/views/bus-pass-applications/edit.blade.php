@@ -9,6 +9,17 @@
                     <div class="alert alert-success">{{ session('success') }}</div>
                 @endif
 
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <h5><i class="icon fas fa-ban"></i> Validation Errors!</h5>
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <div class="card mt-3">
                     <div class="card card-teal">
                         <div class="card-header">
@@ -184,7 +195,7 @@
                                             <option value="">Select Establishment</option>
                                             @foreach ($establishment as $est)
                                                 <option value="{{ $est->id }}"
-                                                    {{ (old('establishment_id', $busPassApplication->establishment_id) == $est->id) ? 'selected' : '' }}>
+                                                    {{ (old('establishment_id', $bus_pass_application->establishment_id) == $est->id) ? 'selected' : '' }}>
                                                     {{ $est->name }}
                                                 </option>
                                             @endforeach
