@@ -8,6 +8,7 @@ class BusPassApplication extends Model
 {
     protected $fillable = [
         'person_id',
+        'establishment_id',
         'branch_directorate',
         'marital_status',
         'approval_living_out',
@@ -58,6 +59,12 @@ class BusPassApplication extends Model
     public function person()
     {
         return $this->belongsTo(Person::class);
+    }
+
+    // Relationship with Establishment
+    public function establishment()
+    {
+        return $this->belongsTo(Establishment::class);
     }
 
     // Relationship with approval history

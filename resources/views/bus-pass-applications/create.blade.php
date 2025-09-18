@@ -9,6 +9,17 @@
                     <div class="alert alert-success">{{ session('success') }}</div>
                 @endif
 
+                @if ($errors->any())
+                    <div class="alert alert-danger">
+                        <h5><i class="icon fas fa-ban"></i> Validation Errors!</h5>
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <div class="card mt-3">
                     <div class="card card-teal">
                         <div class="card-header">
@@ -159,17 +170,26 @@
                                 </div>
 
                                 <div class="row">
+                                    <!-- Establishment (Select2 Dropdown) -->
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="branch_directorate">Branch/Directorate <span
-                                                    class="text-danger">*</span></label>
-                                            <input type="text"
-                                                class="form-control @error('branch_directorate') is-invalid @enderror"
-                                                id="branch_directorate" name="branch_directorate"
-                                                value="{{ old('branch_directorate') }}" required>
-                                            @error('branch_directorate')
+                                            <label for="establishment_id">Establishment <span class="text-danger">*</span></label>
+                                            <select class="form-control @error('establishment_id') is-invalid @enderror"
+                                             id="establishment_id" name="establishment_id" required>
+                                             <option value="">Select Establishment</option>
+                                             @foreach ($establishment as $est)
+                                                    <option value="{{ $est->id }}"
+                                                        {{ old('establishment_id') == $est->id ? 'selected' : '' }}>
+                                                        {{ $est->name }}
+                                                        </option>
+                                                        @endforeach
+                                             </select>
+                                             @error('establishment_id')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
+                                            <small class="form-text text-muted">
+                                            Select the Establishment from the available options.
+                                            </small>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
@@ -540,9 +560,47 @@
     </div>
 @endsection
 
+@section('css')
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@1.5.2/dist/select2-bootstrap4.min.css" rel="stylesheet" />
+    <style>
+        /* Select2 styling to match your form */
+        .select2-container--bootstrap4 .select2-selection {
+            height: calc(1.5em + 0.75rem + 2px) !important;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #495057;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+        }
+        
+        .select2-container--bootstrap4 .select2-selection:focus {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+    </style>
+@stop
+
+@section('js')
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+@stop
+
 @push('js')
+
     <script>
-        $(document).ready(function() {
+              $(document).ready(function() {
+           // Initialize Select2 for Establishment dropdown
+             $('#establishment_id').select2({
+                theme: 'bootstrap4',
+                placeholder: 'Select Establishment',
+                allowClear: true,
+                width: '100%'
+              });
             // Bus pass type change handler
             $('#bus_pass_type').change(function() {
                 var type = $(this).val();
