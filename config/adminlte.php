@@ -474,24 +474,24 @@ return [
             ],
 
         ],
-        // [
-        //     'text' => 'Reports',
-        //     'icon' => 'fas fa-fw fa-cogs',
-        //     // 'can' => 'system_admin_access',
-        //     'submenu' => [
-        //         [
-        //             'text' => 'Rejected Applications',
-        //             'url' => 'rejected-applications',
-        //             'icon' => 'fas fa-fw fa-users',
-        //             // 'can' => 'manage_user_accounts',
-        //             'active' => [
-        //                 'rejected-applications*',
-        //             ],
-        //         ],
+        [
+            'text' => 'Reports',
+            'icon' => 'fas fa-fw fa-cogs',
+            // 'can' => 'system_admin_access',
+            'submenu' => [
+                [
+                    'text' => 'Rejected Applications',
+                    'url' => 'rejected-applications',
+                    'icon' => 'fas fa-fw fa-users',
+                    // 'can' => 'manage_user_accounts',
+                    'active' => [
+                        'rejected-applications*',
+                    ],
+                ],
 
-        //     ],
+            ],
 
-        // ],
+        ],
 
 
 

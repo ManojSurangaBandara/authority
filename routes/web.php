@@ -20,7 +20,7 @@ use App\Http\Controllers\EstablishmentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
 use Illuminate\Support\Facades\Auth;
-// use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ReportController;
 
 Route::get('/', function () {
     return view('auth.login');
@@ -118,7 +118,7 @@ Route::middleware('auth')->group(function () {
         Route::get('roles-hierarchy', [RoleController::class, 'hierarchy'])->name('roles.hierarchy');
     });
 
-    // Route::get('rejected-applications', [ReportController::class, 'index'])->name('rejected-applications.index');
+    Route::get('rejected-applications', [ReportController::class, 'index'])->name('rejected-applications.index');
 
 });
 
