@@ -75,17 +75,18 @@ class UserController extends Controller
     /**
      * Display the specified user
      */
-    public function show(User $user)
+    public function show($id)
     {
-        $user->load('roles.permissions');
+        $user = User::with('roles')->findOrFail($id);
         return view('users.show', compact('user'));
     }
 
     /**
      * Show the form for editing the specified user
      */
-    public function edit(User $user)
+    public function edit($id)
     {
+        $user = User::findOrFail($id);
         $roles = Role::all();
         $userRoles = $user->roles->pluck('id')->toArray();
         return view('users.edit', compact('user', 'roles', 'userRoles'));
@@ -94,8 +95,10 @@ class UserController extends Controller
     /**
      * Update the specified user
      */
-    public function update(Request $request, User $user)
+    public function update(Request $request, $id)
     {
+        $user = User::findOrFail($id);
+        
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => [
@@ -143,8 +146,10 @@ class UserController extends Controller
     /**
      * Remove the specified user
      */
-    public function destroy(User $user)
+    public function destroy($id)
     {
+        $user = User::findOrFail($id);
+        
         // Prevent deleting the current logged-in user
         if ($user->id === Auth::id()) {
             return redirect()->route('users.index')
@@ -160,8 +165,10 @@ class UserController extends Controller
     /**
      * Reset user password
      */
-    public function resetPassword(Request $request, User $user)
+    public function resetPassword(Request $request, $id)
     {
+        $user = User::findOrFail($id);
+        
         $request->validate([
             'new_password' => 'required|string|min:8|confirmed',
         ]);
@@ -177,8 +184,10 @@ class UserController extends Controller
     /**
      * Toggle user active status
      */
-    public function toggleStatus(User $user)
+    public function toggleStatus($id)
     {
+        $user = User::findOrFail($id);
+        
         $user->update([
             'is_active' => !$user->is_active,
         ]);

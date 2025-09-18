@@ -9,7 +9,7 @@
         </div>
         <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-                <li class="breadcrumb-item"><a href="{{ route('home') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="{{ route('users.index') }}">Users</a></li>
                 <li class="breadcrumb-item active">{{ $user->name }}</li>
             </ol>
@@ -30,7 +30,7 @@
                                     <i class="fas fa-key"></i> Reset Password
                                 </button>
                             @endif
-                            <a href="{{ route('users.edit', $user) }}" class="btn btn-sm btn-primary">
+                            <a href="{{ route('users.edit', $user->id) }}" class="btn btn-sm btn-primary">
                                 <i class="fas fa-edit"></i> Edit User
                             </a>
                         @endcan
@@ -162,7 +162,7 @@
                     @else
                         <p class="text-muted">No roles assigned to this user.</p>
                         @can('manage_user_accounts')
-                            <a href="{{ route('users.edit', $user) }}" class="btn btn-primary btn-sm">
+                            <a href="{{ route('users.edit', $user->id) }}" class="btn btn-primary btn-sm">
                                 <i class="fas fa-plus"></i> Assign Roles
                             </a>
                         @endcan
@@ -176,7 +176,7 @@
                 </div>
                 <div class="card-body">
                     @can('manage_user_accounts')
-                        <a href="{{ route('users.edit', $user) }}" class="btn btn-primary btn-block mb-2">
+                        <a href="{{ route('users.edit', $user->id) }}" class="btn btn-primary btn-block mb-2">
                             <i class="fas fa-edit"></i> Edit User
                         </a>
                         
@@ -210,7 +210,7 @@
     <div class="modal fade" id="resetPasswordModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form action="{{ route('users.reset-password', $user) }}" method="POST">
+                <form action="{{ route('users.reset-password', $user->id) }}" method="POST">
                     @csrf
                     @method('PATCH')
                     <div class="modal-header">

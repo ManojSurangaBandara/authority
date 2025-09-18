@@ -92,14 +92,29 @@ Route::middleware('auth')->group(function () {
 
     // User Management routes (System Administrator only)
     Route::middleware('role:System Administrator (DMOV)')->group(function () {
-        Route::resource('users', UserController::class);
-        Route::patch('users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
-        Route::patch('users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
+        // User routes
+        Route::get('users', [UserController::class, 'index'])->name('users.index');
+        Route::get('users/create', [UserController::class, 'create'])->name('users.create');
+        Route::post('users', [UserController::class, 'store'])->name('users.store');
+        Route::get('users/{id}', [UserController::class, 'show'])->name('users.show');
+        Route::get('users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
+        Route::put('users/{id}', [UserController::class, 'update'])->name('users.update');
+        Route::patch('users/{id}', [UserController::class, 'update']);
+        Route::delete('users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+        Route::patch('users/{id}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
+        Route::patch('users/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
 
         // Role Management routes
-        Route::resource('roles', RoleController::class);
-        Route::get('roles/{role}/permissions', [RoleController::class, 'permissions'])->name('roles.permissions');
-        Route::patch('roles/{role}/permissions', [RoleController::class, 'updatePermissions'])->name('roles.update-permissions');
+        Route::get('roles', [RoleController::class, 'index'])->name('roles.index');
+        Route::get('roles/create', [RoleController::class, 'create'])->name('roles.create');
+        Route::post('roles', [RoleController::class, 'store'])->name('roles.store');
+        Route::get('roles/{id}', [RoleController::class, 'show'])->name('roles.show');
+        Route::get('roles/{id}/edit', [RoleController::class, 'edit'])->name('roles.edit');
+        Route::put('roles/{id}', [RoleController::class, 'update'])->name('roles.update');
+        Route::patch('roles/{id}', [RoleController::class, 'update']);
+        Route::delete('roles/{id}', [RoleController::class, 'destroy'])->name('roles.destroy');
+        Route::get('roles/{id}/permissions', [RoleController::class, 'permissions'])->name('roles.permissions');
+        Route::patch('roles/{id}/permissions', [RoleController::class, 'updatePermissions'])->name('roles.update-permissions');
         Route::get('roles-hierarchy', [RoleController::class, 'hierarchy'])->name('roles.hierarchy');
     });
 

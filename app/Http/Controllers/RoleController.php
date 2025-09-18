@@ -63,17 +63,18 @@ class RoleController extends Controller
     /**
      * Display the specified role
      */
-    public function show(Role $role)
+    public function show($id)
     {
-        $role->load('permissions', 'users');
+        $role = Role::with('permissions', 'users')->findOrFail($id);
         return view('roles.show', compact('role'));
     }
 
     /**
      * Show the form for editing the specified role
      */
-    public function edit(Role $role)
+    public function edit($id)
     {
+        $role = Role::findOrFail($id);
         $permissions = Permission::all()->groupBy(function($permission) {
             // Group permissions by category based on naming convention
             $parts = explode('_', $permission->name);
@@ -88,8 +89,10 @@ class RoleController extends Controller
     /**
      * Update the specified role
      */
-    public function update(Request $request, Role $role)
+    public function update(Request $request, $id)
     {
+        $role = Role::findOrFail($id);
+        
         $request->validate([
             'name' => 'required|string|max:255|unique:roles,name,' . $role->id,
             'permissions' => 'array',
@@ -115,8 +118,10 @@ class RoleController extends Controller
     /**
      * Remove the specified role
      */
-    public function destroy(Role $role)
+    public function destroy($id)
     {
+        $role = Role::findOrFail($id);
+        
         // Prevent deleting System Administrator role
         if ($role->name === 'System Administrator (DMOV)') {
             return redirect()->route('roles.index')
@@ -138,8 +143,9 @@ class RoleController extends Controller
     /**
      * Show permissions management for a role
      */
-    public function permissions(Role $role)
+    public function permissions($id)
     {
+        $role = Role::findOrFail($id);
         $permissions = Permission::all()->groupBy(function($permission) {
             // Group permissions by category
             $parts = explode('_', $permission->name);
@@ -154,8 +160,10 @@ class RoleController extends Controller
     /**
      * Update permissions for a role
      */
-    public function updatePermissions(Request $request, Role $role)
+    public function updatePermissions(Request $request, $id)
     {
+        $role = Role::findOrFail($id);
+        
         $request->validate([
             'permissions' => 'array',
             'permissions.*' => 'exists:permissions,id',
