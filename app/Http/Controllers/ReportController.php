@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\RejectedBusPassApplicationDataTable;
+use App\DataTables\TemporaryCardPrintedDataTable;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Establishment;
@@ -16,6 +17,13 @@ class ReportController extends Controller
     {
         $establishments = Establishment::all();
         return $dataTable->render('reports.rejected-applications', compact('establishments'));
+
+    }
+
+     public function index2(TemporaryCardPrintedDataTable $dataTable)
+    {
+        $establishments = Establishment::all();
+        return $dataTable->render('reports.temporary-card-printed', compact('establishments'));
 
     }
 

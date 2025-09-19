@@ -488,6 +488,15 @@ return [
                         'rejected-applications*',
                     ],
                 ],
+                 [
+                    'text' => 'Temporary Card Printed',
+                    'url' => 'temporary-card-printed',
+                    'icon' => 'fas fa-fw fa-id-card',
+                    // 'can' => 'manage_user_accounts',
+                    'active' => [
+                        'temporary-card-printed*',
+                    ],
+                ],
 
             ],
 

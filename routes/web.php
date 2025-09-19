@@ -120,6 +120,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('rejected-applications', [ReportController::class, 'index'])->name('rejected-applications.index');
 
+    Route::get('temporary-card-printed', [ReportController::class, 'index'])->name('temporary-card-printed.index2');
+
 });
 
 Route::get('/logout', function () {
