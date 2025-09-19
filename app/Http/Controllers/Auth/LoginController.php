@@ -41,27 +41,8 @@ class LoginController extends Controller
         $user->last_login_at = now();
         $user->save();
         
-        // Redirect based on user role
-        if ($user->hasRole('Bus Pass Subject Clerk (Branch)')) {
-            return '/dashboard/branch/clerk';
-        } elseif ($user->hasRole('Staff Officer (Branch)')) {
-            return '/dashboard/branch/staff-officer';
-        } elseif ($user->hasRole('Director (Branch)')) {
-            return '/dashboard/branch/director';
-        } elseif ($user->hasRole('Subject Clerk (DMOV)')) {
-            return '/dashboard/movement/clerk';
-        } elseif ($user->hasRole('Staff Officer 2 (DMOV)')) {
-            return '/dashboard/movement/staff-officer-2';
-        } elseif ($user->hasRole('Staff Officer 1 (DMOV)')) {
-            return '/dashboard/movement/staff-officer-1';
-        } elseif ($user->hasRole('Col Mov (DMOV)')) {
-            return '/dashboard/movement/col-mov';
-        } elseif ($user->hasRole('Director (DMOV)')) {
-            return '/dashboard/movement/director';
-        } elseif ($user->hasRole('Bus Escort (DMOV)')) {
-            return '/dashboard/movement/escort';
-        }
-        
+        // For now, redirect all users to the main dashboard
+        // TODO: Implement role-specific dashboard routes when needed
         return '/dashboard';
     }
 
