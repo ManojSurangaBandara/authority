@@ -32,7 +32,7 @@ class RoleController extends Controller
             $parts = explode('_', $permission->name);
             return ucfirst($parts[count($parts) - 1] ?? 'General');
         });
-        
+
         return view('roles.create', compact('permissions'));
     }
 
@@ -80,9 +80,9 @@ class RoleController extends Controller
             $parts = explode('_', $permission->name);
             return ucfirst($parts[count($parts) - 1] ?? 'General');
         });
-        
+
         $rolePermissions = $role->permissions->pluck('id')->toArray();
-        
+
         return view('roles.edit', compact('role', 'permissions', 'rolePermissions'));
     }
 
@@ -92,7 +92,7 @@ class RoleController extends Controller
     public function update(Request $request, $id)
     {
         $role = Role::findOrFail($id);
-        
+
         $request->validate([
             'permissions' => 'array',
             'permissions.*' => 'exists:permissions,id',
@@ -119,7 +119,7 @@ class RoleController extends Controller
     public function destroy($id)
     {
         $role = Role::findOrFail($id);
-        
+
         // Define system-critical roles that cannot be deleted
         $systemRoles = [
             'System Administrator (DMOV)',
@@ -133,7 +133,7 @@ class RoleController extends Controller
             'Director (DMOV)',
             'Bus Escort (DMOV)'
         ];
-        
+
         // Prevent deleting system-critical roles
         if (in_array($role->name, $systemRoles)) {
             return redirect()->route('roles.index')
@@ -164,9 +164,9 @@ class RoleController extends Controller
             $parts = explode('_', $permission->name);
             return ucfirst($parts[count($parts) - 1] ?? 'General');
         });
-        
+
         $rolePermissions = $role->permissions->pluck('id')->toArray();
-        
+
         return view('roles.permissions', compact('role', 'permissions', 'rolePermissions'));
     }
 
@@ -176,7 +176,7 @@ class RoleController extends Controller
     public function updatePermissions(Request $request, $id)
     {
         $role = Role::findOrFail($id);
-        
+
         $request->validate([
             'permissions' => 'array',
             'permissions.*' => 'exists:permissions,id',
@@ -212,7 +212,7 @@ class RoleController extends Controller
         ];
 
         $roles = Role::whereIn('name', array_values($hierarchyRoles))->get();
-        
+
         return view('roles.hierarchy', compact('roles', 'hierarchyRoles'));
     }
 }
