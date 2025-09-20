@@ -118,7 +118,9 @@ Route::middleware('auth')->group(function () {
         Route::get('roles-hierarchy', [RoleController::class, 'hierarchy'])->name('roles.hierarchy');
     });
 
-    Route::get('rejected-applications', [ReportController::class, 'index'])->name('rejected-applications.index');
+    Route::get('rejected-applications', [ReportController::class, 'rejected'])->name('rejected-applications.index');
+
+    Route::get('temporary-card-printed', [ReportController::class, 'temporary_card_printed'])->name('temporary-card-printed.index');
 
 });
 
