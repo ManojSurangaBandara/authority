@@ -189,7 +189,7 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                          <div class="form-group">
-                                        <label for="establishment_id">Filling Station <span class="text-danger">*</span></label>
+                                        <label for="establishment_id">Establishment <span class="text-danger">*</span></label>
                                         <select class="form-control @error('establishment_id') is-invalid @enderror"
                                             id="establishment_id" name="establishment_id" required>
                                             <option value="">Select Establishment</option>
@@ -626,7 +626,7 @@
             border: 1px solid #ced4da;
             border-radius: 0.25rem;
         }
-        
+
         .select2-container--bootstrap4 .select2-selection:focus {
             border-color: #80bdff;
             outline: 0;
