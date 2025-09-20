@@ -94,14 +94,12 @@ class RoleController extends Controller
         $role = Role::findOrFail($id);
         
         $request->validate([
-            'name' => 'required|string|max:255|unique:roles,name,' . $role->id,
             'permissions' => 'array',
             'permissions.*' => 'exists:permissions,id',
         ]);
 
-        $role->update([
-            'name' => $request->name,
-        ]);
+        // Note: Role name updates are disabled for system integrity
+        // Only permissions can be updated
 
         // Sync permissions
         if ($request->has('permissions')) {
@@ -112,7 +110,7 @@ class RoleController extends Controller
         }
 
         return redirect()->route('roles.index')
-            ->with('success', 'Role updated successfully.');
+            ->with('success', 'Role permissions updated successfully.');
     }
 
     /**
@@ -122,22 +120,37 @@ class RoleController extends Controller
     {
         $role = Role::findOrFail($id);
         
-        // Prevent deleting System Administrator role
-        if ($role->name === 'System Administrator (DMOV)') {
+        // Define system-critical roles that cannot be deleted
+        $systemRoles = [
+            'System Administrator (DMOV)',
+            'Bus Pass Subject Clerk (Branch)',
+            'Staff Officer (Branch)',
+            'Director (Branch)',
+            'Subject Clerk (DMOV)',
+            'Staff Officer 2 (DMOV)',
+            'Staff Officer 1 (DMOV)',
+            'Col Mov (DMOV)',
+            'Director (DMOV)',
+            'Bus Escort (DMOV)'
+        ];
+        
+        // Prevent deleting system-critical roles
+        if (in_array($role->name, $systemRoles)) {
             return redirect()->route('roles.index')
-                ->with('error', 'Cannot delete System Administrator role.');
+                ->with('error', 'Cannot delete system role "' . $role->name . '". This role is required for the approval workflow.');
         }
 
         // Check if role has users assigned
         if ($role->users()->count() > 0) {
             return redirect()->route('roles.index')
-                ->with('error', 'Cannot delete role that has users assigned. Please reassign users first.');
+                ->with('error', 'Cannot delete role "' . $role->name . '" because it has ' . $role->users()->count() . ' user(s) assigned. Please reassign users first.');
         }
 
+        $roleName = $role->name;
         $role->delete();
 
         return redirect()->route('roles.index')
-            ->with('success', 'Role deleted successfully.');
+            ->with('success', 'Custom role "' . $roleName . '" has been deleted successfully.');
     }
 
     /**

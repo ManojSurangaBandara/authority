@@ -44,7 +44,7 @@
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-striped table-hover" id="rolesTable">
-                    <thead class="table-dark">
+                    <thead class="table">
                         <tr>
                             <th>#</th>
                             <th>Role Name</th>
@@ -77,27 +77,54 @@
                                 <td>{{ $role->created_at->format('M d, Y') }}</td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a href="{{ route('roles.show', $role) }}" 
-                                           class="btn btn-sm btn-info" 
+                                        <a href="{{ route('roles.show', $role) }}"
+                                           class="btn btn-sm btn-info"
                                            title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="{{ route('roles.permissions', $role) }}" 
-                                           class="btn btn-sm btn-warning" 
+                                        <a href="{{ route('roles.permissions', $role) }}"
+                                           class="btn btn-sm btn-warning"
                                            title="Manage Permissions">
                                             <i class="fas fa-key"></i>
                                         </a>
-                                        <a href="{{ route('roles.edit', $role) }}" 
-                                           class="btn btn-sm btn-primary" 
-                                           title="Edit Role">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        @if($role->name !== 'System Administrator (DMOV)')
-                                            <button type="button" 
-                                                    class="btn btn-sm btn-danger" 
-                                                    title="Delete Role"
-                                                    onclick="confirmDelete({{ $role->id }}, '{{ $role->name }}')">
-                                                <i class="fas fa-trash"></i>
+                                        @php
+                                            $systemRoles = [
+                                                'System Administrator (DMOV)',
+                                                'Bus Pass Subject Clerk (Branch)',
+                                                'Staff Officer (Branch)',
+                                                'Director (Branch)',
+                                                'Subject Clerk (DMOV)',
+                                                'Staff Officer 2 (DMOV)',
+                                                'Staff Officer 1 (DMOV)',
+                                                'Col Mov (DMOV)',
+                                                'Director (DMOV)',
+                                                'Bus Escort (DMOV)'
+                                            ];
+                                            $isSystemRole = in_array($role->name, $systemRoles);
+                                            $hasUsers = $role->users->count() > 0;
+                                        @endphp
+                                        @if(!$isSystemRole)
+                                            @if($hasUsers)
+                                                <button type="button"
+                                                        class="btn btn-sm btn-secondary"
+                                                        title="Cannot delete: {{ $role->users->count() }} user(s) assigned"
+                                                        disabled>
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            @else
+                                                <button type="button"
+                                                        class="btn btn-sm btn-danger"
+                                                        title="Delete Custom Role"
+                                                        onclick="confirmDelete({{ $role->id }}, '{{ $role->name }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            @endif
+                                        @else
+                                            <button type="button"
+                                                    class="btn btn-sm btn-secondary"
+                                                    title="System role cannot be deleted"
+                                                    disabled>
+                                                <i class="fas fa-lock"></i>
                                             </button>
                                         @endif
                                     </div>
@@ -113,7 +140,7 @@
                     </tbody>
                 </table>
             </div>
-            
+
             <!-- Pagination -->
             <div class="d-flex justify-content-center">
                 {{ $roles->links() }}
@@ -135,12 +162,18 @@
                 </div>
                 <div class="modal-body">
                     <p>Are you sure you want to delete the role <strong id="roleName"></strong>?</p>
-                    <p class="text-danger">
-                        <i class="fas fa-warning"></i> This action cannot be undone.
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Warning:</strong> This action cannot be undone. This will permanently delete the custom role.
+                    </div>
+                    <p class="text-muted">
+                        <small><i class="fas fa-info-circle"></i> System roles are protected and cannot be deleted.</small>
                     </p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
                     <form id="deleteForm" method="POST" style="display: inline;">
                         @csrf
                         @method('DELETE')
