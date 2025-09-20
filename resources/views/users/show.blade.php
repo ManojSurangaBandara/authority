@@ -60,6 +60,19 @@
                                     <th>Contact Number:</th>
                                     <td>{{ $user->contact_no ?? 'Not specified' }}</td>
                                 </tr>
+                                <tr>
+                                    <th>Branch/Directorate:</th>
+                                    <td>
+                                        @if($user->establishment)
+                                            <strong>{{ $user->establishment->name }}</strong>
+                                            @if($user->establishment->location)
+                                                <small class="text-muted">({{ $user->establishment->location }})</small>
+                                            @endif
+                                        @else
+                                            <span class="text-danger">Not assigned</span>
+                                        @endif
+                                    </td>
+                                </tr>
                             </table>
                         </div>
                         <div class="col-md-6">
