@@ -26,21 +26,21 @@ class RolesAndPermissionsSeeder extends Seeder
             'delete_bus_pass',
             'approve_bus_pass',
             'reject_bus_pass',
-            
+
             // Bus management
             'manage_buses',
             'assign_drivers',
             'assign_escorts',
             'view_bus_assignments',
-            
+
             // User management
             'manage_users',
             'view_users',
-            
+
             // Reports
             'view_reports',
             'generate_reports',
-            
+
             // Admin functions
             'manage_establishments',
             'system_admin',
@@ -63,6 +63,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'create_bus_pass',
             'edit_bus_pass',
             'view_bus_pass',
+            'approve_bus_pass',
             'view_reports'
         ]);
 
