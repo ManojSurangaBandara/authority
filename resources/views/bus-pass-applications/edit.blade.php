@@ -190,22 +190,34 @@
                                     <div class="col-md-6">
                                          <div class="form-group">
                                         <label for="establishment_id">Establishment <span class="text-danger">*</span></label>
-                                        <select class="form-control @error('establishment_id') is-invalid @enderror"
-                                            id="establishment_id" name="establishment_id" required>
-                                            <option value="">Select Establishment</option>
-                                            @foreach ($establishment as $est)
-                                                <option value="{{ $est->id }}"
-                                                    {{ (old('establishment_id', $bus_pass_application->establishment_id) == $est->id) ? 'selected' : '' }}>
-                                                    {{ $est->name }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        @error('establishment_id')
-                                            <span class="invalid-feedback">{{ $message }}</span>
-                                        @enderror
-                                        <small class="form-text text-muted">
-                                            Select the Establishment from the available options
-                                        </small>
+                                        @if(auth()->user()->hasAnyRole(['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)']))
+                                            <!-- Read-only field for branch users -->
+                                            <input type="text" class="form-control" 
+                                                   value="{{ auth()->user()->establishment->name ?? 'No Establishment Assigned' }}" 
+                                                   readonly>
+                                            <input type="hidden" name="establishment_id" value="{{ auth()->user()->establishment_id }}">
+                                            <small class="form-text text-muted">
+                                                Your establishment is automatically assigned based on your role
+                                            </small>
+                                        @else
+                                            <!-- Dropdown for other users -->
+                                            <select class="form-control @error('establishment_id') is-invalid @enderror"
+                                                id="establishment_id" name="establishment_id" required>
+                                                <option value="">Select Establishment</option>
+                                                @foreach ($establishment as $est)
+                                                    <option value="{{ $est->id }}"
+                                                        {{ (old('establishment_id', $bus_pass_application->establishment_id) == $est->id) ? 'selected' : '' }}>
+                                                        {{ $est->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            @error('establishment_id')
+                                                <span class="invalid-feedback">{{ $message }}</span>
+                                            @enderror
+                                            <small class="form-text text-muted">
+                                                Select the Establishment from the available options
+                                            </small>
+                                        @endif
                                     </div>
                                     </div>
                                     <div class="col-md-3">
@@ -644,13 +656,15 @@
     <script>
         $(document).ready(function() {
 
-            // Initialize Select2 for Establishment dropdown
+            // Initialize Select2 for Establishment dropdown only if element exists and is not disabled
+            @if(!auth()->user()->hasAnyRole(['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)']))
             $('#establishment_id').select2({
                theme: 'bootstrap4',
                placeholder: 'Select Establishment',
                allowClear: true,
                width: '100%'
            });
+            @endif
 
             // Bus pass type change handler
             $('#bus_pass_type').change(function() {

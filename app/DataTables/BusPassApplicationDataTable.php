@@ -4,6 +4,7 @@ namespace App\DataTables;
 
 use App\Models\BusPassApplication;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
+use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
@@ -29,6 +30,12 @@ class BusPassApplicationDataTable extends DataTable
             ->addColumn('status_badge', function ($row) {
                 return $row->status_badge;
             })
+            ->addColumn('establishment_name', function ($row) {
+                if ($row->establishment) {
+                    return '<span class="badge badge-info">' . $row->establishment->name . '</span>';
+                }
+                return '<span class="text-muted">' . ($row->branch_directorate ?? 'Not specified') . '</span>';
+            })
             ->addColumn('applied_date', function ($row) {
                 return $row->created_at ? $row->created_at->format('d M Y') : '';
             })
@@ -45,7 +52,7 @@ class BusPassApplicationDataTable extends DataTable
 
                 return $viewBtn . $editBtn . $deleteBtn;
             })
-            ->rawColumns(['action', 'status_badge', 'type_label', 'applied_date'])
+            ->rawColumns(['action', 'status_badge', 'type_label', 'applied_date', 'establishment_name'])
             ->setRowId('id');
     }
 
@@ -56,7 +63,24 @@ class BusPassApplicationDataTable extends DataTable
      */
     public function query(BusPassApplication $model): QueryBuilder
     {
-        return $model->newQuery()->with('person')->orderBy('bus_pass_applications.created_at', 'desc');
+        $query = $model->newQuery()->with(['person', 'establishment']);
+        
+        // Filter by establishment for branch users
+        $user = Auth::user();
+        if ($user && $user->establishment_id) {
+            // Check if user has branch roles
+            $branchRoles = [
+                'Bus Pass Subject Clerk (Branch)',
+                'Staff Officer (Branch)',
+                'Director (Branch)'
+            ];
+            
+            if ($user->hasAnyRole($branchRoles)) {
+                $query->where('establishment_id', $user->establishment_id);
+            }
+        }
+        
+        return $query->orderBy('bus_pass_applications.created_at', 'desc');
     }
 
     /**
@@ -89,7 +113,7 @@ class BusPassApplicationDataTable extends DataTable
             Column::make('person.regiment_no')->title('Regiment No')->name('person.regiment_no'),
             Column::make('person.name')->title('Name')->name('person.name'),
             Column::make('person.rank')->title('Rank')->name('person.rank'),
-            Column::make('branch_directorate')->title('Branch/Directorate'),
+            Column::make('establishment_name')->title('Branch/Directorate')->searchable(false)->orderable(false),
             Column::make('type_label')->title('Pass Type')->searchable(false),
             Column::make('status_badge')->title('Status')->searchable(false)->orderable(false),
             Column::make('applied_date')->title('Applied Date')->searchable(false)->orderable(false),

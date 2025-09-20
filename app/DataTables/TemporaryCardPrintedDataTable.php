@@ -4,6 +4,7 @@ namespace App\DataTables;
 
 use App\Models\BusPassApplication;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
+use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
@@ -61,7 +62,16 @@ class TemporaryCardPrintedDataTable extends DataTable
      */
     public function query(BusPassApplication $model): QueryBuilder
     {
-        return $model->newQuery()->with('person')->where('status', 'temp_card_printed')->orderBy('bus_pass_applications.created_at', 'desc');
+        $query = $model->newQuery()->with('person')->where('status', 'temp_card_printed');
+        
+        // Filter by establishment for branch users
+        $user = Auth::user();
+        $branchRoles = ['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)'];
+        if ($user && $user->hasAnyRole($branchRoles) && $user->establishment_id) {
+            $query->where('establishment_id', $user->establishment_id);
+        }
+        
+        return $query->orderBy('bus_pass_applications.created_at', 'desc');
     }
 
     /**
