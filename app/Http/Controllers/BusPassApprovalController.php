@@ -125,7 +125,7 @@ class BusPassApprovalController extends Controller
         }
         
         if ($user->hasRole('Subject Clerk (DMOV)')) {
-            return 'pending_subject_clerk_mov';
+            return 'forwarded_to_movement';
         }
         
         if ($user->hasRole('Staff Officer 2 (DMOV)')) {
@@ -192,10 +192,6 @@ class BusPassApprovalController extends Controller
 
         // DMOV workflow  
         if ($currentStatus === 'forwarded_to_movement') {
-            return 'pending_subject_clerk_mov';
-        }
-        
-        if ($currentStatus === 'pending_subject_clerk_mov') {
             return 'pending_staff_officer_2_mov';
         }
         
