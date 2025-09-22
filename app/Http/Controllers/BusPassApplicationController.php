@@ -53,7 +53,6 @@ class BusPassApplicationController extends Controller
             'telephone_no' => 'required|string|max:20',
             'grama_seva_division' => 'required|string|max:100',
             'nearest_police_station' => 'required|string|max:100',
-            'establishment_id' => 'required|exists:establishments,id',
             'marital_status' => 'required|in:single,married',
             'approval_living_out' => 'required|in:yes,no',
             'obtain_sltb_season' => 'required|in:yes,no',
@@ -64,8 +63,14 @@ class BusPassApplicationController extends Controller
             'rent_allowance_order' => $request->bus_pass_type === 'daily_travel' ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'declaration_1' => 'required|in:yes',
             'declaration_2' => 'required|in:yes',
-
         ];
+
+        // Only require establishment_id for non-branch users
+        $user = Auth::user();
+        $branchRoles = ['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)'];
+        if (!$user->hasAnyRole($branchRoles)) {
+            $validationRules['establishment_id'] = 'required|exists:establishments,id';
+        }
 
         // Add conditional validation for weekend/monthly travel
         if ($request->bus_pass_type === 'weekend_monthly_travel') {
@@ -121,9 +126,18 @@ class BusPassApplicationController extends Controller
 
         // Prepare application data (excluding person fields)
         $data['person_id'] = $person->id;
-        $data['establishment_id'] = $request->establishment_id;
+        
+        // For branch users, automatically use their establishment
+        $user = Auth::user();
+        $branchRoles = ['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)'];
+        if ($user->hasAnyRole($branchRoles)) {
+            $data['establishment_id'] = $user->establishment_id;
+        } else {
+            $data['establishment_id'] = $request->establishment_id;
+        }
+        
         // Set branch_directorate to establishment name for now (since form doesn't have this field)
-        $establishment = Establishment::find($request->establishment_id);
+        $establishment = Establishment::find($data['establishment_id']);
         $data['branch_directorate'] = $establishment ? $establishment->name : 'Unknown';
         $data['marital_status'] = $request->marital_status;
         $data['approval_living_out'] = $request->approval_living_out;
@@ -207,7 +221,6 @@ class BusPassApplicationController extends Controller
             'telephone_no' => 'required|string|max:20',
             'grama_seva_division' => 'required|string|max:100',
             'nearest_police_station' => 'required|string|max:100',
-            'establishment_id' => 'required|exists:establishments,id',
             'marital_status' => 'required|in:single,married',
             'approval_living_out' => 'required|in:yes,no',
             'obtain_sltb_season' => 'required|in:yes,no',
@@ -217,6 +230,13 @@ class BusPassApplicationController extends Controller
             'declaration_1' => 'required|in:yes',
             'declaration_2' => 'required|in:yes',
         ];
+
+        // Only require establishment_id for non-branch users
+        $user = Auth::user();
+        $branchRoles = ['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)'];
+        if (!$user->hasAnyRole($branchRoles)) {
+            $validationRules['establishment_id'] = 'required|exists:establishments,id';
+        }
 
         // Add conditional validation for weekend/monthly travel
         if ($request->bus_pass_type === 'weekend_monthly_travel') {
@@ -275,9 +295,15 @@ class BusPassApplicationController extends Controller
         }
 
         // Add application-specific fields
-        $data['establishment_id'] = $request->establishment_id;
+        // Set establishment_id based on user role
+        if ($user->hasAnyRole($branchRoles)) {
+            $data['establishment_id'] = $user->establishment_id;
+        } else {
+            $data['establishment_id'] = $request->establishment_id;
+        }
+        
         // Set branch_directorate to establishment name for now (since form doesn't have this field)
-        $establishment = Establishment::find($request->establishment_id);
+        $establishment = Establishment::find($data['establishment_id']);
         $data['branch_directorate'] = $establishment ? $establishment->name : 'Unknown';
         $data['marital_status'] = $request->marital_status;
         $data['approval_living_out'] = $request->approval_living_out;

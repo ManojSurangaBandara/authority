@@ -13,23 +13,35 @@
                     <!-- Establishment (Select2 Dropdown) -->
                     <div class="col-md-12">
                         <div class="form-group">
-                            <label for="establishment_id">Establishment <span class="text-danger">*</span></label>
-                            <select class="form-control @error('establishment_id') is-invalid @enderror"
-                                id="establishment_id" name="establishment_id" required>
-                                <option value="">Select Establishment</option>
-                                @foreach ($establishments as $establishment)
-                                    <option value="{{ $establishment->id }}"
-                                        {{ old('establishment_id') == $establishment->id ? 'selected' : '' }}>
-                                        {{ $establishment->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('establishment_id')
-                                <span class="invalid-feedback">{{ $message }}</span>
-                            @enderror
-                            <small class="form-text text-muted">
-                                Select the establishment from the available options
-                            </small>
+                            @if(auth()->user()->hasAnyRole(['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)']))
+                                <!-- Hidden field for branch users - auto-selected -->
+                                <label for="establishment_display">Establishment</label>
+                                <input type="text" class="form-control" id="establishment_display" 
+                                       value="{{ $establishments->first()->name ?? 'No Establishment Assigned' }}" readonly>
+                                <input type="hidden" id="establishment_id" name="establishment_id" value="{{ $establishments->first()->id ?? '' }}">
+                                <small class="form-text text-muted">
+                                    Showing data for your assigned establishment
+                                </small>
+                            @else
+                                <!-- Dropdown for other users -->
+                                <label for="establishment_id">Establishment <span class="text-danger">*</span></label>
+                                <select class="form-control @error('establishment_id') is-invalid @enderror"
+                                    id="establishment_id" name="establishment_id" required>
+                                    <option value="">Select Establishment</option>
+                                    @foreach ($establishments as $establishment)
+                                        <option value="{{ $establishment->id }}"
+                                            {{ old('establishment_id') == $establishment->id ? 'selected' : '' }}>
+                                            {{ $establishment->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('establishment_id')
+                                    <span class="invalid-feedback">{{ $message }}</span>
+                                @enderror
+                                <small class="form-text text-muted">
+                                    Select the establishment from the available options
+                                </small>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -145,18 +157,27 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
 $(document).ready(function() {
-    // Initialize Select2 for establishment dropdown
-    $('#establishment_id').select2({
-        theme: 'bootstrap4',
-        placeholder: 'Select Establishment',
-        allowClear: true,
-        width: '100%'
-    });
+    @if(!auth()->user()->hasAnyRole(['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)']))
+        // Initialize Select2 for establishment dropdown (non-branch users)
+        $('#establishment_id').select2({
+            theme: 'bootstrap4',
+            placeholder: 'Select Establishment',
+            allowClear: true,
+            width: '100%'
+        });
 
-    // Reload DataTable when establishment changes
-    $('#establishment_id').on('change', function() {
-        window.LaravelDataTables['bus-pass-application-table'].draw();
-    });
+        // Reload DataTable when establishment changes
+        $('#establishment_id').on('change', function() {
+            window.LaravelDataTables['bus-pass-application-table'].draw();
+        });
+    @else
+        // Auto-load data for branch users
+        setTimeout(function() {
+            if (window.LaravelDataTables && window.LaravelDataTables['bus-pass-application-table']) {
+                window.LaravelDataTables['bus-pass-application-table'].draw();
+            }
+        }, 1000);
+    @endif
 
     // Add export buttons to DataTable after it's initialized
     setTimeout(function() {

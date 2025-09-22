@@ -6,15 +6,15 @@
     <meta charset="utf-8">
     <title>{{ config('app.name') }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="{{ asset('login/css/bootstrap.css'); }}">
-    <link rel="stylesheet" href="{{ asset('login/css/custom.css'); }}">
-    <link rel="stylesheet" href="{{ asset('login/css/custom.min.css'); }}">
+    <link rel="stylesheet" href="{{ asset('login_assets/css/bootstrap.css'); }}">
+    <link rel="stylesheet" href="{{ asset('login_assets/css/custom.css'); }}">
+    <link rel="stylesheet" href="{{ asset('login_assets/css/custom.min.css'); }}">
 
-    <link rel="stylesheet" href="{{ asset('login/css/animate.css'); }}">
+    <link rel="stylesheet" href="{{ asset('login_assets/css/animate.css'); }}">
 <!--     <link rel="stylesheet" href="css/prism-okaidia.css">
     <link rel="stylesheet" href="css/font-awesome.min.css">
      -->
-    <script src="{{ asset('login/js/wow.min.js'); }}"></script>
+    <script src="{{ asset('login_assets/js/wow.min.js'); }}"></script>
     <script>
     new WOW().init();
     </script>
@@ -29,7 +29,7 @@
    <div class="col-lg-4">
 
       <div class="wow fadeInLeft" style="text-align: center;">
-          <img src="{{ asset('login/img/Army_Logo_my.png'); }}" width="200px" align="centere" >
+          <img src="{{ asset('login_assets/img/Army_Logo_my.png'); }}" width="200px" align="centere" >
       <p width="350px" align="centere"  style="color:rgb(255, 165, 0); font-size:35px; text-align: center; font-family: sans-serif; text-shadow: 1px 1px 2px black;"  >
 
         {{-- {{ config('app.name') }} --}}
@@ -93,10 +93,10 @@
 
 
 </body>
- <script src="{{ asset('login/js/jquery.min.js') }}"></script>
- <script src="{{ asset('login/js/bootstrap.bundle.min.js'); }}"></script>
- <script src="{{ asset('login/js/prism.js'); }}" data-manual></script>
- <script src="{{ asset('login/js/custom.js'); }}"></script>
+ <script src="{{ asset('login_assets/js/jquery.min.js') }}"></script>
+ <script src="{{ asset('login_assets/js/bootstrap.bundle.min.js'); }}"></script>
+ <script src="{{ asset('login_assets/js/prism.js'); }}" data-manual></script>
+ <script src="{{ asset('login_assets/js/custom.js'); }}"></script>
 
 </html>
 

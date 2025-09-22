@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Establishment;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
@@ -21,7 +22,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::with('roles')->paginate(15);
+        $users = User::with(['roles', 'establishment'])->paginate(15);
         return view('users.index', compact('users'));
     }
 
@@ -31,7 +32,8 @@ class UserController extends Controller
     public function create()
     {
         $roles = Role::all();
-        return view('users.create', compact('roles'));
+        $establishments = Establishment::where('is_active', true)->orderBy('name')->get();
+        return view('users.create', compact('roles', 'establishments'));
     }
 
     /**
@@ -46,7 +48,7 @@ class UserController extends Controller
             'regiment_no' => 'nullable|string|max:20',
             'rank' => 'nullable|string|max:50',
             'contact_no' => 'nullable|string|max:20',
-            'establishment_id' => 'nullable|exists:establishments,id',
+            'establishment_id' => 'required|exists:establishments,id',
             'roles' => 'required|array|min:1',
             'roles.*' => 'exists:roles,id',
             'is_active' => 'required|boolean',
@@ -88,8 +90,9 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
         $roles = Role::all();
+        $establishments = Establishment::where('is_active', true)->orderBy('name')->get();
         $userRoles = $user->roles->pluck('id')->toArray();
-        return view('users.edit', compact('user', 'roles', 'userRoles'));
+        return view('users.edit', compact('user', 'roles', 'establishments', 'userRoles'));
     }
 
     /**
@@ -112,7 +115,7 @@ class UserController extends Controller
             'regiment_no' => 'nullable|string|max:20',
             'rank' => 'nullable|string|max:50',
             'contact_no' => 'nullable|string|max:20',
-            'establishment_id' => 'nullable|exists:establishments,id',
+            'establishment_id' => 'required|exists:establishments,id',
             'roles' => 'required|array|min:1',
             'roles.*' => 'exists:roles,id',
             'is_active' => 'required|boolean',

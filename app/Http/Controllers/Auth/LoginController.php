@@ -56,4 +56,43 @@ class LoginController extends Controller
         $this->middleware('guest')->except('logout');
         $this->middleware('auth')->only('logout');
     }
+
+    /**
+     * Get the needed authorization credentials from the request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return array
+     */
+    protected function credentials(Request $request)
+    {
+        $credentials = $request->only($this->username(), 'password');
+        $credentials['is_active'] = true; // Only allow active users to login
+        
+        return $credentials;
+    }
+
+    /**
+     * Get the failed login response instance.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    protected function sendFailedLoginResponse(Request $request)
+    {
+        // Check if user exists but is inactive
+        $user = \App\Models\User::where($this->username(), $request->{$this->username()})->first();
+        
+        if ($user && !$user->is_active) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                $this->username() => ['Your account has been deactivated. Please contact the administrator.'],
+            ]);
+        }
+        
+        // Default failed login response
+        throw \Illuminate\Validation\ValidationException::withMessages([
+            $this->username() => [trans('auth.failed')],
+        ]);
+    }
 }

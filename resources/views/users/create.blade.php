@@ -100,6 +100,31 @@
                             @enderror
                         </div>
 
+                        <div class="form-group">
+                            <label for="establishment_id">Branch/Directorate <span class="text-danger">*</span></label>
+                            <select class="form-control @error('establishment_id') is-invalid @enderror" 
+                                    id="establishment_id" 
+                                    name="establishment_id" 
+                                    required>
+                                <option value="">Select Branch/Directorate</option>
+                                @foreach($establishments as $establishment)
+                                    <option value="{{ $establishment->id }}" 
+                                            {{ old('establishment_id') == $establishment->id ? 'selected' : '' }}>
+                                        {{ $establishment->name }}
+                                        @if($establishment->location)
+                                            ({{ $establishment->location }})
+                                        @endif
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('establishment_id')
+                                <span class="invalid-feedback">{{ $message }}</span>
+                            @enderror
+                            <small class="form-text text-muted">
+                                Select the branch or directorate this user belongs to. This is required for bus pass applications.
+                            </small>
+                        </div>
+
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">

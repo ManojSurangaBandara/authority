@@ -94,10 +94,17 @@ class BusPassApprovalController extends Controller
             return collect();
         }
 
-        return BusPassApplication::where('status', $status)
-            ->with(['person', 'statusData'])
-            ->orderBy('created_at', 'asc')
-            ->get();
+        $query = BusPassApplication::where('status', $status)
+            ->with(['person', 'statusData', 'establishment']);
+
+        // Filter by establishment for branch roles
+        if ($user->isBranchUser()) {
+            $query->where('establishment_id', $user->establishment_id);
+        }
+        // Movement roles see all applications that reach their level
+        // (no establishment filtering needed for DMOV roles)
+
+        return $query->orderBy('created_at', 'asc')->get();
     }
 
     /**
@@ -146,7 +153,19 @@ class BusPassApprovalController extends Controller
     private function canUserApprove($user, $application)
     {
         $userPendingStatus = $this->getPendingStatusForUserRole($user);
-        return $userPendingStatus === $application->status;
+        
+        // Check if user's role matches the application status
+        if ($userPendingStatus !== $application->status) {
+            return false;
+        }
+        
+        // For branch users, check if they belong to the same establishment
+        if ($user->isBranchUser()) {
+            return $user->establishment_id === $application->establishment_id;
+        }
+        
+        // Movement users can approve any application that reaches their level
+        return true;
     }
 
     /**

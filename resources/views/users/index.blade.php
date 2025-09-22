@@ -39,6 +39,7 @@
                                 <th>Email</th>
                                 <th>Regiment No</th>
                                 <th>Rank</th>
+                                <th>Branch/Directorate</th>
                                 <th>Roles</th>
                                 <th>Status</th>
                                 <th>Last Login</th>
@@ -58,6 +59,16 @@
                                     <td>{{ $user->email }}</td>
                                     <td>{{ $user->regiment_no ?? '-' }}</td>
                                     <td>{{ $user->rank ?? '-' }}</td>
+                                    <td>
+                                        @if($user->establishment)
+                                            <span class="badge badge-info">{{ $user->establishment->name }}</span>
+                                            @if($user->establishment->location)
+                                                <br><small class="text-muted">{{ $user->establishment->location }}</small>
+                                            @endif
+                                        @else
+                                            <span class="text-danger">Not assigned</span>
+                                        @endif
+                                    </td>
                                     <td>
                                         @if($user->roles->count() > 0)
                                             @foreach($user->roles as $role)

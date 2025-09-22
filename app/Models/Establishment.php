@@ -9,9 +9,10 @@ class Establishment extends Model
 {
     protected $fillable = [
         'name',
-        'code',
-        'type',
-        'description',
+        'location',
+        'contact_no',
+        'email',
+        'address',
         'is_active',
     ];
 

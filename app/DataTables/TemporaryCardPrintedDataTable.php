@@ -4,6 +4,7 @@ namespace App\DataTables;
 
 use App\Models\BusPassApplication;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
+use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
@@ -61,7 +62,16 @@ class TemporaryCardPrintedDataTable extends DataTable
      */
     public function query(BusPassApplication $model): QueryBuilder
     {
-        return $model->newQuery()->with('person')->where('status', 'temp_card_printed')->orderBy('bus_pass_applications.created_at', 'desc');
+        $query = $model->newQuery()->with(['person', 'establishment'])->where('status', 'temp_card_printed');
+        
+        // Filter by establishment for branch users
+        $user = Auth::user();
+        $branchRoles = ['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)'];
+        if ($user && $user->hasAnyRole($branchRoles) && $user->establishment_id) {
+            $query->where('establishment_id', $user->establishment_id);
+        }
+        
+        return $query->orderBy('bus_pass_applications.created_at', 'desc');
     }
 
     /**
@@ -99,7 +109,7 @@ class TemporaryCardPrintedDataTable extends DataTable
             Column::make('person.regiment_no')->title('Regiment No')->name('person.regiment_no'),
             Column::make('person.name')->title('Name')->name('person.name'),
             Column::make('person.rank')->title('Rank')->name('person.rank'),
-            Column::make('branch_directorate')->title('Branch/Directorate'),
+            Column::make('establishment.name')->title('Establishment')->name('establishment.name'),
             Column::make('type_label')->title('Pass Type')->searchable(false),
             Column::make('status_badge')->title('Status')->searchable(false)->orderable(false),
             Column::make('applied_date')->title('Applied Date')->searchable(false)->orderable(false),

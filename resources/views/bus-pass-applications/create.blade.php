@@ -174,22 +174,37 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="establishment_id">Establishment <span class="text-danger">*</span></label>
-                                            <select class="form-control @error('establishment_id') is-invalid @enderror"
-                                             id="establishment_id" name="establishment_id" required>
-                                             <option value="">Select Establishment</option>
-                                             @foreach ($establishment as $est)
-                                                    <option value="{{ $est->id }}"
-                                                        {{ old('establishment_id') == $est->id ? 'selected' : '' }}>
-                                                        {{ $est->name }}
-                                                        </option>
-                                                        @endforeach
-                                             </select>
-                                             @error('establishment_id')
+                                            @if(auth()->user()->isBranchUser())
+                                                <!-- Branch users see their establishment locked -->
+                                                <input type="text" 
+                                                       class="form-control" 
+                                                       value="{{ auth()->user()->establishment ? auth()->user()->establishment->name : 'Not assigned' }}" 
+                                                       readonly>
+                                                <input type="hidden" 
+                                                       name="establishment_id" 
+                                                       value="{{ auth()->user()->establishment_id }}">
+                                                <small class="form-text text-muted">
+                                                    <i class="fas fa-lock"></i> Your establishment is automatically assigned.
+                                                </small>
+                                            @else
+                                                <!-- System admin and movement users can select establishment -->
+                                                <select class="form-control @error('establishment_id') is-invalid @enderror"
+                                                 id="establishment_id" name="establishment_id" required>
+                                                 <option value="">Select Establishment</option>
+                                                 @foreach ($establishment as $est)
+                                                        <option value="{{ $est->id }}"
+                                                            {{ old('establishment_id') == $est->id ? 'selected' : '' }}>
+                                                            {{ $est->name }}
+                                                            </option>
+                                                            @endforeach
+                                                 </select>
+                                                 <small class="form-text text-muted">
+                                                 Select the Establishment from the available options.
+                                                 </small>
+                                            @endif
+                                            @error('establishment_id')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
-                                            <small class="form-text text-muted">
-                                            Select the Establishment from the available options.
-                                            </small>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
@@ -594,13 +609,15 @@
 
     <script>
               $(document).ready(function() {
-           // Initialize Select2 for Establishment dropdown
+           // Initialize Select2 for Establishment dropdown (only for non-branch users)
+             @if(!auth()->user()->isBranchUser())
              $('#establishment_id').select2({
                 theme: 'bootstrap4',
                 placeholder: 'Select Establishment',
                 allowClear: true,
                 width: '100%'
               });
+             @endif
             // Bus pass type change handler
             $('#bus_pass_type').change(function() {
                 var type = $(this).val();

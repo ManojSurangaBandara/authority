@@ -44,30 +44,14 @@
                 <!-- Role Name -->
                 <div class="form-group">
                     <label for="name" class="required">Role Name</label>
-                    @if($role->name === 'System Administrator (DMOV)')
-                        <input type="text" 
-                               class="form-control" 
-                               value="{{ $role->name }}" 
-                               readonly>
-                        <input type="hidden" name="name" value="{{ $role->name }}">
-                        <small class="form-text text-warning">
-                            <i class="fas fa-lock"></i> System Administrator role name cannot be changed.
-                        </small>
-                    @else
-                        <input type="text" 
-                               class="form-control @error('name') is-invalid @enderror" 
-                               id="name" 
-                               name="name" 
-                               value="{{ old('name', $role->name) }}" 
-                               placeholder="Enter role name"
-                               required>
-                        @error('name')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                        <small class="form-text text-muted">
-                            Choose a descriptive name that clearly identifies the role's purpose.
-                        </small>
-                    @endif
+                    <input type="text" 
+                           class="form-control" 
+                           value="{{ $role->name }}" 
+                           readonly>
+                    <input type="hidden" name="name" value="{{ $role->name }}">
+                    <small class="form-text text-warning">
+                        <i class="fas fa-lock"></i> Role names cannot be changed to maintain system integrity.
+                    </small>
                 </div>
 
                 <!-- Permissions Section -->
@@ -202,15 +186,13 @@
 
         // Form validation
         $('form').on('submit', function(e) {
-            @if($role->name !== 'System Administrator (DMOV)')
-                let roleName = $('#name').val().trim();
-                if (roleName === '') {
-                    e.preventDefault();
-                    alert('Please enter a role name.');
-                    $('#name').focus();
-                    return false;
-                }
-            @endif
+            // Role name is now always readonly, no validation needed
+            let checkedPermissions = $('input[name="permissions[]"]:checked').length;
+            if (checkedPermissions === 0) {
+                e.preventDefault();
+                alert('Please select at least one permission for this role.');
+                return false;
+            }
         });
     </script>
 @stop

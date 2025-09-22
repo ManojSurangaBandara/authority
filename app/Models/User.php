@@ -24,7 +24,7 @@ class User extends Authenticatable
         'email',
         'password',
         'establishment_id',
-        'service_number',
+        'regiment_no',
         'rank',
         'contact_no',
         'is_active',
@@ -105,7 +105,7 @@ class User extends Authenticatable
         if ($this->hasRole('Col Mov (DMOV)')) return 7;
         if ($this->hasRole('Director (DMOV)')) return 8;
         if ($this->hasRole('Bus Escort (DMOV)')) return 9;
-        
+
         return 0;
     }
 

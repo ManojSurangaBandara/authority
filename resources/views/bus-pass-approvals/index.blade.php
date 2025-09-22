@@ -5,7 +5,12 @@
 @section('content_header')
     <h1>
         Bus Pass Approvals
-        <small>Pending applications for your review</small>
+        <small>
+            Pending applications for your review
+            @if(auth()->user()->isBranchUser() && auth()->user()->establishment)
+                - {{ auth()->user()->establishment->name }}
+            @endif
+        </small>
     </h1>
 @stop
 
@@ -56,7 +61,16 @@
                                                     {{ $application->type_label }}
                                                 </span>
                                             </td>
-                                            <td>{{ $application->branch_directorate }}</td>
+                                            <td>
+                                                @if($application->establishment)
+                                                    <span class="badge badge-info">{{ $application->establishment->name }}</span>
+                                                    @if($application->establishment->location)
+                                                        <br><small class="text-muted">{{ $application->establishment->location }}</small>
+                                                    @endif
+                                                @else
+                                                    <span class="text-muted">{{ $application->branch_directorate }}</span>
+                                                @endif
+                                            </td>
                                             <td>{!! $application->status_badge !!}</td>
                                             <td>
                                                 {{ $application->created_at->format('d M Y') }}<br>
