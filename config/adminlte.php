@@ -497,6 +497,24 @@ return [
                         'temporary-card-printed*',
                     ],
                 ],
+                [
+                    'text' => 'Handed Over Applications',
+                    'url' => 'handed-over-applications',
+                    'icon' => 'fas fa-fw fa-check',
+                    // 'can' => 'manage_user_accounts',
+                    'active' => [
+                        'handed-over-applications*',
+                    ],
+                ],
+                [
+                    'text' => 'Not Yet Handed Over Applications',
+                    'url' => 'not-yet-handed-over-applications',
+                    'icon' => 'fas fa-fw fa-times',
+                    // 'can' => 'manage_user_accounts',
+                    'active' => [
+                        'not-yet-handed-over-applications*',
+                    ],
+                ],
 
             ],
 

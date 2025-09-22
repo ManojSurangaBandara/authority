@@ -122,6 +122,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('temporary-card-printed', [ReportController::class, 'temporary_card_printed'])->name('temporary-card-printed.index');
 
+    Route::get('handed-over-applications', [ReportController::class, 'handed_over'])->name('handed-over-applications.index');
+
+    Route::get('not-yet-handed-over-applications', [ReportController::class, 'not_yet_handed_over'])->name('not-yet-handed-over-applications.index');
+
 });
 
 Route::get('/logout', function () {
