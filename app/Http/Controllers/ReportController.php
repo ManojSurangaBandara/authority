@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\HandedOverBusPassApplicationDataTable;
+use App\DataTables\IntegratedBusPassApplicationDataTable;
 use App\DataTables\NotyetHandedOverBussPassApplicationDataTable;
+use App\DataTables\PendingBusPassApplicationDataTable;
 use App\DataTables\RejectedBusPassApplicationDataTable;
 use App\DataTables\TemporaryCardPrintedDataTable;
 use App\Http\Controllers\Controller;
@@ -74,6 +76,36 @@ class ReportController extends Controller
         }
         
         return $dataTable->render('reports.not-yet-handed-over-applications', compact('establishments'));
+    }
+
+     public function integrated(IntegratedBusPassApplicationDataTable $dataTable)
+    {
+        // Filter establishments for branch users
+        $user = Auth::user();
+        $branchRoles = ['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)'];
+        
+        if ($user && $user->hasAnyRole($branchRoles) && $user->establishment_id) {
+            $establishments = Establishment::where('id', $user->establishment_id)->get();
+        } else {
+            $establishments = Establishment::all();
+        }
+        
+        return $dataTable->render('reports.integrated-applications', compact('establishments'));
+    }
+
+     public function pending(PendingBusPassApplicationDataTable $dataTable)
+    {
+        // Filter establishments for branch users
+        $user = Auth::user();
+        $branchRoles = ['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)'];
+        
+        if ($user && $user->hasAnyRole($branchRoles) && $user->establishment_id) {
+            $establishments = Establishment::where('id', $user->establishment_id)->get();
+        } else {
+            $establishments = Establishment::all();
+        }
+        
+        return $dataTable->render('reports.pending-applications', compact('establishments'));
     }
 
     

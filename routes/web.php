@@ -126,6 +126,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('not-yet-handed-over-applications', [ReportController::class, 'not_yet_handed_over'])->name('not-yet-handed-over-applications.index');
 
+    Route::get('integrated-applications', [ReportController::class, 'integrated'])->name('integrated-applications.index');
+
+    Route::get('pending-applications', [ReportController::class, 'pending'])->name('pending-applications.index');
+
 });
 
 Route::get('/logout', function () {

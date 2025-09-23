@@ -13,7 +13,7 @@ use Yajra\DataTables\Html\Editor\Editor;
 use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
-class HandedOverBusPassApplicationDataTable extends DataTable
+class PendingBusPassApplicationDataTable extends DataTable
 {
     /**
      * Build the DataTable class.
@@ -62,7 +62,16 @@ class HandedOverBusPassApplicationDataTable extends DataTable
      */
     public function query(BusPassApplication $model): QueryBuilder
     {
-        $query = $model->newQuery()->with(['person', 'establishment'])->where('status', 'temp_card_handed_over');
+        $query = $model->newQuery()->with(['person', 'establishment'])->whereIn('status', [
+            'pending_subject_clerk',
+            'pending_staff_officer_branch',
+            'pending_director_branch',
+            'pending_staff_officer_2_mov',
+            'pending_staff_officer_1_mov',
+            'pending_col_mov',
+            'pending_director_mov',
+            'pending', 
+        ]);
         
         // Filter by establishment for branch users
         $user = Auth::user();
