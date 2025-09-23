@@ -384,7 +384,7 @@ return [
                         'bus-driver-assignments*',
                     ],
                 ],
-                 [
+                [
                     'text' => 'Establishments',
                     'url' => 'establishment',
                     'icon' => 'fas fa-building',
@@ -488,7 +488,7 @@ return [
                         'rejected-applications*',
                     ],
                 ],
-                 [
+                [
                     'text' => 'Temporary Card Printed',
                     'url' => 'temporary-card-printed',
                     'icon' => 'fas fa-fw fa-id-card',
@@ -609,6 +609,16 @@ return [
                     'type' => 'js',
                     'asset' => false,
                     'location' => '//cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js',
+                ],
+            ],
+        ],
+        'CustomCSS' => [
+            'active' => true,
+            'files' => [
+                [
+                    'type' => 'css',
+                    'asset' => true,
+                    'location' => 'css/custom-menu.css',
                 ],
             ],
         ],
