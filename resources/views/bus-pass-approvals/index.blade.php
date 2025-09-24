@@ -35,7 +35,7 @@
                                         <th>Service Details</th>
                                         <th>Bus Pass Type</th>
                                         <th>Branch/Directorate</th>
-                                        <th>Status</th>
+                                        {{-- <th>Status</th> --}}
                                         <th>Submitted</th>
                                         <th>Actions</th>
                                     </tr>
@@ -71,31 +71,37 @@
                                                     <span class="text-muted">{{ $application->branch_directorate }}</span>
                                                 @endif
                                             </td>
-                                            <td>{!! $application->status_badge !!}</td>
+                                            {{-- <td>{!! $application->status_badge !!}</td> --}}
                                             <td>
                                                 {{ $application->created_at->format('d M Y') }}<br>
                                                 <small class="text-muted">{{ $application->created_at->diffForHumans() }}</small>
                                             </td>
                                             <td>
                                                 <div class="btn-group" role="group">
-                                                    <button type="button" class="btn btn-sm btn-info" 
-                                                            data-toggle="modal" 
+                                                    <button type="button" class="btn btn-sm btn-info"
+                                                            data-toggle="modal"
                                                             data-target="#viewModal{{ $application->id }}">
                                                         <i class="fas fa-eye"></i> View
                                                     </button>
-                                                    
+
                                                     @can('approve_bus_pass')
-                                                    <button type="button" class="btn btn-sm btn-success" 
-                                                            data-toggle="modal" 
+                                                    <button type="button" class="btn btn-sm btn-success"
+                                                            data-toggle="modal"
                                                             data-target="#approveModal{{ $application->id }}">
-                                                        <i class="fas fa-check"></i> Approve
+                                                        @if(auth()->user()->hasRole(['Bus Pass Subject Clerk (Branch)', 'Subject Clerk (DMOV)']))
+                                                            <i class="fas fa-arrow-right"></i> Forward
+                                                        @else
+                                                            <i class="fas fa-check"></i> Approve
+                                                        @endif
                                                     </button>
-                                                    
-                                                    <button type="button" class="btn btn-sm btn-danger" 
-                                                            data-toggle="modal" 
+
+                                                    @unless(auth()->user()->hasRole(['Bus Pass Subject Clerk (Branch)', 'Subject Clerk (DMOV)']))
+                                                    <button type="button" class="btn btn-sm btn-danger"
+                                                            data-toggle="modal"
                                                             data-target="#rejectModal{{ $application->id }}">
                                                         <i class="fas fa-times"></i> Reject
                                                     </button>
+                                                    @endunless
                                                     @endcan
                                                 </div>
                                             </td>

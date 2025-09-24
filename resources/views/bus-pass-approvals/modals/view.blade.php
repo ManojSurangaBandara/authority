@@ -51,10 +51,10 @@
                     <!-- Application Details -->
                     <div class="col-md-6">
                         <h5><i class="fas fa-clipboard-list"></i> Application Details</h5>
-                        <table class="table table-sm">
+                                                <table class="table table-sm">
                             <tr>
-                                <td><strong>Branch/Directorate:</strong></td>
-                                <td>{{ $application->branch_directorate }}</td>
+                                <td><strong>Establishment:</strong></td>
+                                <td>{{ $application->establishment ? $application->establishment->name : ($application->branch_directorate ?? 'N/A') }}</td>
                             </tr>
                             <tr>
                                 <td><strong>Marital Status:</strong></td>
@@ -62,19 +62,27 @@
                             </tr>
                             <tr>
                                 <td><strong>Living Out Approval:</strong></td>
-                                <td>{{ ucfirst($application->approval_living_out) }}</td>
+                                <td>
+                                    <span class="badge badge-{{ $application->approval_living_out === 'yes' ? 'success' : 'danger' }}">
+                                        {{ ucfirst($application->approval_living_out) }}
+                                    </span>
+                                </td>
                             </tr>
                             <tr>
-                                <td><strong>SLTB Season:</strong></td>
-                                <td>{{ ucfirst($application->obtain_sltb_season) }}</td>
+                                <td><strong>Obtained SLTB Season:</strong></td>
+                                <td>
+                                    <span class="badge badge-{{ $application->obtain_sltb_season === 'yes' ? 'success' : 'danger' }}">
+                                        {{ ucfirst($application->obtain_sltb_season) }}
+                                    </span>
+                                </td>
                             </tr>
                             <tr>
                                 <td><strong>Arrival at AHQ:</strong></td>
-                                <td>{{ $application->date_arrival_ahq->format('d M Y') }}</td>
+                                <td>{{ $application->date_arrival_ahq ? $application->date_arrival_ahq->format('d M Y') : 'N/A' }}</td>
                             </tr>
                             <tr>
                                 <td><strong>Bus Pass Type:</strong></td>
-                                <td>{{ $application->type_label }}</td>
+                                <td><span class="badge badge-info">{{ $application->type_label }}</span></td>
                             </tr>
                             <tr>
                                 <td><strong>Current Status:</strong></td>
@@ -102,6 +110,19 @@
                                         <td>{{ $application->destination_from_ahq }}</td>
                                     </tr>
                                 @endif
+                                <tr>
+                                    <td><strong>Rent Allowance Part II Order:</strong></td>
+                                    <td>
+                                        @if ($application->rent_allowance_order)
+                                            <a href="{{ asset('storage/' . $application->rent_allowance_order) }}"
+                                                target="_blank" class="btn btn-xs btn-outline-primary">
+                                                <i class="fas fa-file-pdf"></i> View Document
+                                            </a>
+                                        @else
+                                            <span class="text-muted">Not uploaded</span>
+                                        @endif
+                                    </td>
+                                </tr>
                             </table>
                         </div>
                     </div>
@@ -157,6 +178,64 @@
                             <tr>
                                 <td><strong>Nearest Police Station:</strong></td>
                                 <td>{{ $application->person->nearest_police_station }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Documents Section -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h5><i class="fas fa-folder-open"></i> Documents</h5>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Grama Niladari Certificate:</strong></td>
+                                <td>
+                                    @if ($application->grama_niladari_certificate)
+                                        <a href="{{ asset('storage/' . $application->grama_niladari_certificate) }}"
+                                            target="_blank" class="btn btn-xs btn-outline-primary">
+                                            <i class="fas fa-file-pdf"></i> View Document
+                                        </a>
+                                        <small class="text-success ml-2"><i class="fas fa-check-circle"></i> Uploaded</small>
+                                    @else
+                                        <span class="text-muted">Not uploaded</span>
+                                    @endif
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Person Image:</strong></td>
+                                <td>
+                                    @if ($application->person_image)
+                                        <a href="{{ asset('storage/' . $application->person_image) }}" target="_blank"
+                                            class="btn btn-xs btn-outline-primary">
+                                            <i class="fas fa-image"></i> View Image
+                                        </a>
+                                        <small class="text-success ml-2"><i class="fas fa-check-circle"></i> Uploaded</small>
+                                    @else
+                                        <span class="text-muted">Not uploaded</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Application Timeline -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h5><i class="fas fa-clock"></i> Application Timeline</h5>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Created By:</strong></td>
+                                <td>{{ $application->created_by ?? 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Created Date:</strong></td>
+                                <td>{{ $application->created_at->format('d M Y H:i') }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Last Updated:</strong></td>
+                                <td>{{ $application->updated_at->format('d M Y H:i') }}</td>
                             </tr>
                         </table>
                     </div>
