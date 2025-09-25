@@ -35,6 +35,10 @@
                                         <th>Number of Seats</th>
                                         <td>{{ $bus->no_of_seats }}</td>
                                     </tr>
+                                    <tr>
+                                        <th>Total Capacity</th>
+                                        <td>{{ $bus->total_capacity ?? 'Not specified' }}</td>
+                                    </tr>
 
                                 </tbody>
                             </table>

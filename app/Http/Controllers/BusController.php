@@ -38,6 +38,7 @@ class BusController extends Controller
             'name' => 'required|max:50',
             'type_id' => 'required|integer|min:1',
             'no_of_seats' => 'required|integer|min:1',
+            'total_capacity' => 'required|integer|min:1',
         ]);
 
         Bus::create($request->all());
@@ -77,6 +78,7 @@ class BusController extends Controller
             'name' => 'required|max:50',
             'type_id' => 'required|integer|min:1',
             'no_of_seats' => 'required|integer|min:1',
+            'total_capacity' => 'required|integer|min:1',
         ]);
 
         $bus->update($request->all());

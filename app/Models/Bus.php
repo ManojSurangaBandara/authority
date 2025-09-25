@@ -13,6 +13,7 @@ class Bus extends Model
         'name',
         'type_id',
         'no_of_seats',
+        'total_capacity',
     ];
 
     public function type()

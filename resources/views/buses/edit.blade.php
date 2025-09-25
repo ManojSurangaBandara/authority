@@ -30,8 +30,10 @@
                                     <label for="">Bus Type: </label>
                                     <select name="type_id" id="type_id" class="form-control" required>
                                         <option value="">Select Bus Type</option>
-                                        @foreach($busTypes as $type)
-                                            <option value="{{ $type->id }}" {{ $bus->type_id == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
+                                        @foreach ($busTypes as $type)
+                                            <option value="{{ $type->id }}"
+                                                {{ $bus->type_id == $type->id ? 'selected' : '' }}>{{ $type->name }}
+                                            </option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -41,6 +43,15 @@
                                     <input type="number" name="no_of_seats" required class="form-control" min="1"
                                         value="{{ $bus->no_of_seats }}" />
                                     @error('no_of_seats')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="total_capacity">Total Capacity:</label>
+                                    <input type="number" name="total_capacity" required class="form-control" min="1"
+                                        value="{{ $bus->total_capacity }}" />
+                                    @error('total_capacity')
                                         <div class="text-danger">{{ $message }}</div>
                                     @enderror
                                 </div>
