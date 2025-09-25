@@ -39,4 +39,15 @@ class BusRoute extends Model
     {
         return $this->hasMany(BusEscortAssignment::class, 'bus_route_id');
     }
+
+    public function slcmpInchargeAssignment()
+    {
+        return $this->hasOne(SlcmpInchargeAssignment::class, 'bus_route_id')
+            ->where('status', 'active');
+    }
+
+    public function slcmpInchargeAssignments()
+    {
+        return $this->hasMany(SlcmpInchargeAssignment::class, 'bus_route_id');
+    }
 }

@@ -16,9 +16,26 @@ class SlcmpInchargeAssignmentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(SlcmpInchargeAssignmentDataTable $dataTable)
+    public function index()
     {
-        return $dataTable->render('slcmp-incharge-assignments.index');
+        // Get all routes with their assigned SLCMP in-charges
+        $routes = BusRoute::with(['bus', 'slcmpInchargeAssignment.slcmpIncharge'])->get();
+
+        // Get available SLCMP in-charges (not currently assigned to active routes)
+        $assignedSlcmpIds = SlcmpInchargeAssignment::where('status', 'active')
+            ->whereNotNull('slcmp_incharge_id')
+            ->pluck('slcmp_incharge_id')
+            ->toArray();
+        $availableSlcmpIncharges = SlcmpIncharge::whereNotIn('id', $assignedSlcmpIds)->get();
+
+        // Get routes without active SLCMP in-charge assignments
+        $unassignedRoutes = BusRoute::with('bus')
+            ->whereDoesntHave('slcmpInchargeAssignment', function ($query) {
+                $query->where('status', 'active');
+            })
+            ->get();
+
+        return view('slcmp-incharge-assignments.index', compact('routes', 'availableSlcmpIncharges', 'unassignedRoutes'));
     }
 
     /**
@@ -188,6 +205,126 @@ class SlcmpInchargeAssignmentController extends Controller
 
         return redirect()->route('slcmp-incharge-assignments.index')
             ->with('success', 'SLCMP in-charge assignment deleted successfully.');
+    }
+
+    /**
+     * Assign a SLCMP in-charge to a route
+     */
+    public function assign(Request $request)
+    {
+        $request->validate([
+            'slcmp_incharge_id' => 'required|exists:slcmp_incharges,id',
+            'route_id' => 'required|exists:bus_routes,id',
+            'assigned_date' => 'required|date',
+            'end_date' => 'nullable|date|after:assigned_date',
+        ]);
+
+        $slcmpIncharge = SlcmpIncharge::findOrFail($request->slcmp_incharge_id);
+        $route = BusRoute::findOrFail($request->route_id);
+
+        // Check if SLCMP in-charge is already assigned to an active route
+        $existingSlcmpAssignment = SlcmpInchargeAssignment::where('slcmp_incharge_id', $request->slcmp_incharge_id)
+            ->where('status', 'active')
+            ->first();
+        if ($existingSlcmpAssignment) {
+            $existingRoute = BusRoute::find($existingSlcmpAssignment->bus_route_id);
+            $slcmpName = ($slcmpIncharge->rank ?? 'N/A') . ' ' . ($slcmpIncharge->name ?? 'Unknown');
+            $routeName = $existingRoute ? $existingRoute->name : 'Unknown Route';
+            return response()->json([
+                'success' => false,
+                'message' => "SLCMP In-charge {$slcmpName} is already assigned to route {$routeName}."
+            ]);
+        }
+
+        // Check if route already has an active SLCMP in-charge
+        $existingRouteAssignment = SlcmpInchargeAssignment::where('bus_route_id', $request->route_id)
+            ->where('status', 'active')
+            ->first();
+        if ($existingRouteAssignment) {
+            $existingSlcmp = SlcmpIncharge::find($existingRouteAssignment->slcmp_incharge_id);
+            $existingSlcmpName = $existingSlcmp ? (($existingSlcmp->rank ?? 'N/A') . ' ' . ($existingSlcmp->name ?? 'Unknown')) : 'Unknown SLCMP In-charge';
+            return response()->json([
+                'success' => false,
+                'message' => "Route {$route->name} already has SLCMP in-charge {$existingSlcmpName} assigned."
+            ]);
+        }
+
+        // Create the assignment
+        SlcmpInchargeAssignment::create([
+            'bus_route_id' => $request->route_id,
+            'slcmp_incharge_id' => $request->slcmp_incharge_id,
+            'assigned_date' => $request->assigned_date,
+            'end_date' => $request->end_date,
+            'status' => 'active',
+            'created_by' => Auth::user()->name ?? 'System'
+        ]);
+
+        $slcmpName = ($slcmpIncharge->rank ?? 'N/A') . ' ' . ($slcmpIncharge->name ?? 'Unknown');
+        return response()->json([
+            'success' => true,
+            'message' => "SLCMP In-charge {$slcmpName} has been successfully assigned to route {$route->name}."
+        ]);
+    }
+
+    /**
+     * Unassign a SLCMP in-charge from a route
+     */
+    public function unassign(Request $request)
+    {
+        $request->validate([
+            'assignment_id' => 'required|exists:slcmp_incharge_assignments,id',
+        ]);
+
+        $assignment = SlcmpInchargeAssignment::with(['slcmpIncharge', 'busRoute'])->findOrFail($request->assignment_id);
+
+        if ($assignment->status !== 'active') {
+            return response()->json([
+                'success' => false,
+                'message' => "Assignment is not currently active."
+            ]);
+        }
+
+        // Get SLCMP in-charge and route info before updating (in case relationships become null)
+        $slcmpName = $assignment->slcmpIncharge ? ($assignment->slcmpIncharge->rank ?? 'N/A') . ' ' . ($assignment->slcmpIncharge->name ?? 'Unknown') : 'Unknown SLCMP In-charge';
+        $routeName = $assignment->busRoute ? $assignment->busRoute->name : 'Unknown Route';
+
+        // Check if there's already an inactive assignment for this route
+        $existingInactive = SlcmpInchargeAssignment::where('bus_route_id', $assignment->bus_route_id)
+            ->where('status', 'inactive')
+            ->where('id', '!=', $assignment->id)
+            ->first();
+
+        if ($existingInactive) {
+            // Delete the old inactive assignment to avoid constraint violation
+            $existingInactive->forceDelete();
+        }
+
+        // Mark as inactive instead of deleting
+        $assignment->update([
+            'status' => 'inactive',
+            'end_date' => now()->format('Y-m-d')
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "SLCMP In-charge {$slcmpName} has been successfully unassigned from route {$routeName}."
+        ]);
+    }
+
+    /**
+     * Get assignment data for AJAX requests
+     */
+    public function getAssignmentData()
+    {
+        $routes = BusRoute::with(['bus', 'slcmpInchargeAssignment.slcmpIncharge'])->get();
+        $availableSlcmpIncharges = SlcmpIncharge::whereDoesntHave('slcmpInchargeAssignments', function ($query) {
+            $query->where('status', 'active')->whereNotNull('slcmp_incharge_id');
+        })->get();
+
+        return response()->json([
+            'routes' => $routes,
+            'availableSlcmpIncharges' => $availableSlcmpIncharges
+        ]);
     }
 
     /**

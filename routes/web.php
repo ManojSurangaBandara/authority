@@ -94,6 +94,9 @@ Route::middleware('auth')->group(function () {
 
     // SLCMP In-charge Assignment routes
     Route::resource('slcmp-incharge-assignments', SlcmpInchargeAssignmentController::class);
+    Route::post('slcmp-incharge-assignments/assign', [SlcmpInchargeAssignmentController::class, 'assign'])->name('slcmp-incharge-assignments.assign');
+    Route::post('slcmp-incharge-assignments/unassign', [SlcmpInchargeAssignmentController::class, 'unassign'])->name('slcmp-incharge-assignments.unassign');
+    Route::get('slcmp-incharge-assignments/data', [SlcmpInchargeAssignmentController::class, 'getAssignmentData'])->name('slcmp-incharge-assignments.data');
     Route::get('slcmp-incharge-assignments-api/get-slcmp-details', [SlcmpInchargeAssignmentController::class, 'getSlcmpDetails'])->name('slcmp-incharge-assignments.get-slcmp-details');
     Route::get('slcmp-incharge-assignments-api/get-bus-details', [SlcmpInchargeAssignmentController::class, 'getBusDetails'])->name('slcmp-incharge-assignments.get-bus-details');
 
