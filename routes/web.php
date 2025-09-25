@@ -149,6 +149,8 @@ Route::middleware('auth')->group(function () {
     Route::get('integrated-applications', [ReportController::class, 'integrated'])->name('integrated-applications.index');
 
     Route::get('pending-applications', [ReportController::class, 'pending'])->name('pending-applications.index');
+
+    Route::get('integrated-to-build-card', [ReportController::class, 'build'])->name('integrated-to-build-card.index');
 });
 
 Route::get('/logout', function () {
