@@ -17,4 +17,15 @@ class BusRoute extends Model
     {
         return $this->belongsTo(Bus::class, 'bus_id');
     }
+
+    public function driverAssignment()
+    {
+        return $this->hasOne(BusDriverAssignment::class, 'bus_route_id')
+            ->where('status', 'active');
+    }
+
+    public function driverAssignments()
+    {
+        return $this->hasMany(BusDriverAssignment::class, 'bus_route_id');
+    }
 }

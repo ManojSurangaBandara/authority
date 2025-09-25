@@ -12,4 +12,15 @@ class Driver extends Model
         'name',
         'contact_no'
     ];
+
+    public function driverAssignment()
+    {
+        return $this->hasOne(BusDriverAssignment::class, 'driver_id')
+            ->where('status', 'active');
+    }
+
+    public function driverAssignments()
+    {
+        return $this->hasMany(BusDriverAssignment::class, 'driver_id');
+    }
 }

@@ -78,6 +78,9 @@ Route::middleware('auth')->group(function () {
 
     // Bus Driver Assignment routes
     Route::resource('bus-driver-assignments', BusDriverAssignmentController::class);
+    Route::post('bus-driver-assignments/assign', [BusDriverAssignmentController::class, 'assign'])->name('bus-driver-assignments.assign');
+    Route::post('bus-driver-assignments/unassign', [BusDriverAssignmentController::class, 'unassign'])->name('bus-driver-assignments.unassign');
+    Route::get('bus-driver-assignments/data', [BusDriverAssignmentController::class, 'getAssignmentData'])->name('bus-driver-assignments.data');
     Route::get('bus-driver-assignments-api/get-driver-details', [BusDriverAssignmentController::class, 'getDriverDetails'])->name('bus-driver-assignments.get-driver-details');
     Route::get('bus-driver-assignments-api/get-bus-details', [BusDriverAssignmentController::class, 'getBusDetails'])->name('bus-driver-assignments.get-bus-details');
 
