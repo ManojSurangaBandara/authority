@@ -30,4 +30,15 @@ class Bus extends Model
     {
         return $this->hasOne(BusRoute::class, 'bus_id');
     }
+
+    public function fillingStationAssignment()
+    {
+        return $this->hasOne(BusFillingStationAssignment::class, 'bus_id')
+            ->where('status', 'active');
+    }
+
+    public function fillingStationAssignments()
+    {
+        return $this->hasMany(BusFillingStationAssignment::class, 'bus_id');
+    }
 }

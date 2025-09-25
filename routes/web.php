@@ -102,6 +102,9 @@ Route::middleware('auth')->group(function () {
 
     // Bus Filling Station Assignment routes
     Route::resource('bus-filling-station-assignments', BusFillingStationAssignmentController::class);
+    Route::post('bus-filling-station-assignments/assign', [BusFillingStationAssignmentController::class, 'assign'])->name('bus-filling-station-assignments.assign');
+    Route::post('bus-filling-station-assignments/unassign', [BusFillingStationAssignmentController::class, 'unassign'])->name('bus-filling-station-assignments.unassign');
+    Route::get('bus-filling-station-assignments/data', [BusFillingStationAssignmentController::class, 'getAssignmentData'])->name('bus-filling-station-assignments.data');
     Route::get('bus-filling-station-assignments-api/get-bus-details', [BusFillingStationAssignmentController::class, 'getBusDetails'])->name('bus-filling-station-assignments.get-bus-details');
 
     // Establishment routes
