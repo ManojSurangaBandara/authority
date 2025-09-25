@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\DataTables\EstablishmentDataTable;
 use App\Models\Establishment;
+use Exception;
+use Illuminate\Support\Facades\Log;
 
 class EstablishmentController extends Controller
 {
-     /**
+    /**
      * Display a listing of the resource.
      */
     public function index(EstablishmentDataTable $dataTable)
@@ -31,14 +33,19 @@ class EstablishmentController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|max:255',
+            'name' => 'required|max:255|unique:establishments,name',
         ]);
 
-        Establishment::create($request->all());
+        Establishment::create([
+            'name' => $request->name,
+            'is_active' => true,
+        ]);
 
         return redirect()->route('establishment.index')
             ->with('success', 'Establishment created successfully.');
     }
+
+
 
     /**
      * Display the specified resource.
@@ -66,7 +73,7 @@ class EstablishmentController extends Controller
         $establishment = Establishment::findOrFail($id);
 
         $request->validate([
-            'name' => 'required|max:255',
+            'name' => 'required|max:255|unique:establishments,name,' . $id,
         ]);
 
         $establishment->update($request->all());
@@ -85,5 +92,5 @@ class EstablishmentController extends Controller
 
         return redirect()->route('establishment.index')
             ->with('success', 'Establishment deleted successfully.');
-}
+    }
 }
