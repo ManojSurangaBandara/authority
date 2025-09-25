@@ -464,15 +464,15 @@ return [
                         'roles*',
                     ],
                 ],
-                [
-                    'text' => 'Role Hierarchy',
-                    'url' => 'roles-hierarchy',
-                    'icon' => 'fas fa-fw fa-sitemap',
-                    'can' => 'system_admin_access',
-                    'active' => [
-                        'roles-hierarchy*',
-                    ],
-                ],
+                // [
+                //     'text' => 'Role Hierarchy',
+                //     'url' => 'roles-hierarchy',
+                //     'icon' => 'fas fa-fw fa-sitemap',
+                //     'can' => 'system_admin_access',
+                //     'active' => [
+                //         'roles-hierarchy*',
+                //     ],
+                // ],
             ],
 
         ],
