@@ -12,4 +12,15 @@ class Escort extends Model
         'name',
         'contact_no'
     ];
+
+    public function escortAssignment()
+    {
+        return $this->hasOne(BusEscortAssignment::class, 'escort_id')
+            ->where('status', 'active');
+    }
+
+    public function escortAssignments()
+    {
+        return $this->hasMany(BusEscortAssignment::class, 'escort_id');
+    }
 }

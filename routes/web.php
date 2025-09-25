@@ -86,6 +86,9 @@ Route::middleware('auth')->group(function () {
 
     // Bus Escort Assignment routes
     Route::resource('bus-escort-assignments', BusEscortAssignmentController::class);
+    Route::post('bus-escort-assignments/assign', [BusEscortAssignmentController::class, 'assign'])->name('bus-escort-assignments.assign');
+    Route::post('bus-escort-assignments/unassign', [BusEscortAssignmentController::class, 'unassign'])->name('bus-escort-assignments.unassign');
+    Route::get('bus-escort-assignments/data', [BusEscortAssignmentController::class, 'getAssignmentData'])->name('bus-escort-assignments.data');
     Route::get('bus-escort-assignments-api/get-escort-details', [BusEscortAssignmentController::class, 'getEscortDetails'])->name('bus-escort-assignments.get-escort-details');
     Route::get('bus-escort-assignments-api/get-bus-details', [BusEscortAssignmentController::class, 'getBusDetails'])->name('bus-escort-assignments.get-bus-details');
 
