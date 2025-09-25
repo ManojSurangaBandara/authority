@@ -329,6 +329,14 @@ return [
                     ],
                 ],
                 [
+                    'text' => 'Bus Assignments',
+                    'url' => 'bus-assignments',
+                    'icon' => 'fas fa-fw fa-link',
+                    'active' => [
+                        'bus-assignments*',
+                    ],
+                ],
+                [
                     'text' => 'Drivers',
                     'url' => 'drivers',
                     'icon' => 'fas fa-fw fa-user',

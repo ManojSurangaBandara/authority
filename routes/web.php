@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BusController;
+use App\Http\Controllers\BusAssignmentController;
 use App\Http\Controllers\BusDriverAssignmentController;
 use App\Http\Controllers\BusEscortAssignmentController;
 use App\Http\Controllers\SlcmpInchargeAssignmentController;
@@ -38,6 +39,13 @@ Route::middleware('auth')->group(function () {
     // Add other protected routes here
     Route::resource('buses', BusController::class);
     Route::resource('bus-routes', BusRouteController::class);
+
+    // Bus Assignment routes
+    Route::get('bus-assignments', [BusAssignmentController::class, 'index'])->name('bus-assignments.index');
+    Route::post('bus-assignments/assign', [BusAssignmentController::class, 'assign'])->name('bus-assignments.assign');
+    Route::post('bus-assignments/unassign', [BusAssignmentController::class, 'unassign'])->name('bus-assignments.unassign');
+    Route::get('bus-assignments/data', [BusAssignmentController::class, 'getAssignmentData'])->name('bus-assignments.data');
+
     Route::resource('drivers', DriverController::class);
     Route::get('drivers-api/get-details', [DriverController::class, 'getDriverDetails'])->name('drivers.get-details');
 
@@ -129,7 +137,6 @@ Route::middleware('auth')->group(function () {
     Route::get('integrated-applications', [ReportController::class, 'integrated'])->name('integrated-applications.index');
 
     Route::get('pending-applications', [ReportController::class, 'pending'])->name('pending-applications.index');
-
 });
 
 Route::get('/logout', function () {

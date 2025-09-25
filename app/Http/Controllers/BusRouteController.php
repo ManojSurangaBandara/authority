@@ -23,8 +23,7 @@ class BusRouteController extends Controller
      */
     public function create()
     {
-        $buses = Bus::all();
-        return view('bus-routes.create', compact('buses'));
+        return view('bus-routes.create');
     }
 
     /**
@@ -34,10 +33,9 @@ class BusRouteController extends Controller
     {
         $request->validate([
             'name' => 'required|max:100',
-            'bus_id' => 'required|exists:buses,id',
         ]);
 
-        BusRoute::create($request->all());
+        BusRoute::create($request->only(['name']));
 
         return redirect()->route('bus-routes.index')
             ->with('success', 'Bus route created successfully.');
@@ -48,7 +46,7 @@ class BusRouteController extends Controller
      */
     public function show(string $id)
     {
-        $busRoute = BusRoute::with('bus')->findOrFail($id);
+        $busRoute = BusRoute::with('bus.type')->findOrFail($id);
         return view('bus-routes.show', compact('busRoute'));
     }
 
@@ -58,8 +56,7 @@ class BusRouteController extends Controller
     public function edit(string $id)
     {
         $busRoute = BusRoute::findOrFail($id);
-        $buses = Bus::all();
-        return view('bus-routes.edit', compact('busRoute', 'buses'));
+        return view('bus-routes.edit', compact('busRoute'));
     }
 
     /**
@@ -71,10 +68,9 @@ class BusRouteController extends Controller
 
         $request->validate([
             'name' => 'required|max:100',
-            'bus_id' => 'required|exists:buses,id',
         ]);
 
-        $busRoute->update($request->all());
+        $busRoute->update($request->only(['name']));
 
         return redirect()->route('bus-routes.index')
             ->with('success', 'Bus route updated successfully.');
