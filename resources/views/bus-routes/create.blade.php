@@ -15,20 +15,6 @@
                             <form action="{{ route('bus-routes.store') }}" method="POST">
                                 @csrf
                                 <div class="mb-3">
-                                    <label for="bus_id">Bus:</label>
-                                    <select name="bus_id" id="bus_id" class="form-control" required>
-                                        <option value="">Select Bus</option>
-                                        @foreach ($buses as $bus)
-                                            <option value="{{ $bus->id }}">{{ $bus->name }} ({{ $bus->no }})
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('bus_id')
-                                        <div class="text-danger">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="mb-3">
                                     <label for="name">Route Name:</label>
                                     <input type="text" name="name" required class="form-control"
                                         value="{{ old('name') }}" />

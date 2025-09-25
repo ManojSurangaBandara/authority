@@ -86,6 +86,7 @@ class BusDataTable extends DataTable
             Column::make('name')->title('Name'),
             Column::make('type.name')->title('Type'),
             Column::make('no_of_seats')->title('No of Seats'),
+            Column::make('total_capacity')->title('Total Capacity'),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)

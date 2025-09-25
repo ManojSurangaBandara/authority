@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Bus Filling Station Assignments')
+@section('title', 'Bus Assignments')
 
 @section('content_header')
-    <h1>Bus Filling Station Assignments</h1>
+    <h1>Bus Route Assignments</h1>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 @stop
 
@@ -15,54 +15,36 @@
             <div class="col-md-4">
                 <div class="card card-primary">
                     <div class="card-header">
-                        <h3 class="card-title"><i class="fas fa-gas-pump"></i> Assign Filling Station to Bus</h3>
+                        <h3 class="card-title"><i class="fas fa-link"></i> Assign Bus to Route</h3>
                     </div>
                     <div class="card-body">
                         <form id="assignmentForm">
                             @csrf
                             <div class="form-group">
-                                <label for="filling_station_select">Select Filling Station:</label>
-                                <select id="filling_station_select" name="filling_station_id" class="form-control">
-                                    <option value="">Choose a filling station...</option>
-                                    @foreach ($availableFillingStations as $fillingStation)
-                                        <option value="{{ $fillingStation->id }}">
-                                            {{ $fillingStation->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div class="form-group">
                                 <label for="bus_select">Select Bus:</label>
                                 <select id="bus_select" name="bus_id" class="form-control">
                                     <option value="">Choose a bus...</option>
                                     @foreach ($unassignedBuses as $bus)
-                                        <option value="{{ $bus->id }}">
-                                            {{ $bus->name }}
-                                            @if ($bus->no)
-                                                - {{ $bus->no }}
-                                            @endif
-                                            @if ($bus->type)
-                                                ({{ $bus->type->name }})
-                                            @endif
+                                        <option value="{{ $bus->id }}" data-bus-no="{{ $bus->no }}"
+                                            data-bus-name="{{ $bus->name }}">
+                                            {{ $bus->name }} ({{ $bus->no }}) - {{ $bus->no_of_seats }} seats
                                         </option>
                                     @endforeach
                                 </select>
                             </div>
 
                             <div class="form-group">
-                                <label for="assigned_date">Assignment Date:</label>
-                                <input type="date" id="assigned_date" name="assigned_date" class="form-control"
-                                    value="{{ date('Y-m-d') }}" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="end_date">End Date (Optional):</label>
-                                <input type="date" id="end_date" name="end_date" class="form-control">
+                                <label for="route_select">Select Route:</label>
+                                <select id="route_select" name="route_id" class="form-control">
+                                    <option value="">Choose a route...</option>
+                                    @foreach ($unassignedRoutes as $route)
+                                        <option value="{{ $route->id }}">{{ $route->name }}</option>
+                                    @endforeach
+                                </select>
                             </div>
 
                             <button type="submit" class="btn btn-primary btn-block">
-                                <i class="fas fa-gas-pump"></i> Assign Filling Station to Bus
+                                <i class="fas fa-link"></i> Assign Bus to Route
                             </button>
                         </form>
                     </div>
@@ -73,7 +55,7 @@
             <div class="col-md-8">
                 <div class="card card-success">
                     <div class="card-header">
-                        <h3 class="card-title"><i class="fas fa-list"></i> Current Filling Station-Bus Assignments</h3>
+                        <h3 class="card-title"><i class="fas fa-list"></i> Current Bus-Route Assignments</h3>
                         <div class="card-tools">
                             <button type="button" class="btn btn-tool" onclick="refreshAssignments()">
                                 <i class="fas fa-sync-alt"></i>
@@ -85,55 +67,35 @@
                             <table class="table table-striped" id="assignmentsTable">
                                 <thead>
                                     <tr>
+                                        <th>Route Name</th>
                                         <th>Bus Name</th>
-                                        <th>Bus No</th>
-                                        <th>Bus Type</th>
-                                        <th>Filling Station</th>
-                                        <th>Assignment Date</th>
-                                        <th>Status</th>
+                                        <th>Bus Number</th>
+                                        <th>Seats</th>
+                                        <th>Total Capacity</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($buses->filter(function($bus) { return $bus->fillingStationAssignment && $bus->fillingStationAssignment->fillingStation; }) as $bus)
-                                        <tr id="assignment-{{ $bus->fillingStationAssignment->id }}">
-                                            <td>{{ $bus->name }}</td>
-                                            <td>{{ $bus->no ?? 'N/A' }}</td>
+                                    @forelse($routes->where('bus_id') as $route)
+                                        <tr id="assignment-{{ $route->id }}">
+                                            <td>{{ $route->name }}</td>
+                                            <td>{{ $route->bus->name ?? 'N/A' }}</td>
+                                            <td>{{ $route->bus->no ?? 'N/A' }}</td>
+                                            <td>{{ $route->bus->no_of_seats ?? 'N/A' }}</td>
+                                            <td>{{ $route->bus->total_capacity ?? 'N/A' }}</td>
                                             <td>
-                                                @if ($bus->type)
-                                                    {{ $bus->type->name }}
-                                                @else
-                                                    <span class="text-muted">No type</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if ($bus->fillingStationAssignment && $bus->fillingStationAssignment->fillingStation)
-                                                    <strong>{{ $bus->fillingStationAssignment->fillingStation->name ?? 'Unknown' }}</strong>
-                                                @else
-                                                    <span class="text-muted">No filling station</span>
-                                                @endif
-                                            </td>
-                                            <td>{{ $bus->fillingStationAssignment->assigned_date->format('d M Y') }}</td>
-                                            <td>
-                                                <span class="badge badge-success">Active</span>
-                                            </td>
-                                            <td>
-                                                @if ($bus->fillingStationAssignment && $bus->fillingStationAssignment->fillingStation)
-                                                    <button type="button" class="btn btn-sm btn-warning unassign-btn"
-                                                        data-assignment-id="{{ $bus->fillingStationAssignment->id }}"
-                                                        data-bus-name="{{ $bus->name }} ({{ $bus->no ?? 'N/A' }})"
-                                                        data-filling-station-name="{{ $bus->fillingStationAssignment->fillingStation->name ?? 'Unknown' }}">
-                                                        <i class="fas fa-times"></i> Unassign
-                                                    </button>
-                                                @else
-                                                    <span class="text-muted">No action available</span>
-                                                @endif
+                                                <button type="button" class="btn btn-sm btn-warning unassign-btn"
+                                                    data-route-id="{{ $route->id }}"
+                                                    data-route-name="{{ $route->name }}"
+                                                    data-bus-name="{{ $route->bus->name ?? '' }}">
+                                                    <i class="fas fa-unlink"></i> Unassign
+                                                </button>
                                             </td>
                                         </tr>
                                     @empty
                                         <tr id="no-assignments">
-                                            <td colspan="7" class="text-center text-muted">
-                                                No filling station-bus assignments found
+                                            <td colspan="6" class="text-center text-muted">
+                                                No bus-route assignments found
                                             </td>
                                         </tr>
                                     @endforelse
@@ -162,12 +124,11 @@
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-success">
                     <div class="inner">
-                        <h3 id="assigned-filling-stations">
-                            {{ $buses->filter(function ($bus) {return $bus->fillingStationAssignment;})->count() }}</h3>
-                        <p>Assigned Filling Stations</p>
+                        <h3 id="assigned-buses">{{ $routes->where('bus_id')->count() }}</h3>
+                        <p>Assigned Buses</p>
                     </div>
                     <div class="icon">
-                        <i class="fas fa-gas-pump"></i>
+                        <i class="fas fa-link"></i>
                     </div>
                 </div>
             </div>
@@ -175,11 +136,11 @@
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-warning">
                     <div class="inner">
-                        <h3 id="available-filling-stations">{{ $availableFillingStations->count() }}</h3>
-                        <p>Available Filling Stations</p>
+                        <h3 id="unassigned-buses">{{ $unassignedBuses->count() }}</h3>
+                        <p>Unassigned Buses</p>
                     </div>
                     <div class="icon">
-                        <i class="fas fa-gas-pump text-white"></i>
+                        <i class="fas fa-bus text-white"></i>
                     </div>
                 </div>
             </div>
@@ -187,11 +148,11 @@
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-danger">
                     <div class="inner">
-                        <h3 id="unassigned-buses">{{ $unassignedBuses->count() }}</h3>
-                        <p>Unassigned Buses</p>
+                        <h3 id="unassigned-routes">{{ $unassignedRoutes->count() }}</h3>
+                        <p>Unassigned Routes</p>
                     </div>
                     <div class="icon">
-                        <i class="fas fa-bus"></i>
+                        <i class="fas fa-road"></i>
                     </div>
                 </div>
             </div>
@@ -231,25 +192,21 @@
             $('#assignmentForm').on('submit', function(e) {
                 e.preventDefault();
 
-                let fillingStationId = $('#filling_station_select').val();
                 let busId = $('#bus_select').val();
-                let assignedDate = $('#assigned_date').val();
-                let endDate = $('#end_date').val();
+                let routeId = $('#route_select').val();
 
-                if (!fillingStationId || !busId || !assignedDate) {
-                    showAlert('Please select a filling station, bus, and assignment date.', 'warning');
+                if (!busId || !routeId) {
+                    showAlert('Please select both a bus and a route.', 'warning');
                     return;
                 }
 
                 $.ajax({
-                    url: '{{ route('bus-filling-station-assignments.assign') }}',
+                    url: '{{ route('bus-assignments.assign') }}',
                     method: 'POST',
                     data: {
                         _token: $('meta[name="csrf-token"]').attr('content'),
-                        filling_station_id: fillingStationId,
                         bus_id: busId,
-                        assigned_date: assignedDate,
-                        end_date: endDate
+                        route_id: routeId
                     },
                     beforeSend: function() {
                         $('#assignmentForm button[type="submit"]').prop('disabled', true)
@@ -265,37 +222,32 @@
                         }
                     },
                     error: function() {
-                        showAlert('An error occurred while assigning the filling station.',
-                            'error');
+                        showAlert('An error occurred while assigning the bus.', 'error');
                     },
                     complete: function() {
                         $('#assignmentForm button[type="submit"]').prop('disabled', false)
-                            .html(
-                                '<i class="fas fa-gas-pump"></i> Assign Filling Station to Bus'
-                                );
+                            .html('<i class="fas fa-link"></i> Assign Bus to Route');
                     }
                 });
             });
 
             // Unassign Button Click
             $(document).on('click', '.unassign-btn', function() {
-                let assignmentId = $(this).data('assignment-id');
+                let routeId = $(this).data('route-id');
+                let routeName = $(this).data('route-name');
                 let busName = $(this).data('bus-name');
-                let fillingStationName = $(this).data('filling-station-name');
 
                 if (confirm(
-                        `Are you sure you want to unassign filling station "${fillingStationName}" from bus "${busName}"?`
-                        )) {
+                    `Are you sure you want to unassign bus "${busName}" from route "${routeName}"?`)) {
                     $.ajax({
-                        url: '{{ route('bus-filling-station-assignments.unassign') }}',
+                        url: '{{ route('bus-assignments.unassign') }}',
                         method: 'POST',
                         data: {
                             _token: $('meta[name="csrf-token"]').attr('content'),
-                            assignment_id: assignmentId
+                            route_id: routeId
                         },
                         beforeSend: function() {
-                            $(`#assignment-${assignmentId} .unassign-btn`).prop('disabled',
-                                    true)
+                            $(`#assignment-${routeId} .unassign-btn`).prop('disabled', true)
                                 .html('<i class="fas fa-spinner fa-spin"></i> Unassigning...');
                         },
                         success: function(response) {
@@ -307,14 +259,11 @@
                             }
                         },
                         error: function() {
-                            showAlert(
-                                'An error occurred while unassigning the filling station.',
-                                'error');
+                            showAlert('An error occurred while unassigning the bus.', 'error');
                         },
                         complete: function() {
-                            $(`#assignment-${assignmentId} .unassign-btn`).prop('disabled',
-                                    false)
-                                .html('<i class="fas fa-times"></i> Unassign');
+                            $(`#assignment-${routeId} .unassign-btn`).prop('disabled', false)
+                                .html('<i class="fas fa-unlink"></i> Unassign');
                         }
                     });
                 }
@@ -327,9 +276,8 @@
 
         function resetForm() {
             $('#assignmentForm')[0].reset();
-            $('#filling_station_select').val('');
             $('#bus_select').val('');
-            $('#assigned_date').val('{{ date('Y-m-d') }}');
+            $('#route_select').val('');
         }
 
         function showAlert(message, type) {

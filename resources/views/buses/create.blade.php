@@ -42,6 +42,15 @@
                                 </div>
 
                                 <div class="mb-3">
+                                    <label for="total_capacity">Total Capacity:</label>
+                                    <input type="number" name="total_capacity" required class="form-control"
+                                        min="1" />
+                                    @error('total_capacity')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="mb-3">
                                     <button type="submit" class="btn btn-sm btn-primary">Save</button>
                                 </div>
 

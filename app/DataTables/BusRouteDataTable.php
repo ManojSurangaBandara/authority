@@ -23,15 +23,6 @@ class BusRouteDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addIndexColumn()
-            ->addColumn('bus.name', function ($row) {
-                return $row->bus ? $row->bus->name : 'N/A';
-            })
-            ->addColumn('bus.type.name', function ($row) {
-                return $row->bus && $row->bus->type ? $row->bus->type->name : 'N/A';
-            })
-            ->addColumn('bus.no_of_seats', function ($row) {
-                return $row->bus ? $row->bus->no_of_seats : 'N/A';
-            })
             ->addColumn('action', function ($row) {
                 $viewBtn = '<a href="' . route('bus-routes.show', $row->id) . '" class="btn btn-xs btn-info" title="View"><i class="fas fa-eye"></i></a>';
                 $editBtn = '<a href="' . route('bus-routes.edit', $row->id) . '" class="btn btn-xs btn-primary mx-1" title="Edit"><i class="fas fa-edit"></i></a>';
@@ -56,7 +47,7 @@ class BusRouteDataTable extends DataTable
      */
     public function query(BusRoute $model): QueryBuilder
     {
-        return $model->with('bus.type')->newQuery();
+        return $model->newQuery();
     }
 
     /**
@@ -88,10 +79,6 @@ class BusRouteDataTable extends DataTable
         return [
             Column::make('DT_RowIndex')->title('#')->searchable(false)->orderable(false),
             Column::make('name')->title('Route Name'),
-            Column::make('bus.name')->title('Bus Name'),
-            Column::make('bus.no')->title('Bus No'),
-            Column::make('bus.type.name')->title('Bus Type'),
-            Column::make('bus.no_of_seats')->title('No of Seats'),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)

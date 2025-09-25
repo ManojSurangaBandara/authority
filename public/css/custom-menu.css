@@ -1,0 +1,30 @@
+/* Custom Menu Styling - Reduce submenu indentation */
+.nav-treeview>.nav-item>.nav-link {
+    padding-left: 2rem !important;
+    /* Reduce from default 3rem */
+}
+
+/* Optional: Further reduce for deeper nesting levels */
+.nav-treeview .nav-treeview>.nav-item>.nav-link {
+    padding-left: 2.5rem !important;
+    /* For third level menus */
+}
+
+/* Ensure icons align properly with reduced padding */
+.nav-treeview>.nav-item>.nav-link>.nav-icon {
+    margin-right: 0.5rem;
+}
+
+/* Optional: Adjust bullet points for better alignment */
+.nav-treeview>.nav-item>.nav-link::before {
+    border-radius: 50%;
+    content: "";
+    display: inline-block;
+    height: 6px;
+    left: 1.5rem;
+    margin-right: 0.5rem;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+}

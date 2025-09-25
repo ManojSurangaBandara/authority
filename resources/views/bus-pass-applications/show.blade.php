@@ -273,9 +273,22 @@
                 </div>
 
                 <div class="card-footer">
+                    @php
+                        $showEditButton = false; // Default to false, only show for specific conditions
+                        // Only Bus Pass Subject Clerk (Branch) should be able to edit applications
+                        if (auth()->user()->hasRole('Bus Pass Subject Clerk (Branch)')) {
+                            // Show edit button only if status is 'pending_subject_clerk' (before forwarding)
+                            if ($bus_pass_application->status === 'pending_subject_clerk') {
+                                $showEditButton = true;
+                            }
+                        }
+                    @endphp
+
+                    @if ($showEditButton)
                     <a href="{{ route('bus-pass-applications.edit', $bus_pass_application) }}" class="btn btn-warning">
                         <i class="fas fa-edit"></i> Edit
                     </a>
+                    @endif
                     <a href="{{ route('bus-pass-applications.index') }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left"></i> Back
                     </a>
@@ -285,3 +298,4 @@
     </div>
     </div>
 @endsection
+

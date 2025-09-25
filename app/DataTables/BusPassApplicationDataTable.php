@@ -3,8 +3,10 @@
 namespace App\DataTables;
 
 use App\Models\BusPassApplication;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
@@ -40,15 +42,39 @@ class BusPassApplicationDataTable extends DataTable
                 return $row->created_at ? $row->created_at->format('d M Y') : '';
             })
             ->addColumn('action', function ($row) {
+                $user = Auth::user();
                 $viewBtn = '<a href="' . route('bus-pass-applications.show', $row->id) . '" class="btn btn-xs btn-info" title="View"><i class="fas fa-eye"></i></a>';
-                $editBtn = '<a href="' . route('bus-pass-applications.edit', $row->id) . '" class="btn btn-xs btn-primary mx-1" title="Edit"><i class="fas fa-edit"></i></a>';
-                $deleteBtn = '<form action="' . route('bus-pass-applications.destroy', $row->id) . '" method="POST" style="display:inline">
-                    ' . csrf_field() . '
-                    ' . method_field("DELETE") . '
-                    <button type="submit" class="btn btn-xs btn-danger" onclick="return confirm(\'Are you sure you want to delete this application?\')" title="Delete">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </form>';
+
+                // Check if edit and delete buttons should be shown
+                $showEditDelete = false; // Default to false, only show for specific conditions
+
+                // Only Bus Pass Subject Clerk (Branch) should be able to edit/delete applications
+                if ($user) {
+                    // Load user with roles for proper role checking
+                    $userWithRoles = User::with('roles')->find($user->id);
+                    $hasSubjectClerkRole = $userWithRoles->hasRole('Bus Pass Subject Clerk (Branch)');
+
+                    if ($hasSubjectClerkRole) {
+                        // Show edit/delete only if status is 'pending_subject_clerk' (before forwarding)
+                        if ($row->status === 'pending_subject_clerk') {
+                            $showEditDelete = true;
+                        }
+                    }
+                }
+
+                $editBtn = '';
+                $deleteBtn = '';
+
+                if ($showEditDelete) {
+                    $editBtn = '<a href="' . route('bus-pass-applications.edit', $row->id) . '" class="btn btn-xs btn-primary mx-1" title="Edit"><i class="fas fa-edit"></i></a>';
+                    $deleteBtn = '<form action="' . route('bus-pass-applications.destroy', $row->id) . '" method="POST" style="display:inline">
+                        ' . csrf_field() . '
+                        ' . method_field("DELETE") . '
+                        <button type="submit" class="btn btn-xs btn-danger" onclick="return confirm(\'Are you sure you want to delete this application?\')" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>';
+                }
 
                 return $viewBtn . $editBtn . $deleteBtn;
             })
@@ -64,7 +90,7 @@ class BusPassApplicationDataTable extends DataTable
     public function query(BusPassApplication $model): QueryBuilder
     {
         $query = $model->newQuery()->with(['person', 'establishment']);
-        
+
         // Filter by establishment for branch users
         $user = Auth::user();
         if ($user && $user->establishment_id) {
@@ -74,12 +100,16 @@ class BusPassApplicationDataTable extends DataTable
                 'Staff Officer (Branch)',
                 'Director (Branch)'
             ];
-            
-            if ($user->hasAnyRole($branchRoles)) {
+
+            // Load user with roles for proper role checking
+            $userWithRoles = User::with('roles')->find($user->id);
+            $hasBranchRole = $userWithRoles->hasAnyRole($branchRoles);
+
+            if ($hasBranchRole) {
                 $query->where('establishment_id', $user->establishment_id);
             }
         }
-        
+
         return $query->orderBy('bus_pass_applications.created_at', 'desc');
     }
 

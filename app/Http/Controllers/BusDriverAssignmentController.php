@@ -16,9 +16,26 @@ class BusDriverAssignmentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(BusDriverAssignmentDataTable $dataTable)
+    public function index()
     {
-        return $dataTable->render('bus-driver-assignments.index');
+        // Get all routes with their assigned drivers
+        $routes = BusRoute::with(['bus', 'driverAssignment.driver'])->get();
+
+        // Get available drivers (not currently assigned to active routes)
+        $assignedDriverIds = BusDriverAssignment::where('status', 'active')
+            ->whereNotNull('driver_id')
+            ->pluck('driver_id')
+            ->toArray();
+        $availableDrivers = Driver::whereNotIn('id', $assignedDriverIds)->get();
+
+        // Get routes without active driver assignments
+        $unassignedRoutes = BusRoute::with('bus')
+            ->whereDoesntHave('driverAssignment', function ($query) {
+                $query->where('status', 'active');
+            })
+            ->get();
+
+        return view('bus-driver-assignments.index', compact('routes', 'availableDrivers', 'unassignedRoutes'));
     }
 
     /**
@@ -185,6 +202,126 @@ class BusDriverAssignmentController extends Controller
 
         return redirect()->route('bus-driver-assignments.index')
             ->with('success', 'Bus driver assignment deleted successfully.');
+    }
+
+    /**
+     * Assign a driver to a route
+     */
+    public function assign(Request $request)
+    {
+        $request->validate([
+            'driver_id' => 'required|exists:drivers,id',
+            'route_id' => 'required|exists:bus_routes,id',
+            'assigned_date' => 'required|date',
+            'end_date' => 'nullable|date|after:assigned_date',
+        ]);
+
+        $driver = Driver::findOrFail($request->driver_id);
+        $route = BusRoute::findOrFail($request->route_id);
+
+        // Check if driver is already assigned to an active route
+        $existingDriverAssignment = BusDriverAssignment::where('driver_id', $request->driver_id)
+            ->where('status', 'active')
+            ->first();
+        if ($existingDriverAssignment) {
+            $existingRoute = BusRoute::find($existingDriverAssignment->bus_route_id);
+            $driverName = ($driver->rank ?? 'N/A') . ' ' . ($driver->name ?? 'Unknown');
+            $routeName = $existingRoute ? $existingRoute->name : 'Unknown Route';
+            return response()->json([
+                'success' => false,
+                'message' => "Driver {$driverName} is already assigned to route {$routeName}."
+            ]);
+        }
+
+        // Check if route already has an active driver
+        $existingRouteAssignment = BusDriverAssignment::where('bus_route_id', $request->route_id)
+            ->where('status', 'active')
+            ->first();
+        if ($existingRouteAssignment) {
+            $existingDriver = Driver::find($existingRouteAssignment->driver_id);
+            $existingDriverName = $existingDriver ? (($existingDriver->rank ?? 'N/A') . ' ' . ($existingDriver->name ?? 'Unknown')) : 'Unknown Driver';
+            return response()->json([
+                'success' => false,
+                'message' => "Route {$route->name} already has driver {$existingDriverName} assigned."
+            ]);
+        }
+
+        // Create the assignment
+        BusDriverAssignment::create([
+            'bus_route_id' => $request->route_id,
+            'driver_id' => $request->driver_id,
+            'assigned_date' => $request->assigned_date,
+            'end_date' => $request->end_date,
+            'status' => 'active',
+            'created_by' => Auth::user()->name ?? 'System'
+        ]);
+
+        $driverName = ($driver->rank ?? 'N/A') . ' ' . ($driver->name ?? 'Unknown');
+        return response()->json([
+            'success' => true,
+            'message' => "Driver {$driverName} has been successfully assigned to route {$route->name}."
+        ]);
+    }
+
+    /**
+     * Unassign a driver from a route
+     */
+    public function unassign(Request $request)
+    {
+        $request->validate([
+            'assignment_id' => 'required|exists:bus_driver_assignments,id',
+        ]);
+
+        $assignment = BusDriverAssignment::with(['driver', 'busRoute'])->findOrFail($request->assignment_id);
+
+        if ($assignment->status !== 'active') {
+            return response()->json([
+                'success' => false,
+                'message' => "Assignment is not currently active."
+            ]);
+        }
+
+        // Get driver and route info before updating (in case relationships become null)
+        $driverName = $assignment->driver ? ($assignment->driver->rank ?? 'N/A') . ' ' . ($assignment->driver->name ?? 'Unknown') : 'Unknown Driver';
+        $routeName = $assignment->busRoute ? $assignment->busRoute->name : 'Unknown Route';
+
+        // Check if there's already an inactive assignment for this route
+        $existingInactive = BusDriverAssignment::where('bus_route_id', $assignment->bus_route_id)
+            ->where('status', 'inactive')
+            ->where('id', '!=', $assignment->id)
+            ->first();
+
+        if ($existingInactive) {
+            // Delete the old inactive assignment to avoid constraint violation
+            $existingInactive->forceDelete();
+        }
+
+        // Mark as inactive instead of deleting
+        $assignment->update([
+            'status' => 'inactive',
+            'end_date' => now()->format('Y-m-d')
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Driver {$driverName} has been successfully unassigned from route {$routeName}."
+        ]);
+    }
+
+    /**
+     * Get assignment data for AJAX requests
+     */
+    public function getAssignmentData()
+    {
+        $routes = BusRoute::with(['bus', 'driverAssignment.driver'])->get();
+        $availableDrivers = Driver::whereDoesntHave('driverAssignments', function ($query) {
+            $query->where('status', 'active')->whereNotNull('driver_id');
+        })->get();
+
+        return response()->json([
+            'routes' => $routes,
+            'availableDrivers' => $availableDrivers
+        ]);
     }
 
     /**

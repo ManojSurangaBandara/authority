@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BusController;
+use App\Http\Controllers\BusAssignmentController;
 use App\Http\Controllers\BusDriverAssignmentController;
 use App\Http\Controllers\BusEscortAssignmentController;
 use App\Http\Controllers\SlcmpInchargeAssignmentController;
@@ -38,6 +39,13 @@ Route::middleware('auth')->group(function () {
     // Add other protected routes here
     Route::resource('buses', BusController::class);
     Route::resource('bus-routes', BusRouteController::class);
+
+    // Bus Assignment routes
+    Route::get('bus-assignments', [BusAssignmentController::class, 'index'])->name('bus-assignments.index');
+    Route::post('bus-assignments/assign', [BusAssignmentController::class, 'assign'])->name('bus-assignments.assign');
+    Route::post('bus-assignments/unassign', [BusAssignmentController::class, 'unassign'])->name('bus-assignments.unassign');
+    Route::get('bus-assignments/data', [BusAssignmentController::class, 'getAssignmentData'])->name('bus-assignments.data');
+
     Route::resource('drivers', DriverController::class);
     Route::get('drivers-api/get-details', [DriverController::class, 'getDriverDetails'])->name('drivers.get-details');
 
@@ -70,21 +78,33 @@ Route::middleware('auth')->group(function () {
 
     // Bus Driver Assignment routes
     Route::resource('bus-driver-assignments', BusDriverAssignmentController::class);
+    Route::post('bus-driver-assignments/assign', [BusDriverAssignmentController::class, 'assign'])->name('bus-driver-assignments.assign');
+    Route::post('bus-driver-assignments/unassign', [BusDriverAssignmentController::class, 'unassign'])->name('bus-driver-assignments.unassign');
+    Route::get('bus-driver-assignments/data', [BusDriverAssignmentController::class, 'getAssignmentData'])->name('bus-driver-assignments.data');
     Route::get('bus-driver-assignments-api/get-driver-details', [BusDriverAssignmentController::class, 'getDriverDetails'])->name('bus-driver-assignments.get-driver-details');
     Route::get('bus-driver-assignments-api/get-bus-details', [BusDriverAssignmentController::class, 'getBusDetails'])->name('bus-driver-assignments.get-bus-details');
 
     // Bus Escort Assignment routes
     Route::resource('bus-escort-assignments', BusEscortAssignmentController::class);
+    Route::post('bus-escort-assignments/assign', [BusEscortAssignmentController::class, 'assign'])->name('bus-escort-assignments.assign');
+    Route::post('bus-escort-assignments/unassign', [BusEscortAssignmentController::class, 'unassign'])->name('bus-escort-assignments.unassign');
+    Route::get('bus-escort-assignments/data', [BusEscortAssignmentController::class, 'getAssignmentData'])->name('bus-escort-assignments.data');
     Route::get('bus-escort-assignments-api/get-escort-details', [BusEscortAssignmentController::class, 'getEscortDetails'])->name('bus-escort-assignments.get-escort-details');
     Route::get('bus-escort-assignments-api/get-bus-details', [BusEscortAssignmentController::class, 'getBusDetails'])->name('bus-escort-assignments.get-bus-details');
 
     // SLCMP In-charge Assignment routes
     Route::resource('slcmp-incharge-assignments', SlcmpInchargeAssignmentController::class);
+    Route::post('slcmp-incharge-assignments/assign', [SlcmpInchargeAssignmentController::class, 'assign'])->name('slcmp-incharge-assignments.assign');
+    Route::post('slcmp-incharge-assignments/unassign', [SlcmpInchargeAssignmentController::class, 'unassign'])->name('slcmp-incharge-assignments.unassign');
+    Route::get('slcmp-incharge-assignments/data', [SlcmpInchargeAssignmentController::class, 'getAssignmentData'])->name('slcmp-incharge-assignments.data');
     Route::get('slcmp-incharge-assignments-api/get-slcmp-details', [SlcmpInchargeAssignmentController::class, 'getSlcmpDetails'])->name('slcmp-incharge-assignments.get-slcmp-details');
     Route::get('slcmp-incharge-assignments-api/get-bus-details', [SlcmpInchargeAssignmentController::class, 'getBusDetails'])->name('slcmp-incharge-assignments.get-bus-details');
 
     // Bus Filling Station Assignment routes
     Route::resource('bus-filling-station-assignments', BusFillingStationAssignmentController::class);
+    Route::post('bus-filling-station-assignments/assign', [BusFillingStationAssignmentController::class, 'assign'])->name('bus-filling-station-assignments.assign');
+    Route::post('bus-filling-station-assignments/unassign', [BusFillingStationAssignmentController::class, 'unassign'])->name('bus-filling-station-assignments.unassign');
+    Route::get('bus-filling-station-assignments/data', [BusFillingStationAssignmentController::class, 'getAssignmentData'])->name('bus-filling-station-assignments.data');
     Route::get('bus-filling-station-assignments-api/get-bus-details', [BusFillingStationAssignmentController::class, 'getBusDetails'])->name('bus-filling-station-assignments.get-bus-details');
 
     // Establishment routes
@@ -129,7 +149,6 @@ Route::middleware('auth')->group(function () {
     Route::get('integrated-applications', [ReportController::class, 'integrated'])->name('integrated-applications.index');
 
     Route::get('pending-applications', [ReportController::class, 'pending'])->name('pending-applications.index');
-
 });
 
 Route::get('/logout', function () {

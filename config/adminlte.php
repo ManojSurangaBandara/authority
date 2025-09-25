@@ -310,7 +310,7 @@ return [
         [
             'text' => 'Master Data',
             'icon' => 'fa fa fa- fa-database text-secondary',
-
+            'can' => 'system_admin_access',
             'submenu' => [
                 [
                     'text' => 'Buses',
@@ -326,6 +326,14 @@ return [
                     'icon' => 'fas fa-fw fa-road',
                     'active' => [
                         'bus-routes*',
+                    ],
+                ],
+                [
+                    'text' => 'Bus Assignments',
+                    'url' => 'bus-assignments',
+                    'icon' => 'fas fa-fw fa-link',
+                    'active' => [
+                        'bus-assignments*',
                     ],
                 ],
                 [
@@ -384,7 +392,7 @@ return [
                         'bus-driver-assignments*',
                     ],
                 ],
-                 [
+                [
                     'text' => 'Establishments',
                     'url' => 'establishment',
                     'icon' => 'fas fa-building',
@@ -424,6 +432,7 @@ return [
             'text' => 'Bus Pass Applications',
             'url' => 'bus-pass-applications',
             'icon' => 'fas fa-fw fa-id-card',
+            'can' => 'operational_user_access',
             'active' => [
                 'bus-pass-applications*',
             ],
@@ -433,6 +442,7 @@ return [
             'text' => 'Bus Pass Approvals',
             'url' => 'bus-pass-approvals',
             'icon' => 'fas fa-fw fa-check-circle',
+            'can' => 'operational_user_access',
             'active' => [
                 'bus-pass-approvals*',
             ],
@@ -462,22 +472,22 @@ return [
                         'roles*',
                     ],
                 ],
-                [
-                    'text' => 'Role Hierarchy',
-                    'url' => 'roles-hierarchy',
-                    'icon' => 'fas fa-fw fa-sitemap',
-                    'can' => 'system_admin_access',
-                    'active' => [
-                        'roles-hierarchy*',
-                    ],
-                ],
+                // [
+                //     'text' => 'Role Hierarchy',
+                //     'url' => 'roles-hierarchy',
+                //     'icon' => 'fas fa-fw fa-sitemap',
+                //     'can' => 'system_admin_access',
+                //     'active' => [
+                //         'roles-hierarchy*',
+                //     ],
+                // ],
             ],
 
         ],
         [
             'text' => 'Reports',
             'icon' => 'fas fa-fw fa-cogs',
-            // 'can' => 'system_admin_access',
+            'can' => 'operational_user_access',
             'submenu' => [
                 [
                     'text' => 'Rejected Applications',
@@ -488,7 +498,7 @@ return [
                         'rejected-applications*',
                     ],
                 ],
-                 [
+                [
                     'text' => 'Temporary Card Printed',
                     'url' => 'temporary-card-printed',
                     'icon' => 'fas fa-fw fa-id-card',
@@ -627,6 +637,16 @@ return [
                     'type' => 'js',
                     'asset' => false,
                     'location' => '//cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js',
+                ],
+            ],
+        ],
+        'CustomCSS' => [
+            'active' => true,
+            'files' => [
+                [
+                    'type' => 'css',
+                    'asset' => true,
+                    'location' => 'css/custom-menu.css',
                 ],
             ],
         ],

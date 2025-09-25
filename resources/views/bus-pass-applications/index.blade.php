@@ -11,8 +11,10 @@
                 <div class="card mt-3">
                     <div class="card card-teal">
                         <div class="card-header"><i class="nav-icon fas fa-id-card nav-icon"></i> {{ __('Bus Pass Applications') }}
-                            <a href="{{ route('bus-pass-applications.create') }}" class="btn btn-sm btn-primary float-right">Add New
-                                Application</a>
+                            @if(auth()->user()->hasRole('Bus Pass Subject Clerk (Branch)'))
+                                <a href="{{ route('bus-pass-applications.create') }}" class="btn btn-sm btn-primary float-right">Add New
+                                    Application</a>
+                            @endif
                         </div>
 
                         <div class="card-body">
