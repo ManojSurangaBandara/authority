@@ -305,7 +305,6 @@ return [
             'text' => 'Dashboard',
             'url' => 'dashboard',
             'icon' => 'fas fa-fw fa-tachometer-alt',
-            'can' => '!system_admin_access',
         ],
 
         [
@@ -425,7 +424,7 @@ return [
             'text' => 'Bus Pass Applications',
             'url' => 'bus-pass-applications',
             'icon' => 'fas fa-fw fa-id-card',
-            'can' => '!system_admin_access',
+            'can' => 'operational_user_access',
             'active' => [
                 'bus-pass-applications*',
             ],
@@ -435,7 +434,7 @@ return [
             'text' => 'Bus Pass Approvals',
             'url' => 'bus-pass-approvals',
             'icon' => 'fas fa-fw fa-check-circle',
-            'can' => '!system_admin_access',
+            'can' => 'operational_user_access',
             'active' => [
                 'bus-pass-approvals*',
             ],
@@ -480,7 +479,7 @@ return [
         [
             'text' => 'Reports',
             'icon' => 'fas fa-fw fa-cogs',
-            'can' => '!system_admin_access',
+            'can' => 'operational_user_access',
             'submenu' => [
                 [
                     'text' => 'Rejected Applications',

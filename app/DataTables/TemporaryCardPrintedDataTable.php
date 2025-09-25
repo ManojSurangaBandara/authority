@@ -62,15 +62,15 @@ class TemporaryCardPrintedDataTable extends DataTable
      */
     public function query(BusPassApplication $model): QueryBuilder
     {
-        $query = $model->newQuery()->with(['person', 'establishment'])->where('status', 'temp_card_printed');
-        
+        $query = $model->newQuery()->with(['person', 'establishment'])->whereIn('status', ['temp_card_printed', 'temp_card_handed_over']);
+
         // Filter by establishment for branch users
         $user = Auth::user();
         $branchRoles = ['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)'];
         if ($user && $user->hasAnyRole($branchRoles) && $user->establishment_id) {
             $query->where('establishment_id', $user->establishment_id);
         }
-        
+
         return $query->orderBy('bus_pass_applications.created_at', 'desc');
     }
 
