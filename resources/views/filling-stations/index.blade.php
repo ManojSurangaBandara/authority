@@ -10,15 +10,17 @@
                 @endif
                 <div class="card mt-3">
                     <div class="card card-teal">
-                    <div class="card-header"><i class="nav-icon fas fa-gas-pump nav-icon"></i> {{ __('Filling Stations') }}
-                        <a href="{{ route('filling-stations.create') }}" class="btn btn-sm btn-primary float-right">Add New Filling Station</a>
-                    </div>
-
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            {{ $dataTable->table() }}
+                        <div class="card-header"><i class="nav-icon fas fa-gas-pump nav-icon"></i>
+                            {{ __('Filling Stations') }}
+                            <a href="{{ route('filling-stations.create') }}" class="btn btn-sm btn-primary float-right">Add
+                                New Filling Station</a>
                         </div>
-                    </div>
+
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                {{ $dataTable->table() }}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -27,7 +29,19 @@
     @include('footer')
 @endsection
 
-@push('js')
 @section('plugins.Datatables', true)
-{{ $dataTable->scripts() }}
+
+@push('js')
+    {{ $dataTable->scripts() }}
+    <script>
+        $(document).ready(function() {
+            // Initialize tooltips after DataTable is loaded
+            $('#filling-station-table').on('draw.dt', function() {
+                $('[data-toggle="tooltip"]').tooltip();
+            });
+
+            // Initialize tooltips on page load
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
 @endpush
