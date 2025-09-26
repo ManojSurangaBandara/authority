@@ -328,14 +328,7 @@ return [
                         'bus-routes*',
                     ],
                 ],
-                [
-                    'text' => 'Bus Assignments',
-                    'url' => 'bus-assignments',
-                    'icon' => 'fas fa-fw fa-link',
-                    'active' => [
-                        'bus-assignments*',
-                    ],
-                ],
+
                 [
                     'text' => 'Drivers',
                     'url' => 'drivers',
@@ -369,30 +362,6 @@ return [
                     ],
                 ],
                 [
-                    'text' => 'Persons',
-                    'url' => 'persons',
-                    'icon' => 'fas fa-fw fa-users',
-                    'active' => [
-                        'persons*',
-                    ],
-                ],
-                [
-                    'text' => 'Bus Pass Statuses',
-                    'url' => 'bus-pass-statuses',
-                    'icon' => 'fas fa-fw fa-tags',
-                    'active' => [
-                        'bus-pass-statuses*',
-                    ],
-                ],
-                [
-                    'text' => 'Bus Driver Assignments',
-                    'url' => 'bus-driver-assignments',
-                    'icon' => 'fas fa-fw fa-user-tie',
-                    'active' => [
-                        'bus-driver-assignments*',
-                    ],
-                ],
-                [
                     'text' => 'Establishments',
                     'url' => 'establishment',
                     'icon' => 'fas fa-building',
@@ -401,7 +370,47 @@ return [
                     ],
                 ],
                 [
-                    'text' => 'Bus Escort Assignments',
+                    'text' => 'Persons',
+                    'url' => 'persons',
+                    'icon' => 'fas fa-fw fa-users',
+                    'active' => [
+                        'persons*',
+                    ],
+                ],
+                // [
+                //     'text' => 'Bus Pass Statuses',
+                //     'url' => 'bus-pass-statuses',
+                //     'icon' => 'fas fa-fw fa-tags',
+                //     'active' => [
+                //         'bus-pass-statuses*',
+                //     ],
+                // ],
+
+            ],
+        ],
+         [
+            'text' => 'Assignments',
+            'icon' => 'fa fa fa- fa-database text-secondary',
+            'can' => 'system_admin_access',
+            'submenu' => [
+                [
+                    'text' => 'Bus Assignments',
+                    'url' => 'bus-assignments',
+                    'icon' => 'fas fa-fw fa-link',
+                    'active' => [
+                        'bus-assignments*',
+                    ],
+                ],
+                [
+                    'text' => 'Driver Assignments',
+                    'url' => 'bus-driver-assignments',
+                    'icon' => 'fas fa-fw fa-user-tie',
+                    'active' => [
+                        'bus-driver-assignments*',
+                    ],
+                ],
+                [
+                    'text' => 'Escort Assignments',
                     'url' => 'bus-escort-assignments',
                     'icon' => 'fas fa-fw fa-user-shield',
                     'active' => [
@@ -417,14 +426,13 @@ return [
                     ],
                 ],
                 [
-                    'text' => 'Bus Filling Station Assignments',
+                    'text' => 'Filling Station Assignments',
                     'url' => 'bus-filling-station-assignments',
                     'icon' => 'fas fa-fw fa-gas-pump',
                     'active' => [
                         'bus-filling-station-assignments*',
                     ],
                 ],
-
             ],
         ],
 
