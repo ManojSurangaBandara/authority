@@ -11,8 +11,8 @@
                 <div class="card mt-3">
                     <div class="card card-teal">
                         <div class="card-header"><i class="nav-icon fas fa-users nav-icon"></i> {{ __('Persons') }}
-                            <a href="{{ route('persons.create') }}" class="btn btn-sm btn-primary float-right">Add New
-                                Person</a>
+                            {{-- <a href="{{ route('persons.create') }}" class="btn btn-sm btn-primary float-right">Add New
+                                Person</a> --}}
                         </div>
 
                         <div class="card-body">

@@ -56,7 +56,8 @@ class PersonDataTable extends DataTable
                     </form>';
                 }
 
-                return $viewBtn . $editBtn . $deleteBtn;
+                // return $viewBtn . $editBtn . $deleteBtn;
+                return $viewBtn;
             })
             ->rawColumns(['action'])
             ->setRowId('id');
