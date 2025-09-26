@@ -13,6 +13,15 @@
                         <div class="card-header"><i class="nav-icon fas fa-user-shield nav-icon"></i>
                             {{ __('Edit SLCMP In Charge') }}</div>
                         <div class="card-body">
+                            @if ($isUsed ?? false)
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>Note:</strong> This SLCMP incharge has {{ $activeAssignmentsCount }} active
+                                    assignment(s).
+                                    The regiment number cannot be changed while the SLCMP incharge is assigned.
+                                </div>
+                            @endif
+
                             <form action="{{ route('slcmp-incharges.update', $slcmpIncharge->id) }}" method="POST"
                                 id="slcmpInchargeForm">
                                 @csrf
@@ -21,12 +30,21 @@
                                     <label for="regiment_no">Regiment Number:</label>
                                     <div class="input-group">
                                         <input type="text" name="regiment_no" id="regiment_no" required
-                                            class="form-control" value="{{ $slcmpIncharge->regiment_no }}">
-                                        <div class="input-group-append">
-                                            <button type="button" class="btn btn-info" id="fetchSlcmpInchargeBtn">Fetch
-                                                Details</button>
-                                        </div>
+                                            class="form-control" value="{{ $slcmpIncharge->regiment_no }}"
+                                            {{ $isUsed ?? false ? 'readonly' : '' }}>
+                                        @if (!($isUsed ?? false))
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-info" id="fetchSlcmpInchargeBtn">Fetch
+                                                    Details</button>
+                                            </div>
+                                        @endif
                                     </div>
+                                    @if ($isUsed ?? false)
+                                        <small class="form-text text-muted">
+                                            <i class="fas fa-lock"></i> Regiment number is locked because this SLCMP
+                                            incharge has active assignments.
+                                        </small>
+                                    @endif
                                     @error('regiment_no')
                                         <div class="text-danger">{{ $message }}</div>
                                     @enderror

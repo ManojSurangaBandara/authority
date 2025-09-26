@@ -29,7 +29,19 @@
     @include('footer')
 @endsection
 
+@section('plugins.Datatables', true)
+
 @push('js')
-    @section('plugins.Datatables', true)
     {{ $dataTable->scripts() }}
+    <script>
+        $(document).ready(function() {
+            // Initialize tooltips after DataTable is loaded
+            $('#slcmp-incharge-table').on('draw.dt', function() {
+                $('[data-toggle="tooltip"]').tooltip();
+            });
+
+            // Initialize tooltips on page load
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
 @endpush
