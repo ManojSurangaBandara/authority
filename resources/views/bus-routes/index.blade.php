@@ -1,34 +1,48 @@
 @extends('adminlte::page')
 
 @section('content')
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-12">
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-12">
 
-            @if (session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
+                @if (session('success'))
+                    <div class="alert alert-success">{{ session('success') }}</div>
+                @endif
 
-            <div class="card mt-3">
-                <div class="card card-teal">
-                <div class="card-header"><i class="nav-icon fas fa-road nav-icon"></i> {{ __('Bus Routes') }}                    <a href="{{ route('bus-routes.create') }}" class="btn btn-sm btn-primary float-right">Add New Route</a>
-                </div>
+                <div class="card mt-3">
+                    <div class="card card-teal">
+                        <div class="card-header"><i class="nav-icon fas fa-road nav-icon"></i> {{ __('Bus Routes') }} <a
+                                href="{{ route('bus-routes.create') }}" class="btn btn-sm btn-primary float-right">Add New
+                                Route</a>
+                        </div>
 
-                <div class="card-body">
+                        <div class="card-body">
 
-                <div class="table-responsive">
-                {{ $dataTable->table() }}
+                            <div class="table-responsive">
+                                {{ $dataTable->table() }}
 
-                </div>
-                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    @include('footer')
-@endsection
+        @include('footer')
+    @endsection
 
-@push('js')
-@section('plugins.Datatables', true)
-{{ $dataTable->scripts() }}
-@endpush
+    @section('plugins.Datatables', true)
+
+    @push('js')
+        {{ $dataTable->scripts() }}
+        <script>
+            $(document).ready(function() {
+                // Initialize tooltips after DataTable is loaded
+                $('#busroute-table').on('draw.dt', function() {
+                    $('[data-toggle="tooltip"]').tooltip();
+                });
+
+                // Initialize tooltips on page load
+                $('[data-toggle="tooltip"]').tooltip();
+            });
+        </script>
+    @endpush
