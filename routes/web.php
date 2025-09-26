@@ -20,6 +20,7 @@ use App\Http\Controllers\BusPassApprovalController;
 use App\Http\Controllers\EstablishmentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\ReportController;
 
@@ -149,6 +150,11 @@ Route::middleware('auth')->group(function () {
     Route::get('integrated-applications', [ReportController::class, 'integrated'])->name('integrated-applications.index');
 
     Route::get('pending-applications', [ReportController::class, 'pending'])->name('pending-applications.index');
+
+    // Profile routes (All authenticated users)
+    Route::get('profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::get('profile/change-password', [ProfileController::class, 'editPassword'])->name('profile.change-password');
+    Route::post('profile/update-password', [ProfileController::class, 'updatePassword'])->name('profile.update-password');
 });
 
 Route::get('/logout', function () {
