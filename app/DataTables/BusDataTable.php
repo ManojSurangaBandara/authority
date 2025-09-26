@@ -28,15 +28,46 @@ class BusDataTable extends DataTable
                 return $row->type ? $row->type->name : 'N/A';
             })
             ->addColumn('action', function ($row) {
+                // Use the preloaded counts for better performance
+                $routesCount = $row->routes_count ?? 0;
+                $fillingStationAssignmentsCount = $row->filling_station_assignments_count ?? 0;
+                $isUsed = $routesCount > 0 || $fillingStationAssignmentsCount > 0;
+
+                // Build usage reasons array
+                $usageReasons = [];
+                if ($routesCount > 0) {
+                    $usageReasons[] = "Assigned to {$routesCount} route(s)";
+                }
+                if ($fillingStationAssignmentsCount > 0) {
+                    $usageReasons[] = "Has {$fillingStationAssignmentsCount} filling station assignment(s)";
+                }
+
+                $reasonText = implode(', ', $usageReasons);
+
+                // View button (always available)
                 $viewBtn = '<a href="' . route('buses.show', $row->id) . '" class="btn btn-xs btn-info" title="View"><i class="fas fa-eye"></i></a>';
-                $editBtn = '<a href="' . route('buses.edit', $row->id) . '" class="btn btn-xs btn-primary mx-1" title="Edit"><i class="fas fa-edit"></i></a>';
-                $deleteBtn = '<form action="' . route('buses.destroy', $row->id) . '" method="POST" style="display:inline">
-                    ' . csrf_field() . '
-                    ' . method_field("DELETE") . '
-                    <button type="submit" class="btn btn-xs btn-danger" onclick="return confirm(\'Are you sure you want to delete this bus?\')" title="Delete">
+
+                // Edit button (always enabled, but with warning tooltip if bus is in use)
+                if ($isUsed) {
+                    $editBtn = '<a href="' . route('buses.edit', $row->id) . '" class="btn btn-xs btn-primary mx-1" title="Edit (Note: Bus number cannot be changed - ' . $reasonText . ')" data-toggle="tooltip"><i class="fas fa-edit"></i></a>';
+                } else {
+                    $editBtn = '<a href="' . route('buses.edit', $row->id) . '" class="btn btn-xs btn-primary mx-1" title="Edit"><i class="fas fa-edit"></i></a>';
+                }
+
+                // Delete button (disabled if bus is in use)
+                if ($isUsed) {
+                    $deleteBtn = '<span class="btn btn-xs btn-secondary disabled" title="Cannot delete: ' . $reasonText . '" data-toggle="tooltip">
                         <i class="fas fa-trash"></i>
-                    </button>
-                </form>';
+                    </span>';
+                } else {
+                    $deleteBtn = '<form action="' . route('buses.destroy', $row->id) . '" method="POST" style="display:inline">
+                        ' . csrf_field() . '
+                        ' . method_field("DELETE") . '
+                        <button type="submit" class="btn btn-xs btn-danger" onclick="return confirm(\'Are you sure you want to delete this bus?\')" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>';
+                }
 
                 return $viewBtn . $editBtn . $deleteBtn;
             })
@@ -51,7 +82,7 @@ class BusDataTable extends DataTable
      */
     public function query(Bus $model): QueryBuilder
     {
-        return $model->with('type')->newQuery();
+        return $model->with('type')->withCount(['routes', 'fillingStationAssignments'])->newQuery();
     }
 
     /**
