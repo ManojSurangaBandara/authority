@@ -37,7 +37,7 @@
                                 </tbody>
                             </table>
 
-                            <div class="mt-3">
+                            {{-- <div class="mt-3">
                                 <a href="{{ route('slcmp-incharges.edit', $slcmpIncharge->id) }}"
                                     class="btn btn-sm btn-primary">
                                     <i class="fas fa-edit"></i> Edit
@@ -51,7 +51,7 @@
                                         <i class="fas fa-trash"></i> Delete
                                     </button>
                                 </form>
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
                 </div>

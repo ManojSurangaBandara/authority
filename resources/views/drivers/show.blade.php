@@ -36,7 +36,7 @@
                                 </tbody>
                             </table>
 
-                            <div class="mt-3">
+                            {{-- <div class="mt-3">
                                 <a href="{{ route('drivers.edit', $driver->id) }}" class="btn btn-sm btn-primary">
                                     <i class="fas fa-edit"></i> Edit
                                 </a>
@@ -49,7 +49,7 @@
                                         <i class="fas fa-trash"></i> Delete
                                     </button>
                                 </form>
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
                 </div>
