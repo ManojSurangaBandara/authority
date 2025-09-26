@@ -53,10 +53,21 @@ class BusPassApprovalHistory extends Model
         $colors = [
             'approved' => 'success',
             'rejected' => 'danger',
-            'forwarded' => 'info'
+            'forwarded' => 'info',
+            'recommended' => 'success',
+            'not_recommended' => 'warning'
+        ];
+
+        $labels = [
+            'approved' => 'Approved',
+            'rejected' => 'Rejected',
+            'forwarded' => 'Forwarded',
+            'recommended' => 'Recommended',
+            'not_recommended' => 'Not Recommended'
         ];
 
         $color = $colors[$this->action] ?? 'secondary';
-        return '<span class="badge badge-' . $color . '">' . ucfirst($this->action) . '</span>';
+        $label = $labels[$this->action] ?? ucfirst($this->action);
+        return '<span class="badge badge-' . $color . '">' . $label . '</span>';
     }
 }

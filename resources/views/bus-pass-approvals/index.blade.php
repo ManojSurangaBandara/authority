@@ -7,7 +7,7 @@
         Bus Pass Approvals
         <small>
             Pending applications for your review
-            @if(auth()->user()->isBranchUser() && auth()->user()->establishment)
+            @if (auth()->user()->isBranchUser() && auth()->user()->establishment)
                 - {{ auth()->user()->establishment->name }}
             @endif
         </small>
@@ -25,7 +25,7 @@
                     </h3>
                 </div>
                 <div class="card-body">
-                    @if($pendingApplications->count() > 0)
+                    @if ($pendingApplications->count() > 0)
                         <div class="table-responsive">
                             <table class="table table-bordered table-striped" id="approvals-table">
                                 <thead>
@@ -41,10 +41,14 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($pendingApplications as $application)
-                                        <tr>
+                                    @foreach ($pendingApplications as $application)
+                                        <tr class="{{ $application->wasRecentlyNotRecommended() ? 'table-warning' : '' }}">
                                             <td>
                                                 <strong>#{{ $application->id }}</strong>
+                                                @if ($application->wasRecentlyNotRecommended())
+                                                    <br><span class="badge badge-warning"><i
+                                                            class="fas fa-exclamation-triangle"></i> Not Recommended</span>
+                                                @endif
                                             </td>
                                             <td>
                                                 <strong>{{ $application->person->name }}</strong><br>
@@ -53,19 +57,23 @@
                                             </td>
                                             <td>
                                                 <strong>{{ $application->person->rank }}</strong><br>
-                                                <small class="text-muted">{{ $application->person->regiment_no }}</small><br>
+                                                <small
+                                                    class="text-muted">{{ $application->person->regiment_no }}</small><br>
                                                 <small class="text-muted">{{ $application->person->unit }}</small>
                                             </td>
                                             <td>
-                                                <span class="badge badge-{{ $application->bus_pass_type === 'daily_travel' ? 'primary' : 'secondary' }}">
+                                                <span
+                                                    class="badge badge-{{ $application->bus_pass_type === 'daily_travel' ? 'primary' : 'secondary' }}">
                                                     {{ $application->type_label }}
                                                 </span>
                                             </td>
                                             <td>
-                                                @if($application->establishment)
-                                                    <span class="badge badge-info">{{ $application->establishment->name }}</span>
-                                                    @if($application->establishment->location)
-                                                        <br><small class="text-muted">{{ $application->establishment->location }}</small>
+                                                @if ($application->establishment)
+                                                    <span
+                                                        class="badge badge-info">{{ $application->establishment->name }}</span>
+                                                    @if ($application->establishment->location)
+                                                        <br><small
+                                                            class="text-muted">{{ $application->establishment->location }}</small>
                                                     @endif
                                                 @else
                                                     <span class="text-muted">{{ $application->branch_directorate }}</span>
@@ -74,34 +82,56 @@
                                             {{-- <td>{!! $application->status_badge !!}</td> --}}
                                             <td>
                                                 {{ $application->created_at->format('d M Y') }}<br>
-                                                <small class="text-muted">{{ $application->created_at->diffForHumans() }}</small>
+                                                <small
+                                                    class="text-muted">{{ $application->created_at->diffForHumans() }}</small>
                                             </td>
                                             <td>
                                                 <div class="btn-group" role="group">
-                                                    <button type="button" class="btn btn-sm btn-info"
-                                                            data-toggle="modal"
-                                                            data-target="#viewModal{{ $application->id }}">
+                                                    <button type="button" class="btn btn-sm btn-info" data-toggle="modal"
+                                                        data-target="#viewModal{{ $application->id }}">
                                                         <i class="fas fa-eye"></i> View
                                                     </button>
 
-                                                    @can('approve_bus_pass')
-                                                    <button type="button" class="btn btn-sm btn-success"
-                                                            data-toggle="modal"
-                                                            data-target="#approveModal{{ $application->id }}">
-                                                        @if(auth()->user()->hasRole(['Bus Pass Subject Clerk (Branch)', 'Subject Clerk (DMOV)']))
-                                                            <i class="fas fa-arrow-right"></i> Forward
-                                                        @else
-                                                            <i class="fas fa-check"></i> Approve
-                                                        @endif
-                                                    </button>
+                                                    @if (auth()->user()->hasRole('Bus Pass Subject Clerk (Branch)'))
+                                                        <a href="{{ route('bus-pass-applications.edit', $application->id) }}"
+                                                            class="btn btn-sm btn-warning">
+                                                            <i class="fas fa-edit"></i> Edit
+                                                        </a>
+                                                    @endif
 
-                                                    @unless(auth()->user()->hasRole(['Bus Pass Subject Clerk (Branch)', 'Subject Clerk (DMOV)']))
-                                                    <button type="button" class="btn btn-sm btn-danger"
-                                                            data-toggle="modal"
-                                                            data-target="#rejectModal{{ $application->id }}">
-                                                        <i class="fas fa-times"></i> Reject
-                                                    </button>
-                                                    @endunless
+                                                    @can('approve_bus_pass')
+                                                        @if (auth()->user()->hasRole('Staff Officer (Branch)'))
+                                                            {{-- Staff Officer Branch: Recommend/Not Recommend --}}
+                                                            <button type="button" class="btn btn-sm btn-success"
+                                                                data-toggle="modal"
+                                                                data-target="#recommendModal{{ $application->id }}">
+                                                                <i class="fas fa-thumbs-up"></i> Recommend
+                                                            </button>
+                                                            <button type="button" class="btn btn-sm btn-warning"
+                                                                data-toggle="modal"
+                                                                data-target="#notRecommendModal{{ $application->id }}">
+                                                                <i class="fas fa-thumbs-down"></i> Not Recommend
+                                                            </button>
+                                                        @else
+                                                            {{-- All other roles: Approve/Reject or Forward --}}
+                                                            <button type="button" class="btn btn-sm btn-success"
+                                                                data-toggle="modal"
+                                                                data-target="#approveModal{{ $application->id }}">
+                                                                @if (auth()->user()->hasRole(['Bus Pass Subject Clerk (Branch)', 'Subject Clerk (DMOV)']))
+                                                                    <i class="fas fa-arrow-right"></i> Forward
+                                                                @else
+                                                                    <i class="fas fa-check"></i> Approve
+                                                                @endif
+                                                            </button>
+
+                                                            @unless (auth()->user()->hasRole(['Bus Pass Subject Clerk (Branch)', 'Subject Clerk (DMOV)']))
+                                                                <button type="button" class="btn btn-sm btn-danger"
+                                                                    data-toggle="modal"
+                                                                    data-target="#rejectModal{{ $application->id }}">
+                                                                    <i class="fas fa-times"></i> Reject
+                                                                </button>
+                                                            @endunless
+                                                        @endif
                                                     @endcan
                                                 </div>
                                             </td>
@@ -123,10 +153,12 @@
     </div>
 
     <!-- Modals for each application -->
-    @foreach($pendingApplications as $application)
+    @foreach ($pendingApplications as $application)
         @include('bus-pass-approvals.modals.view', ['application' => $application])
         @include('bus-pass-approvals.modals.approve', ['application' => $application])
         @include('bus-pass-approvals.modals.reject', ['application' => $application])
+        @include('bus-pass-approvals.modals.recommend', ['application' => $application])
+        @include('bus-pass-approvals.modals.not-recommend', ['application' => $application])
     @endforeach
 @stop
 
@@ -135,8 +167,18 @@
         .table th {
             white-space: nowrap;
         }
+
         .btn-group .btn {
             margin-right: 2px;
+        }
+
+        .bg-warning-light {
+            background-color: #fff3cd !important;
+            border-left: 4px solid #ffc107;
+        }
+
+        .table-warning {
+            background-color: rgba(255, 193, 7, 0.1) !important;
         }
     </style>
 @stop
@@ -149,9 +191,13 @@
                 "lengthChange": false,
                 "autoWidth": false,
                 "pageLength": 25,
-                "order": [[ 6, "desc" ]], // Sort by submitted date
-                "columnDefs": [
-                    { "orderable": false, "targets": 7 } // Disable sorting on actions column
+                "order": [
+                    [6, "desc"]
+                ], // Sort by submitted date
+                "columnDefs": [{
+                        "orderable": false,
+                        "targets": 7
+                    } // Disable sorting on actions column
                 ]
             });
         });

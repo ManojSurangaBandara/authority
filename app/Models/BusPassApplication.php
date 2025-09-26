@@ -161,4 +161,36 @@ class BusPassApplication extends Model
     {
         return $this->type_label;
     }
+
+    /**
+     * Get the latest "not recommended" action for this application
+     */
+    public function getLatestNotRecommendedAction()
+    {
+        return $this->approvalHistory()
+            ->where('action', 'not_recommended')
+            ->with('user')
+            ->orderBy('action_date', 'desc')
+            ->first();
+    }
+
+    /**
+     * Check if application was recently not recommended
+     */
+    public function wasRecentlyNotRecommended()
+    {
+        $latestNotRecommended = $this->getLatestNotRecommendedAction();
+
+        if (!$latestNotRecommended) {
+            return false;
+        }
+
+        // Check if the latest not recommended action is more recent than any approved/forwarded actions
+        $latestApprovalAfter = $this->approvalHistory()
+            ->whereIn('action', ['approved', 'forwarded', 'recommended'])
+            ->where('action_date', '>', $latestNotRecommended->action_date)
+            ->exists();
+
+        return !$latestApprovalAfter;
+    }
 }

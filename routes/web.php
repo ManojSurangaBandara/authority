@@ -76,6 +76,8 @@ Route::middleware('auth')->group(function () {
     Route::get('bus-pass-approvals', [BusPassApprovalController::class, 'index'])->name('bus-pass-approvals.index');
     Route::post('bus-pass-approvals/{application}/approve', [BusPassApprovalController::class, 'approve'])->name('bus-pass-approvals.approve');
     Route::post('bus-pass-approvals/{application}/reject', [BusPassApprovalController::class, 'reject'])->name('bus-pass-approvals.reject');
+    Route::post('bus-pass-approvals/{application}/recommend', [BusPassApprovalController::class, 'recommend'])->name('bus-pass-approvals.recommend');
+    Route::post('bus-pass-approvals/{application}/not-recommend', [BusPassApprovalController::class, 'notRecommend'])->name('bus-pass-approvals.not-recommend');
 
     // Bus Driver Assignment routes
     Route::resource('bus-driver-assignments', BusDriverAssignmentController::class);
