@@ -12,6 +12,15 @@
                     <div class="card card-teal">
                         <div class="card-header"><i class="nav-icon fas fa-user nav-icon"></i> {{ __('Edit Driver') }}</div>
                         <div class="card-body">
+                            @if ($isUsed ?? false)
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>Note:</strong> This driver has {{ $activeAssignmentsCount }} active
+                                    assignment(s).
+                                    The regiment number cannot be changed while the driver is assigned.
+                                </div>
+                            @endif
+
                             <form action="{{ route('drivers.update', $driver->id) }}" method="POST" id="driverForm">
                                 @csrf
                                 @method('PUT')
@@ -19,12 +28,21 @@
                                     <label for="regiment_no">Regiment Number:</label>
                                     <div class="input-group">
                                         <input type="text" name="regiment_no" id="regiment_no" required
-                                            class="form-control" value="{{ $driver->regiment_no }}">
-                                        <div class="input-group-append">
-                                            <button type="button" class="btn btn-info" id="fetchDriverBtn">Fetch
-                                                Details</button>
-                                        </div>
+                                            class="form-control" value="{{ $driver->regiment_no }}"
+                                            {{ $isUsed ?? false ? 'readonly' : '' }}>
+                                        @if (!($isUsed ?? false))
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-info" id="fetchDriverBtn">Fetch
+                                                    Details</button>
+                                            </div>
+                                        @endif
                                     </div>
+                                    @if ($isUsed ?? false)
+                                        <small class="form-text text-muted">
+                                            <i class="fas fa-lock"></i> Regiment number is locked because this driver has
+                                            active assignments.
+                                        </small>
+                                    @endif
                                     @error('regiment_no')
                                         <div class="text-danger">{{ $message }}</div>
                                     @enderror
