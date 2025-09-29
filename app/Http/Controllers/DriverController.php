@@ -58,8 +58,13 @@ class DriverController extends Controller
      */
     public function edit(string $id)
     {
-        $driver = Driver::findOrFail($id);
-        return view('drivers.edit', compact('driver'));
+        $driver = Driver::withCount('driverAssignments')->findOrFail($id);
+
+        // Check if driver has active assignments
+        $activeAssignmentsCount = $driver->driverAssignments()->where('status', 'active')->count();
+        $isUsed = $activeAssignmentsCount > 0;
+
+        return view('drivers.edit', compact('driver', 'isUsed', 'activeAssignmentsCount'));
     }
 
     /**
@@ -69,14 +74,36 @@ class DriverController extends Controller
     {
         $driver = Driver::findOrFail($id);
 
-        $request->validate([
-            'regiment_no' => 'required|max:20|unique:drivers,regiment_no,' . $id,
+        // Check if driver has active assignments
+        $activeAssignmentsCount = $driver->driverAssignments()->where('status', 'active')->count();
+        $isUsed = $activeAssignmentsCount > 0;
+
+        // Validation rules
+        $rules = [
             'rank' => 'required|max:50',
             'name' => 'required|max:100',
             'contact_no' => 'required|max:20',
-        ]);
+        ];
 
-        $driver->update($request->all());
+        // Only validate regiment_no if it's not in use (allowing changes)
+        if (!$isUsed) {
+            $rules['regiment_no'] = 'required|max:20|unique:drivers,regiment_no,' . $id;
+        } else {
+            // If driver is in use, ensure the submitted regiment_no matches the existing one
+            $rules['regiment_no'] = 'required|max:20|in:' . $driver->regiment_no;
+        }
+
+        $request->validate($rules);
+
+        // Prepare data for update
+        $updateData = $request->only(['rank', 'name', 'contact_no']);
+
+        // Only update regiment_no if not in use
+        if (!$isUsed) {
+            $updateData['regiment_no'] = $request->regiment_no;
+        }
+
+        $driver->update($updateData);
 
         return redirect()->route('drivers.index')
             ->with('success', 'Driver updated successfully.');
@@ -115,12 +142,12 @@ class DriverController extends Controller
             if ($response->successful()) {
                 // The response comes as a JSON array with brackets, we need to decode it
                 $responseData = json_decode($response->body(), true);
-                
+
                 // Check if the API returned valid data
                 if (is_array($responseData) && !empty($responseData)) {
                     // Extract the first record from the array
                     $data = $responseData[0];
-                    
+
                     // Map API response fields to our application fields
                     $driverData = [
                         'rank' => $data['rank'] ?? '',
@@ -129,16 +156,16 @@ class DriverController extends Controller
                         // we'll leave it empty for the user to fill in
                         'contact_no' => ''
                     ];
-                    
+
                     return response()->json([
                         'success' => true,
                         'data' => $driverData
                     ]);
                 }
-                
+
                 return response()->json(['success' => false, 'message' => 'No data found for this regiment number'], 404);
             }
-            
+
             return response()->json(['success' => false, 'message' => 'Failed to fetch data from Army API'], $response->status());
         } catch (\Exception $e) {
             return response()->json([

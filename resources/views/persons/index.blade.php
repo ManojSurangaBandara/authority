@@ -11,8 +11,8 @@
                 <div class="card mt-3">
                     <div class="card card-teal">
                         <div class="card-header"><i class="nav-icon fas fa-users nav-icon"></i> {{ __('Persons') }}
-                            <a href="{{ route('persons.create') }}" class="btn btn-sm btn-primary float-right">Add New
-                                Person</a>
+                            {{-- <a href="{{ route('persons.create') }}" class="btn btn-sm btn-primary float-right">Add New
+                                Person</a> --}}
                         </div>
 
                         <div class="card-body">
@@ -28,7 +28,19 @@
     @include('footer')
 @endsection
 
+@section('plugins.Datatables', true)
+
 @push('js')
-    @section('plugins.Datatables', true)
     {{ $dataTable->scripts() }}
+    <script>
+        $(document).ready(function() {
+            // Initialize tooltips after DataTable is loaded
+            $('#person-table').on('draw.dt', function() {
+                $('[data-toggle="tooltip"]').tooltip();
+            });
+
+            // Initialize tooltips on page load
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
 @endpush

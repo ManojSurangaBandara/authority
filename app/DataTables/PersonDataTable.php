@@ -24,17 +24,40 @@ class PersonDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addIndexColumn()
             ->addColumn('action', function ($row) {
-                $viewBtn = '<a href="' . route('persons.show', $row->id) . '" class="btn btn-xs btn-info" title="View"><i class="fas fa-eye"></i></a>';
-                $editBtn = '<a href="' . route('persons.edit', $row->id) . '" class="btn btn-xs btn-primary mx-1" title="Edit"><i class="fas fa-edit"></i></a>';
-                $deleteBtn = '<form action="' . route('persons.destroy', $row->id) . '" method="POST" style="display:inline">
-                    ' . csrf_field() . '
-                    ' . method_field("DELETE") . '
-                    <button type="submit" class="btn btn-xs btn-danger" onclick="return confirm(\'Are you sure you want to delete this person?\')" title="Delete">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </form>';
+                // Check if person has bus pass applications
+                $busPassApplicationsCount = $row->busPassApplications()->count();
+                $isUsed = $busPassApplicationsCount > 0;
 
-                return $viewBtn . $editBtn . $deleteBtn;
+                // Build usage reason
+                $reasonText = $isUsed ? "Person has {$busPassApplicationsCount} bus pass application(s)" : '';
+
+                // View button (always available)
+                $viewBtn = '<a href="' . route('persons.show', $row->id) . '" class="btn btn-xs btn-info" title="View"><i class="fas fa-eye"></i></a>';
+
+                // Edit button (always enabled, but with warning tooltip if person is in use)
+                if ($isUsed) {
+                    $editBtn = '<a href="' . route('persons.edit', $row->id) . '" class="btn btn-xs btn-primary mx-1" title="Edit (Note: Regiment number cannot be changed - ' . $reasonText . ')" data-toggle="tooltip"><i class="fas fa-edit"></i></a>';
+                } else {
+                    $editBtn = '<a href="' . route('persons.edit', $row->id) . '" class="btn btn-xs btn-primary mx-1" title="Edit"><i class="fas fa-edit"></i></a>';
+                }
+
+                // Delete button (disabled if person is in use)
+                if ($isUsed) {
+                    $deleteBtn = '<span class="btn btn-xs btn-secondary disabled" title="Cannot delete: ' . $reasonText . '" data-toggle="tooltip">
+                        <i class="fas fa-trash"></i>
+                    </span>';
+                } else {
+                    $deleteBtn = '<form action="' . route('persons.destroy', $row->id) . '" method="POST" style="display:inline">
+                        ' . csrf_field() . '
+                        ' . method_field("DELETE") . '
+                        <button type="submit" class="btn btn-xs btn-danger" onclick="return confirm(\'Are you sure you want to delete this person?\')" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>';
+                }
+
+                // return $viewBtn . $editBtn . $deleteBtn;
+                return $viewBtn;
             })
             ->rawColumns(['action'])
             ->setRowId('id');

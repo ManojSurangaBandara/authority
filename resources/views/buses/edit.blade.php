@@ -12,13 +12,26 @@
                     <div class="card card-teal">
                         <div class="card-header"><i class="nav-icon fa fa fa-bus nav-icon"></i> {{ __('Edit Bus') }}</div>
                         <div class="card-body">
+                            @if ($isUsed ?? false)
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>Note:</strong> This bus is currently {{ implode(' and ', $usageReasons) }}.
+                                    The bus number cannot be changed while it's in use.
+                                </div>
+                            @endif
+
                             <form action="{{ route('buses.update', $bus->id) }}" method="POST">
                                 @csrf
                                 @method('PUT')
                                 <div class="mb-3">
                                     <label for="">Bus Number:</label>
                                     <input type="text" name="no" required class="form-control"
-                                        value="{{ $bus->no }}" />
+                                        value="{{ $bus->no }}" {{ $isUsed ?? false ? 'readonly' : '' }} />
+                                    @if ($isUsed ?? false)
+                                        <small class="form-text text-muted">
+                                            <i class="fas fa-lock"></i> Bus number is locked because this bus is in use.
+                                        </small>
+                                    @endif
                                 </div>
                                 <div class="mb-3">
                                     <label for="">Bus Name:</label>

@@ -12,6 +12,15 @@
                     <div class="card card-teal">
                         <div class="card-header"><i class="nav-icon fas fa-user nav-icon"></i> {{ __('Edit Escort') }}</div>
                         <div class="card-body">
+                            @if ($isUsed ?? false)
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>Note:</strong> This escort has {{ $activeAssignmentsCount }} active
+                                    assignment(s).
+                                    The regiment number cannot be changed while the escort is assigned.
+                                </div>
+                            @endif
+
                             <form action="{{ route('escorts.update', $escort->id) }}" method="POST" id="escortForm">
                                 @csrf
                                 @method('PUT')
@@ -19,12 +28,21 @@
                                     <label for="regiment_no">Regiment Number:</label>
                                     <div class="input-group">
                                         <input type="text" name="regiment_no" id="regiment_no" required
-                                            class="form-control" value="{{ $escort->regiment_no }}">
-                                        <div class="input-group-append">
-                                            <button type="button" class="btn btn-info" id="fetchEscortBtn">Fetch
-                                                Details</button>
-                                        </div>
+                                            class="form-control" value="{{ $escort->regiment_no }}"
+                                            {{ $isUsed ?? false ? 'readonly' : '' }}>
+                                        @if (!($isUsed ?? false))
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-info" id="fetchEscortBtn">Fetch
+                                                    Details</button>
+                                            </div>
+                                        @endif
                                     </div>
+                                    @if ($isUsed ?? false)
+                                        <small class="form-text text-muted">
+                                            <i class="fas fa-lock"></i> Regiment number is locked because this escort has
+                                            active assignments.
+                                        </small>
+                                    @endif
                                     @error('regiment_no')
                                         <div class="text-danger">{{ $message }}</div>
                                     @enderror

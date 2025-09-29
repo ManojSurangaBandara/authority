@@ -58,8 +58,13 @@ class EscortController extends Controller
      */
     public function edit(string $id)
     {
-        $escort = Escort::findOrFail($id);
-        return view('escorts.edit', compact('escort'));
+        $escort = Escort::withCount('escortAssignments')->findOrFail($id);
+
+        // Check if escort has active assignments
+        $activeAssignmentsCount = $escort->escortAssignments()->where('status', 'active')->count();
+        $isUsed = $activeAssignmentsCount > 0;
+
+        return view('escorts.edit', compact('escort', 'isUsed', 'activeAssignmentsCount'));
     }
 
     /**
@@ -69,14 +74,36 @@ class EscortController extends Controller
     {
         $escort = Escort::findOrFail($id);
 
-        $request->validate([
-            'regiment_no' => 'required|max:20|unique:escorts,regiment_no,' . $id,
+        // Check if escort has active assignments
+        $activeAssignmentsCount = $escort->escortAssignments()->where('status', 'active')->count();
+        $isUsed = $activeAssignmentsCount > 0;
+
+        // Validation rules
+        $rules = [
             'rank' => 'required|max:50',
             'name' => 'required|max:100',
             'contact_no' => 'required|max:20',
-        ]);
+        ];
 
-        $escort->update($request->all());
+        // Only validate regiment_no if it's not in use (allowing changes)
+        if (!$isUsed) {
+            $rules['regiment_no'] = 'required|max:20|unique:escorts,regiment_no,' . $id;
+        } else {
+            // If escort is in use, ensure the submitted regiment_no matches the existing one
+            $rules['regiment_no'] = 'required|max:20|in:' . $escort->regiment_no;
+        }
+
+        $request->validate($rules);
+
+        // Prepare data for update
+        $updateData = $request->only(['rank', 'name', 'contact_no']);
+
+        // Only update regiment_no if not in use
+        if (!$isUsed) {
+            $updateData['regiment_no'] = $request->regiment_no;
+        }
+
+        $escort->update($updateData);
 
         return redirect()->route('escorts.index')
             ->with('success', 'Escort updated successfully.');
@@ -115,12 +142,12 @@ class EscortController extends Controller
             if ($response->successful()) {
                 // The response comes as a JSON array with brackets, we need to decode it
                 $responseData = json_decode($response->body(), true);
-                
+
                 // Check if the API returned valid data
                 if (is_array($responseData) && !empty($responseData)) {
                     // Extract the first record from the array
                     $data = $responseData[0];
-                    
+
                     // Map API response fields to our application fields
                     $escortData = [
                         'rank' => $data['rank'] ?? '',
@@ -129,16 +156,16 @@ class EscortController extends Controller
                         // we'll leave it empty for the user to fill in
                         'contact_no' => ''
                     ];
-                    
+
                     return response()->json([
                         'success' => true,
                         'data' => $escortData
                     ]);
                 }
-                
+
                 return response()->json(['success' => false, 'message' => 'No data found for this regiment number'], 404);
             }
-            
+
             return response()->json(['success' => false, 'message' => 'Failed to fetch data from Army API'], $response->status());
         } catch (\Exception $e) {
             return response()->json([

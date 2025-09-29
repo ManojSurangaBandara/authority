@@ -58,8 +58,13 @@ class SlcmpInchargeController extends Controller
      */
     public function edit(string $id)
     {
-        $slcmpIncharge = SlcmpIncharge::findOrFail($id);
-        return view('slcmp-incharges.edit', compact('slcmpIncharge'));
+        $slcmpIncharge = SlcmpIncharge::withCount('slcmpInchargeAssignments')->findOrFail($id);
+
+        // Check if SLCMP incharge has active assignments
+        $activeAssignmentsCount = $slcmpIncharge->slcmpInchargeAssignments()->where('status', 'active')->count();
+        $isUsed = $activeAssignmentsCount > 0;
+
+        return view('slcmp-incharges.edit', compact('slcmpIncharge', 'isUsed', 'activeAssignmentsCount'));
     }
 
     /**
@@ -69,14 +74,36 @@ class SlcmpInchargeController extends Controller
     {
         $slcmpIncharge = SlcmpIncharge::findOrFail($id);
 
-        $request->validate([
-            'regiment_no' => 'required|max:20|unique:slcmp_incharges,regiment_no,' . $id,
+        // Check if SLCMP incharge has active assignments
+        $activeAssignmentsCount = $slcmpIncharge->slcmpInchargeAssignments()->where('status', 'active')->count();
+        $isUsed = $activeAssignmentsCount > 0;
+
+        // Validation rules
+        $rules = [
             'rank' => 'required|max:50',
             'name' => 'required|max:100',
             'contact_no' => 'required|max:20',
-        ]);
+        ];
 
-        $slcmpIncharge->update($request->all());
+        // Only validate regiment_no if it's not in use (allowing changes)
+        if (!$isUsed) {
+            $rules['regiment_no'] = 'required|max:20|unique:slcmp_incharges,regiment_no,' . $id;
+        } else {
+            // If SLCMP incharge is in use, ensure the submitted regiment_no matches the existing one
+            $rules['regiment_no'] = 'required|max:20|in:' . $slcmpIncharge->regiment_no;
+        }
+
+        $request->validate($rules);
+
+        // Prepare data for update
+        $updateData = $request->only(['rank', 'name', 'contact_no']);
+
+        // Only update regiment_no if not in use
+        if (!$isUsed) {
+            $updateData['regiment_no'] = $request->regiment_no;
+        }
+
+        $slcmpIncharge->update($updateData);
 
         return redirect()->route('slcmp-incharges.index')
             ->with('success', 'SLCMP in charge updated successfully.');

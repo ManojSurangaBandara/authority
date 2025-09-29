@@ -116,4 +116,12 @@ class User extends Authenticatable
     {
         $this->update(['last_login_at' => now()]);
     }
+
+    /**
+     * Get the profile URL for AdminLTE
+     */
+    public function adminlte_profile_url(): string
+    {
+        return route('profile.show');
+    }
 }

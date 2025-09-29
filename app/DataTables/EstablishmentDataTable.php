@@ -24,15 +24,48 @@ class EstablishmentDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addIndexColumn()
             ->addColumn('action', function ($row) {
+                // Use the preloaded counts for better performance
+                $usersCount = $row->users_count ?? 0;
+                $busPassApplicationsCount = $row->bus_pass_applications_count ?? 0;
+                $isUsed = $usersCount > 0 || $busPassApplicationsCount > 0;
+
+                // Build usage reasons array
+                $usageReasons = [];
+                if ($usersCount > 0) {
+                    $usageReasons[] = "Used by {$usersCount} user(s)";
+                }
+                if ($busPassApplicationsCount > 0) {
+                    $usageReasons[] = "Has {$busPassApplicationsCount} bus pass application(s)";
+                }
+
+                $reasonText = implode(', ', $usageReasons);
+
+                // View button (always available)
                 $viewBtn = '<a href="' . route('establishment.show', $row->id) . '" class="btn btn-xs btn-info" title="View"><i class="fas fa-eye"></i></a>';
-                $editBtn = '<a href="' . route('establishment.edit', $row->id) . '" class="btn btn-xs btn-primary mx-1" title="Edit"><i class="fas fa-edit"></i></a>';
-                $deleteBtn = '<form action="' . route('establishment.destroy', $row->id) . '" method="POST" style="display:inline">
-                    ' . csrf_field() . '
-                    ' . method_field("DELETE") . '
-                    <button type="submit" class="btn btn-xs btn-danger" onclick="return confirm(\'Are you sure you want to delete this establishment?\')" title="Delete">
+
+                // Edit button
+                if ($isUsed) {
+                    $editBtn = '<span class="btn btn-xs btn-secondary mx-1 disabled" title="Cannot edit: ' . $reasonText . '" data-toggle="tooltip">
+                        <i class="fas fa-edit"></i>
+                    </span>';
+                } else {
+                    $editBtn = '<a href="' . route('establishment.edit', $row->id) . '" class="btn btn-xs btn-primary mx-1" title="Edit"><i class="fas fa-edit"></i></a>';
+                }
+
+                // Delete button
+                if ($isUsed) {
+                    $deleteBtn = '<span class="btn btn-xs btn-secondary disabled" title="Cannot delete: ' . $reasonText . '" data-toggle="tooltip">
                         <i class="fas fa-trash"></i>
-                    </button>
-                </form>';
+                    </span>';
+                } else {
+                    $deleteBtn = '<form action="' . route('establishment.destroy', $row->id) . '" method="POST" style="display:inline">
+                        ' . csrf_field() . '
+                        ' . method_field("DELETE") . '
+                        <button type="submit" class="btn btn-xs btn-danger" onclick="return confirm(\'Are you sure you want to delete this establishment?\')" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>';
+                }
 
                 return $viewBtn . $editBtn . $deleteBtn;
             })
@@ -47,7 +80,7 @@ class EstablishmentDataTable extends DataTable
      */
     public function query(Establishment $model): QueryBuilder
     {
-        return $model->newQuery();
+        return $model->newQuery()->withCount(['users', 'busPassApplications']);
     }
 
     /**
@@ -93,5 +126,5 @@ class EstablishmentDataTable extends DataTable
     protected function filename(): string
     {
         return 'establishment_' . date('YmdHis');
-}
+    }
 }

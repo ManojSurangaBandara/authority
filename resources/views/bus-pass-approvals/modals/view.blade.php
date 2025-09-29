@@ -51,10 +51,11 @@
                     <!-- Application Details -->
                     <div class="col-md-6">
                         <h5><i class="fas fa-clipboard-list"></i> Application Details</h5>
-                                                <table class="table table-sm">
+                        <table class="table table-sm">
                             <tr>
                                 <td><strong>Establishment:</strong></td>
-                                <td>{{ $application->establishment ? $application->establishment->name : ($application->branch_directorate ?? 'N/A') }}</td>
+                                <td>{{ $application->establishment ? $application->establishment->name : $application->branch_directorate ?? 'N/A' }}
+                                </td>
                             </tr>
                             <tr>
                                 <td><strong>Marital Status:</strong></td>
@@ -63,7 +64,8 @@
                             <tr>
                                 <td><strong>Living Out Approval:</strong></td>
                                 <td>
-                                    <span class="badge badge-{{ $application->approval_living_out === 'yes' ? 'success' : 'danger' }}">
+                                    <span
+                                        class="badge badge-{{ $application->approval_living_out === 'yes' ? 'success' : 'danger' }}">
                                         {{ ucfirst($application->approval_living_out) }}
                                     </span>
                                 </td>
@@ -71,14 +73,16 @@
                             <tr>
                                 <td><strong>Obtained SLTB Season:</strong></td>
                                 <td>
-                                    <span class="badge badge-{{ $application->obtain_sltb_season === 'yes' ? 'success' : 'danger' }}">
+                                    <span
+                                        class="badge badge-{{ $application->obtain_sltb_season === 'yes' ? 'success' : 'danger' }}">
                                         {{ ucfirst($application->obtain_sltb_season) }}
                                     </span>
                                 </td>
                             </tr>
                             <tr>
                                 <td><strong>Arrival at AHQ:</strong></td>
-                                <td>{{ $application->date_arrival_ahq ? $application->date_arrival_ahq->format('d M Y') : 'N/A' }}</td>
+                                <td>{{ $application->date_arrival_ahq ? $application->date_arrival_ahq->format('d M Y') : 'N/A' }}
+                                </td>
                             </tr>
                             <tr>
                                 <td><strong>Bus Pass Type:</strong></td>
@@ -93,18 +97,18 @@
                 </div>
 
                 <!-- Bus Pass Type Specific Details -->
-                @if($application->bus_pass_type === 'daily_travel')
+                @if ($application->bus_pass_type === 'daily_travel')
                     <div class="row mt-3">
                         <div class="col-12">
                             <h5><i class="fas fa-route"></i> Daily Travel Details</h5>
                             <table class="table table-sm">
-                                @if($application->requested_bus_name)
+                                @if ($application->requested_bus_name)
                                     <tr>
                                         <td><strong>Requested Bus:</strong></td>
                                         <td>{{ $application->requested_bus_name }}</td>
                                     </tr>
                                 @endif
-                                @if($application->destination_from_ahq)
+                                @if ($application->destination_from_ahq)
                                     <tr>
                                         <td><strong>Destination from AHQ:</strong></td>
                                         <td>{{ $application->destination_from_ahq }}</td>
@@ -128,30 +132,30 @@
                     </div>
                 @endif
 
-                @if($application->bus_pass_type === 'weekend_monthly_travel')
+                @if ($application->bus_pass_type === 'weekend_monthly_travel')
                     <div class="row mt-3">
                         <div class="col-12">
                             <h5><i class="fas fa-calendar-week"></i> Weekend/Monthly Travel Details</h5>
                             <table class="table table-sm">
-                                @if($application->living_in_bus)
+                                @if ($application->living_in_bus)
                                     <tr>
                                         <td><strong>Living In Bus:</strong></td>
                                         <td>{{ $application->living_in_bus }}</td>
                                     </tr>
                                 @endif
-                                @if($application->destination_location_ahq)
+                                @if ($application->destination_location_ahq)
                                     <tr>
                                         <td><strong>Destination Location from AHQ:</strong></td>
                                         <td>{{ $application->destination_location_ahq }}</td>
                                     </tr>
                                 @endif
-                                @if($application->weekend_bus_name)
+                                @if ($application->weekend_bus_name)
                                     <tr>
                                         <td><strong>Weekend Bus:</strong></td>
                                         <td>{{ $application->weekend_bus_name }}</td>
                                     </tr>
                                 @endif
-                                @if($application->weekend_destination)
+                                @if ($application->weekend_destination)
                                     <tr>
                                         <td><strong>Weekend Destination:</strong></td>
                                         <td>{{ $application->weekend_destination }}</td>
@@ -196,7 +200,8 @@
                                             target="_blank" class="btn btn-xs btn-outline-primary">
                                             <i class="fas fa-file-pdf"></i> View Document
                                         </a>
-                                        <small class="text-success ml-2"><i class="fas fa-check-circle"></i> Uploaded</small>
+                                        <small class="text-success ml-2"><i class="fas fa-check-circle"></i>
+                                            Uploaded</small>
                                     @else
                                         <span class="text-muted">Not uploaded</span>
                                     @endif
@@ -210,7 +215,8 @@
                                             class="btn btn-xs btn-outline-primary">
                                             <i class="fas fa-image"></i> View Image
                                         </a>
-                                        <small class="text-success ml-2"><i class="fas fa-check-circle"></i> Uploaded</small>
+                                        <small class="text-success ml-2"><i class="fas fa-check-circle"></i>
+                                            Uploaded</small>
                                     @else
                                         <span class="text-muted">Not uploaded</span>
                                     @endif
@@ -242,12 +248,61 @@
                 </div>
 
                 <!-- Current Remarks -->
-                @if($application->remarks)
+                @if ($application->remarks)
                     <div class="row mt-3">
                         <div class="col-12">
                             <h5><i class="fas fa-comment"></i> Current Remarks</h5>
                             <div class="alert alert-info">
                                 {{ $application->remarks }}
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                <!-- Approval History -->
+                @if ($application->approvalHistory->count() > 0)
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h5><i class="fas fa-history"></i> Approval History</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Date/Time</th>
+                                            <th>Action By</th>
+                                            <th>Action</th>
+                                            <th>Remarks</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($application->approvalHistory as $history)
+                                            <tr
+                                                class="{{ $history->action === 'not_recommended' ? 'table-warning' : '' }}">
+                                                <td>
+                                                    <small>{{ $history->action_date->format('d M Y') }}<br>{{ $history->action_date->format('h:i A') }}</small>
+                                                </td>
+                                                <td>
+                                                    <strong>{{ $history->user->name }}</strong><br>
+                                                    <small
+                                                        class="text-muted">{{ $history->user->roles->first()->name ?? 'N/A' }}</small>
+                                                </td>
+                                                <td>
+                                                    {!! $history->action_badge !!}
+                                                </td>
+                                                <td>
+                                                    @if ($history->remarks)
+                                                        <small
+                                                            class="{{ $history->action === 'not_recommended' ? 'text-warning' : '' }}">
+                                                            "{{ $history->remarks }}"
+                                                        </small>
+                                                    @else
+                                                        <small class="text-muted">No remarks</small>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>

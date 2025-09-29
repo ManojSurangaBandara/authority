@@ -64,8 +64,13 @@ class PersonController extends Controller
      */
     public function edit(string $id)
     {
-        $person = Person::findOrFail($id);
-        return view('persons.edit', compact('person'));
+        $person = Person::withCount('busPassApplications')->findOrFail($id);
+
+        // Check if person has bus pass applications
+        $busPassApplicationsCount = $person->bus_pass_applications_count ?? 0;
+        $isUsed = $busPassApplicationsCount > 0;
+
+        return view('persons.edit', compact('person', 'isUsed', 'busPassApplicationsCount'));
     }
 
     /**
@@ -75,8 +80,12 @@ class PersonController extends Controller
     {
         $person = Person::findOrFail($id);
 
-        $request->validate([
-            'regiment_no' => 'required|max:20|unique:persons,regiment_no,' . $id,
+        // Check if person has bus pass applications
+        $busPassApplicationsCount = $person->busPassApplications()->count();
+        $isUsed = $busPassApplicationsCount > 0;
+
+        // Validation rules
+        $rules = [
             'rank' => 'required|max:50',
             'name' => 'required|max:100',
             'unit' => 'required|max:100',
@@ -86,9 +95,27 @@ class PersonController extends Controller
             'telephone_no' => 'required|max:20',
             'grama_seva_division' => 'required|max:100',
             'nearest_police_station' => 'required|max:100',
-        ]);
+        ];
 
-        $person->update($request->all());
+        // Only validate regiment_no if it's not in use (allowing changes)
+        if (!$isUsed) {
+            $rules['regiment_no'] = 'required|max:20|unique:persons,regiment_no,' . $id;
+        } else {
+            // If person is in use, ensure the submitted regiment_no matches the existing one
+            $rules['regiment_no'] = 'required|max:20|in:' . $person->regiment_no;
+        }
+
+        $request->validate($rules);
+
+        // Prepare data for update
+        $updateData = $request->only(['rank', 'name', 'unit', 'nic', 'army_id', 'permanent_address', 'telephone_no', 'grama_seva_division', 'nearest_police_station']);
+
+        // Only update regiment_no if not in use
+        if (!$isUsed) {
+            $updateData['regiment_no'] = $request->regiment_no;
+        }
+
+        $person->update($updateData);
 
         return redirect()->route('persons.index')
             ->with('success', 'Person updated successfully.');

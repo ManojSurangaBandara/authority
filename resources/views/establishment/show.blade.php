@@ -10,7 +10,7 @@
             @endif
             <div class="card mt-3">
                 <div class="card card-teal">
-                    <div class="card-header">                              
+                    <div class="card-header">
                         <i class="nav-icon fas fa-building"></i>{{ __('View Establishment Details') }}
                         <a href="{{ route('establishment.index') }}" class="btn btn-sm btn-dark float-right">Back to List</a>
                     </div>
@@ -24,10 +24,10 @@
                             </tbody>
                         </table>
 
-                        <div class="mt-3">                             
+                        {{-- <div class="mt-3">
                             <a href="{{ route('establishment.edit', $establishment->id) }}" class="btn btn-sm btn-primary">
                                 <i class="fas fa-edit"></i> Edit
-                            </a>                                                
+                            </a>
                             <form action="{{ route('establishment.destroy', $establishment->id) }}" method="POST"
                                 style="display:inline-block">
                                 @csrf
@@ -37,7 +37,7 @@
                                     <i class="fas fa-trash"></i> Delete
                                 </button>
                             </form>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
             </div>
