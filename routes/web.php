@@ -23,6 +23,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\LivingInBusController;
 
 Route::get('/', function () {
     return view('auth.login');
@@ -139,6 +140,11 @@ Route::middleware('auth')->group(function () {
         Route::get('roles/{id}/permissions', [RoleController::class, 'permissions'])->name('roles.permissions');
         Route::patch('roles/{id}/permissions', [RoleController::class, 'updatePermissions'])->name('roles.update-permissions');
         Route::get('roles-hierarchy', [RoleController::class, 'hierarchy'])->name('roles.hierarchy');
+
+        // Living In Buses routes
+        Route::resource('living-in-buses', LivingInBusController::class);
+        
+
     });
 
     Route::get('rejected-applications', [ReportController::class, 'rejected'])->name('rejected-applications.index');
