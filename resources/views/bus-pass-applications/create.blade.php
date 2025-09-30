@@ -176,12 +176,12 @@
                                             <label for="establishment_id">Establishment <span class="text-danger">*</span></label>
                                             @if(auth()->user()->isBranchUser())
                                                 <!-- Branch users see their establishment locked -->
-                                                <input type="text" 
-                                                       class="form-control" 
-                                                       value="{{ auth()->user()->establishment ? auth()->user()->establishment->name : 'Not assigned' }}" 
+                                                <input type="text"
+                                                       class="form-control"
+                                                       value="{{ auth()->user()->establishment ? auth()->user()->establishment->name : 'Not assigned' }}"
                                                        readonly>
-                                                <input type="hidden" 
-                                                       name="establishment_id" 
+                                                <input type="hidden"
+                                                       name="establishment_id"
                                                        value="{{ auth()->user()->establishment_id }}">
                                                 <small class="form-text text-muted">
                                                     <i class="fas fa-lock"></i> Your establishment is automatically assigned.
@@ -526,8 +526,8 @@
                                                     id="declaration_1" name="declaration_1" value="yes" required
                                                     {{ old('declaration_1') == 'yes' ? 'checked' : '' }}>
                                                 <label class="form-check-label" for="declaration_1">
-                                                    I declare that the information provided above is true and correct to the
-                                                    best of my knowledge. <span class="text-danger">*</span>
+                                                    The applicant have declared that the information provided above is true and correct to the
+                                                    best of his/her knowledge. <span class="text-danger">*</span>
                                                 </label>
                                                 @error('declaration_1')
                                                     <span class="invalid-feedback">{{ $message }}</span>
@@ -546,7 +546,7 @@
                                                     id="declaration_2" name="declaration_2" value="yes" required
                                                     {{ old('declaration_2') == 'yes' ? 'checked' : '' }}>
                                                 <label class="form-check-label" for="declaration_2">
-                                                    I understand that any false information may result in the rejection of
+                                                    The applicant understands that any false information may result in the rejection of
                                                     this application and/or disciplinary action. <span
                                                         class="text-danger">*</span>
                                                 </label>
@@ -592,7 +592,7 @@
             border: 1px solid #ced4da;
             border-radius: 0.25rem;
         }
-        
+
         .select2-container--bootstrap4 .select2-selection:focus {
             border-color: #80bdff;
             outline: 0;
