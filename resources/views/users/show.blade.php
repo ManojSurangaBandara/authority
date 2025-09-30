@@ -159,7 +159,7 @@
                             <div class="role-item mb-3 p-3 border rounded">
                                 <h5 class="mb-1">{{ $role->name }}</h5>
                                 <p class="text-muted mb-2">{{ $role->permissions->count() }} permissions</p>
-                                
+
                                 @if($role->permissions->count() > 0)
                                     <details>
                                         <summary class="text-primary" style="cursor: pointer;">View Permissions</summary>
@@ -192,25 +192,25 @@
                         <a href="{{ route('users.edit', $user->id) }}" class="btn btn-primary btn-block mb-2">
                             <i class="fas fa-edit"></i> Edit User
                         </a>
-                        
+
                         @if($user->id !== auth()->user()->id)
-                            <button type="button" 
-                                    class="btn btn-{{ $user->is_active ? 'secondary' : 'success' }} btn-block mb-2" 
+                            <button type="button"
+                                    class="btn btn-{{ $user->is_active ? 'secondary' : 'success' }} btn-block mb-2"
                                     onclick="toggleUserStatus({{ $user->id }})">
-                                <i class="fas fa-{{ $user->is_active ? 'ban' : 'check' }}"></i> 
+                                <i class="fas fa-{{ $user->is_active ? 'ban' : 'check' }}"></i>
                                 {{ $user->is_active ? 'Deactivate' : 'Activate' }}
                             </button>
-                            
+
                             <button type="button" class="btn btn-warning btn-block mb-2" onclick="resetPasswordModal()">
                                 <i class="fas fa-key"></i> Reset Password
                             </button>
-                            
+
                             <button type="button" class="btn btn-danger btn-block" onclick="deleteUser({{ $user->id }})">
                                 <i class="fas fa-trash"></i> Delete User
                             </button>
                         @endif
                     @endcan
-                    
+
                     <a href="{{ route('users.index') }}" class="btn btn-secondary btn-block">
                         <i class="fas fa-arrow-left"></i> Back to Users
                     </a>
@@ -297,13 +297,13 @@
         }
 
         function deleteUser(userId) {
-            $('#deleteForm').attr('action', '/users/' + userId);
+            $('#deleteForm').attr('action', '/ahqams/users/' + userId);
             $('#deleteModal').modal('show');
         }
 
         function toggleUserStatus(userId) {
             if (confirm('Are you sure you want to change this user\'s status?')) {
-                $('#toggleStatusForm').attr('action', '/users/' + userId + '/toggle-status');
+                $('#toggleStatusForm').attr('action', '/ahqams/users/' + userId + '/toggle-status');
                 $('#toggleStatusForm').submit();
             }
         }
