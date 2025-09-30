@@ -23,6 +23,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\LivingInBusController;
 
 Route::get('/', function () {
     return view('auth.login');
@@ -139,6 +140,11 @@ Route::middleware('auth')->group(function () {
         Route::get('roles/{id}/permissions', [RoleController::class, 'permissions'])->name('roles.permissions');
         Route::patch('roles/{id}/permissions', [RoleController::class, 'updatePermissions'])->name('roles.update-permissions');
         Route::get('roles-hierarchy', [RoleController::class, 'hierarchy'])->name('roles.hierarchy');
+
+        // Living In Buses routes
+        Route::resource('living-in-buses', LivingInBusController::class);
+        
+
     });
 
     Route::get('rejected-applications', [ReportController::class, 'rejected'])->name('rejected-applications.index');
@@ -153,10 +159,14 @@ Route::middleware('auth')->group(function () {
 
     Route::get('pending-applications', [ReportController::class, 'pending'])->name('pending-applications.index');
 
+
+    Route::get('integrated-to-build-card', [ReportController::class, 'build'])->name('integrated-to-build-card.index');
+
     // Profile routes (All authenticated users)
     Route::get('profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::get('profile/change-password', [ProfileController::class, 'editPassword'])->name('profile.change-password');
     Route::post('profile/update-password', [ProfileController::class, 'updatePassword'])->name('profile.update-password');
+
 });
 
 Route::get('/logout', function () {
