@@ -377,6 +377,14 @@ return [
                         'persons*',
                     ],
                 ],
+                [
+                    'text' => 'Living In Bus Names',
+                    'url' => 'living-in-buses',
+                    'icon' => 'fas fa-fw fa-bus',
+                    'active' => [
+                        'living-in-buses*',
+                    ],
+                ],
                 // [
                 //     'text' => 'Bus Pass Statuses',
                 //     'url' => 'bus-pass-statuses',

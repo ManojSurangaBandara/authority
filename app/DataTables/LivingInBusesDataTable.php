@@ -26,7 +26,7 @@ class LivingInBusesDataTable extends DataTable
             ->addColumn('action', function ($row) {
                 // View button (always available)
                 $viewBtn = '<a href="' . route('living-in-buses.show', $row->id) . '" class="btn btn-xs btn-info" title="View"><i class="fas fa-eye"></i></a>';
-                
+
                 // Edit button (always enabled)
                 $editBtn = '<a href="' . route('living-in-buses.edit', $row->id) . '" class="btn btn-xs btn-primary mx-1" title="Edit"><i class="fas fa-edit"></i></a>';
 
@@ -82,8 +82,8 @@ class LivingInBusesDataTable extends DataTable
         public function getColumns(): array
         {
             return [
-                Column::make('id')->title('ID'),
-                Column::make('name')->title('Name'),
+                Column::make('DT_RowIndex')->title('#')->searchable(false)->orderable(false),
+                Column::make('name')->title('Bus Name'),
                 Column::computed('action')
                       ->exportable(false)
                       ->printable(false)
@@ -103,8 +103,8 @@ class LivingInBusesDataTable extends DataTable
 
 }
 
-        
-    
 
-     
+
+
+
 
