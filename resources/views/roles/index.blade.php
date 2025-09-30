@@ -19,7 +19,7 @@
 @stop
 
 @section('content')
-    @if(session('success'))
+    @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="fas fa-check-circle"></i> {{ session('success') }}
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -28,7 +28,7 @@
         </div>
     @endif
 
-    @if(session('error'))
+    @if (session('error'))
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -60,7 +60,7 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td>
                                     <strong>{{ $role->name }}</strong>
-                                    @if($role->name === 'System Administrator (DMOV)')
+                                    @if ($role->name === 'System Administrator (DMOV)')
                                         <span class="badge badge-danger ml-1">Super Admin</span>
                                     @endif
                                 </td>
@@ -77,16 +77,16 @@
                                 <td>{{ $role->created_at->format('M d, Y') }}</td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a href="{{ route('roles.show', $role) }}"
-                                           class="btn btn-sm btn-info"
-                                           title="View Details">
+                                        <a href="{{ route('roles.show', $role) }}" class="btn btn-sm btn-info"
+                                            title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="{{ route('roles.permissions', $role) }}"
-                                           class="btn btn-sm btn-warning"
-                                           title="Manage Permissions">
-                                            <i class="fas fa-key"></i>
-                                        </a>
+                                        @if ($role->name !== 'System Administrator (DMOV)')
+                                            <a href="{{ route('roles.permissions', $role) }}"
+                                                class="btn btn-sm btn-warning" title="Manage Permissions">
+                                                <i class="fas fa-key"></i>
+                                            </a>
+                                        @endif
                                         @php
                                             $systemRoles = [
                                                 'System Administrator (DMOV)',
@@ -98,32 +98,28 @@
                                                 'Staff Officer 1 (DMOV)',
                                                 'Col Mov (DMOV)',
                                                 'Director (DMOV)',
-                                                'Bus Escort (DMOV)'
+                                                'Bus Escort (DMOV)',
                                             ];
                                             $isSystemRole = in_array($role->name, $systemRoles);
                                             $hasUsers = $role->users->count() > 0;
                                         @endphp
-                                        @if(!$isSystemRole)
-                                            @if($hasUsers)
-                                                <button type="button"
-                                                        class="btn btn-sm btn-secondary"
-                                                        title="Cannot delete: {{ $role->users->count() }} user(s) assigned"
-                                                        disabled>
+                                        @if (!$isSystemRole)
+                                            @if ($hasUsers)
+                                                <button type="button" class="btn btn-sm btn-secondary"
+                                                    title="Cannot delete: {{ $role->users->count() }} user(s) assigned"
+                                                    disabled>
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             @else
-                                                <button type="button"
-                                                        class="btn btn-sm btn-danger"
-                                                        title="Delete Custom Role"
-                                                        onclick="confirmDelete({{ $role->id }}, '{{ $role->name }}')">
+                                                <button type="button" class="btn btn-sm btn-danger"
+                                                    title="Delete Custom Role"
+                                                    onclick="confirmDelete({{ $role->id }}, '{{ $role->name }}')">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             @endif
                                         @else
-                                            <button type="button"
-                                                    class="btn btn-sm btn-secondary"
-                                                    title="System role cannot be deleted"
-                                                    disabled>
+                                            <button type="button" class="btn btn-sm btn-secondary"
+                                                title="System role cannot be deleted" disabled>
                                                 <i class="fas fa-lock"></i>
                                             </button>
                                         @endif
@@ -164,7 +160,8 @@
                     <p>Are you sure you want to delete the role <strong id="roleName"></strong>?</p>
                     <div class="alert alert-warning">
                         <i class="fas fa-exclamation-triangle"></i>
-                        <strong>Warning:</strong> This action cannot be undone. This will permanently delete the custom role.
+                        <strong>Warning:</strong> This action cannot be undone. This will permanently delete the custom
+                        role.
                     </div>
                     <p class="text-muted">
                         <small><i class="fas fa-info-circle"></i> System roles are protected and cannot be deleted.</small>
@@ -198,7 +195,9 @@
         $(document).ready(function() {
             $('#rolesTable').DataTable({
                 responsive: true,
-                order: [[1, 'asc']],
+                order: [
+                    [1, 'asc']
+                ],
                 pageLength: 10,
                 language: {
                     search: "Search roles:",
