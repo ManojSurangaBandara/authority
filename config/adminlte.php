@@ -385,7 +385,22 @@ return [
                 //         'bus-pass-statuses*',
                 //     ],
                 // ],
-
+                [
+                    'text' => 'Living In Bus',
+                    'url' => 'living-in-buses',
+                    'icon' => 'fas fa-fw fa-users',
+                    'active' => [
+                        'living-in-buses*',
+                    ],
+                ],
+                [
+                    'text' => 'Destination Locations',
+                    'url' => 'destination-locations',
+                    'icon' => 'fas fa-fw fa-map-marker-alt',
+                    'active' => [
+                        'destination-locations*',
+                    ],
+                ],
             ],
         ],
         [
