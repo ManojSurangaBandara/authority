@@ -63,7 +63,6 @@ class DestinationLocationDataTable extends DataTable
                         ->setTableId('destinationlocation-table')
                         ->columns($this->getColumns())
                         ->minifiedAjax()
-                        ->dom('Bfrtip')
                         ->orderBy(1)
                         ->selectStyleSingle()
                         ->buttons([
