@@ -24,6 +24,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\LivingInBusController;
+use App\Http\Controllers\DestinationLocationController;
 
 Route::get('/', function () {
     return view('auth.login');
@@ -143,6 +144,9 @@ Route::middleware('auth')->group(function () {
 
         // Living In Buses routes
         Route::resource('living-in-buses', LivingInBusController::class);
+
+        // Destination Locations routes
+        Route::resource('destination-locations', DestinationLocationController::class);
         
 
     });

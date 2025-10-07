@@ -393,7 +393,15 @@ return [
                 //         'bus-pass-statuses*',
                 //     ],
                 // ],
-
+                
+                [
+                    'text' => 'Destination Locations',
+                    'url' => 'destination-locations',
+                    'icon' => 'fas fa-fw fa-map-marker-alt',
+                    'active' => [
+                        'destination-locations*',
+                    ],
+                ],
             ],
         ],
         [
