@@ -15,7 +15,7 @@
                         <table class="table table-bordered">
                             <tbody>
                                 <tr>
-                                    <th style="width: 30%">Name</th>
+                                    <th style="width: 30%">Bus Name</th>
                                     <td>{{ $livingInBus->name }}</td>
                                 </tr>
                             </tbody>

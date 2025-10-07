@@ -21,7 +21,7 @@
     <form action="{{ route('users.update', $user->id) }}" method="POST">
         @csrf
         @method('PATCH')
-        
+
         <div class="row">
             <div class="col-md-8">
                 <div class="card">
@@ -33,12 +33,8 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="name">Full Name <span class="text-danger">*</span></label>
-                                    <input type="text" 
-                                           class="form-control @error('name') is-invalid @enderror" 
-                                           id="name" 
-                                           name="name" 
-                                           value="{{ old('name', $user->name) }}" 
-                                           required>
+                                    <input type="text" class="form-control @error('name') is-invalid @enderror"
+                                        id="name" name="name" value="{{ old('name', $user->name) }}" required>
                                     @error('name')
                                         <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror
@@ -47,12 +43,8 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="email">Email Address <span class="text-danger">*</span></label>
-                                    <input type="email" 
-                                           class="form-control @error('email') is-invalid @enderror" 
-                                           id="email" 
-                                           name="email" 
-                                           value="{{ old('email', $user->email) }}" 
-                                           required>
+                                    <input type="email" class="form-control @error('email') is-invalid @enderror"
+                                        id="email" name="email" value="{{ old('email', $user->email) }}" required>
                                     @error('email')
                                         <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror
@@ -64,11 +56,9 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="regiment_no">Regiment Number</label>
-                                    <input type="text" 
-                                           class="form-control @error('regiment_no') is-invalid @enderror" 
-                                           id="regiment_no" 
-                                           name="regiment_no" 
-                                           value="{{ old('regiment_no', $user->regiment_no) }}">
+                                    <input type="text" class="form-control @error('regiment_no') is-invalid @enderror"
+                                        id="regiment_no" name="regiment_no"
+                                        value="{{ old('regiment_no', $user->regiment_no) }}">
                                     @error('regiment_no')
                                         <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror
@@ -77,11 +67,8 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="rank">Rank</label>
-                                    <input type="text" 
-                                           class="form-control @error('rank') is-invalid @enderror" 
-                                           id="rank" 
-                                           name="rank" 
-                                           value="{{ old('rank', $user->rank) }}">
+                                    <input type="text" class="form-control @error('rank') is-invalid @enderror"
+                                        id="rank" name="rank" value="{{ old('rank', $user->rank) }}">
                                     @error('rank')
                                         <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror
@@ -91,11 +78,8 @@
 
                         <div class="form-group">
                             <label for="contact_no">Contact Number</label>
-                            <input type="text" 
-                                   class="form-control @error('contact_no') is-invalid @enderror" 
-                                   id="contact_no" 
-                                   name="contact_no" 
-                                   value="{{ old('contact_no', $user->contact_no) }}">
+                            <input type="text" class="form-control @error('contact_no') is-invalid @enderror"
+                                id="contact_no" name="contact_no" value="{{ old('contact_no', $user->contact_no) }}">
                             @error('contact_no')
                                 <span class="invalid-feedback">{{ $message }}</span>
                             @enderror
@@ -103,16 +87,14 @@
 
                         <div class="form-group">
                             <label for="establishment_id">Branch/Directorate <span class="text-danger">*</span></label>
-                            <select class="form-control @error('establishment_id') is-invalid @enderror" 
-                                    id="establishment_id" 
-                                    name="establishment_id" 
-                                    required>
+                            <select class="form-control @error('establishment_id') is-invalid @enderror"
+                                id="establishment_id" name="establishment_id" required>
                                 <option value="">Select Branch/Directorate</option>
-                                @foreach($establishments as $establishment)
-                                    <option value="{{ $establishment->id }}" 
-                                            {{ old('establishment_id', $user->establishment_id) == $establishment->id ? 'selected' : '' }}>
+                                @foreach ($establishments as $establishment)
+                                    <option value="{{ $establishment->id }}"
+                                        {{ old('establishment_id', $user->establishment_id) == $establishment->id ? 'selected' : '' }}>
                                         {{ $establishment->name }}
-                                        @if($establishment->location)
+                                        @if ($establishment->location)
                                             ({{ $establishment->location }})
                                         @endif
                                     </option>
@@ -122,7 +104,8 @@
                                 <span class="invalid-feedback">{{ $message }}</span>
                             @enderror
                             <small class="form-text text-muted">
-                                Select the branch or directorate this user belongs to. This is required for bus pass applications.
+                                Select the branch or directorate this user belongs to. This is required for bus pass
+                                applications.
                             </small>
                         </div>
 
@@ -136,10 +119,9 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="password">New Password</label>
-                                            <input type="password" 
-                                                   class="form-control @error('password') is-invalid @enderror" 
-                                                   id="password" 
-                                                   name="password">
+                                            <input type="password"
+                                                class="form-control @error('password') is-invalid @enderror" id="password"
+                                                name="password">
                                             @error('password')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
@@ -148,10 +130,8 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="password_confirmation">Confirm New Password</label>
-                                            <input type="password" 
-                                                   class="form-control" 
-                                                   id="password_confirmation" 
-                                                   name="password_confirmation">
+                                            <input type="password" class="form-control" id="password_confirmation"
+                                                name="password_confirmation">
                                         </div>
                                     </div>
                                 </div>
@@ -172,23 +152,40 @@
                             @error('roles')
                                 <div class="text-danger small mb-2">{{ $message }}</div>
                             @enderror
-                            
-                            @if($roles->count() > 0)
+
+                            @if ($roles->count() > 0)
                                 <div class="role-list" style="max-height: 300px; overflow-y: auto;">
-                                    @foreach($roles as $role)
+                                    @foreach ($roles as $role)
                                         <div class="custom-control custom-checkbox mb-2">
-                                            <input type="checkbox" 
-                                                   class="custom-control-input" 
-                                                   id="role_{{ $role->id }}" 
-                                                   name="roles[]" 
-                                                   value="{{ $role->id }}"
-                                                   @if(in_array($role->id, old('roles', $userRoles))) checked @endif>
+                                            @php
+                                                $isSystemAdmin = $role->name === 'System Administrator (DMOV)';
+                                                $userHasSystemAdmin = $user->hasRole('System Administrator (DMOV)');
+                                                $isDisabled = $isSystemAdmin && $userHasSystemAdmin;
+                                            @endphp
+                                            <input type="checkbox" class="custom-control-input"
+                                                id="role_{{ $role->id }}" name="roles[]"
+                                                value="{{ $role->id }}"
+                                                @if (in_array($role->id, old('roles', $userRoles))) checked @endif
+                                                @if ($isDisabled) disabled @endif>
                                             <label class="custom-control-label" for="role_{{ $role->id }}">
                                                 <strong>{{ $role->name }}</strong>
+                                                @if ($isDisabled)
+                                                    <span class="badge badge-warning ml-2">
+                                                        <i class="fas fa-lock"></i> Protected
+                                                    </span>
+                                                @endif
                                                 <small class="text-muted d-block">
                                                     {{ $role->permissions->count() }} permissions
+                                                    @if ($isDisabled)
+                                                        <br><em class="text-warning">Cannot be removed from System
+                                                            Administrator users</em>
+                                                    @endif
                                                 </small>
                                             </label>
+                                            @if ($isDisabled)
+                                                {{-- Hidden input to ensure the role is always included --}}
+                                                <input type="hidden" name="roles[]" value="{{ $role->id }}">
+                                            @endif
                                         </div>
                                     @endforeach
                                 </div>
@@ -200,12 +197,8 @@
                         <div class="form-group">
                             <label>Account Status</label>
                             <div class="custom-control custom-switch">
-                                <input type="checkbox" 
-                                       class="custom-control-input" 
-                                       id="is_active" 
-                                       name="is_active" 
-                                       value="1" 
-                                       @if(old('is_active', $user->is_active)) checked @endif>
+                                <input type="checkbox" class="custom-control-input" id="is_active" name="is_active"
+                                    value="1" @if (old('is_active', $user->is_active)) checked @endif>
                                 <label class="custom-control-label" for="is_active">Active Account</label>
                             </div>
                         </div>
@@ -219,7 +212,7 @@
                     <div class="card-body">
                         <p><strong>Created:</strong> {{ $user->created_at->format('M d, Y H:i') }}</p>
                         <p><strong>Last Updated:</strong> {{ $user->updated_at->format('M d, Y H:i') }}</p>
-                        @if($user->last_login_at)
+                        @if ($user->last_login_at)
                             <p><strong>Last Login:</strong> {{ $user->last_login_at->format('M d, Y H:i') }}</p>
                         @endif
                     </div>
@@ -250,6 +243,18 @@
             border-radius: 0.25rem;
             padding: 0.75rem;
             background-color: #f8f9fa;
+        }
+
+        .custom-control-input:disabled~.custom-control-label {
+            opacity: 0.7;
+            background-color: #fff3cd;
+            border-radius: 0.25rem;
+            padding: 0.25rem;
+        }
+
+        .custom-control-input:disabled~.custom-control-label::before {
+            background-color: #ffc107;
+            border-color: #ffc107;
         }
     </style>
 @stop

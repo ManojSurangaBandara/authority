@@ -101,7 +101,17 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
-        
+
+        // Custom validation: If user has System Administrator role, it must be included
+        $systemAdminRole = Role::where('name', 'System Administrator (DMOV)')->first();
+        if ($user->hasRole('System Administrator (DMOV)') && $systemAdminRole) {
+            if (!in_array($systemAdminRole->id, $request->roles ?? [])) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['roles' => 'System Administrator role cannot be removed from this user.']);
+            }
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => [
@@ -140,6 +150,15 @@ class UserController extends Controller
 
         // Update user roles
         $roles = Role::whereIn('id', $request->roles)->get();
+
+        // If user currently has System Administrator role, ensure it's preserved
+        if ($user->hasRole('System Administrator (DMOV)')) {
+            $systemAdminRole = Role::where('name', 'System Administrator (DMOV)')->first();
+            if ($systemAdminRole && !$roles->contains($systemAdminRole)) {
+                $roles->push($systemAdminRole);
+            }
+        }
+
         $user->syncRoles($roles);
 
         return redirect()->route('users.index')
@@ -152,7 +171,7 @@ class UserController extends Controller
     public function destroy($id)
     {
         $user = User::findOrFail($id);
-        
+
         // Prevent deleting the current logged-in user
         if ($user->id === Auth::id()) {
             return redirect()->route('users.index')
@@ -171,7 +190,7 @@ class UserController extends Controller
     public function resetPassword(Request $request, $id)
     {
         $user = User::findOrFail($id);
-        
+
         $request->validate([
             'new_password' => 'required|string|min:8|confirmed',
         ]);
@@ -190,13 +209,13 @@ class UserController extends Controller
     public function toggleStatus($id)
     {
         $user = User::findOrFail($id);
-        
+
         $user->update([
             'is_active' => !$user->is_active,
         ]);
 
         $status = $user->is_active ? 'activated' : 'deactivated';
-        
+
         return redirect()->route('users.index')
             ->with('success', "User {$status} successfully.");
     }

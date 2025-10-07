@@ -19,7 +19,7 @@
                             @csrf
                             @method('PUT')
                             <div class="mb-3">
-                                <label for="name">Name <span class="text-danger">*</span></label>
+                                <label for="name">Bus Name <span class="text-danger">*</span></label>
                                 <input type="text" name="name" class="form-control"
                                     value="{{ $livingInBus->name }}" required>
                                 @error('name')

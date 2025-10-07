@@ -196,13 +196,13 @@
         });
 
         function deleteUser(userId) {
-            $('#deleteForm').attr('action', '/users/' + userId);
+            $('#deleteForm').attr('action', '/ahqams/users/' + userId);
             $('#deleteModal').modal('show');
         }
 
         function toggleUserStatus(userId) {
             if (confirm('Are you sure you want to change this user\'s status?')) {
-                $('#toggleStatusForm').attr('action', '/users/' + userId + '/toggle-status');
+                $('#toggleStatusForm').attr('action', '/ahqams/users/' + userId + '/toggle-status');
                 $('#toggleStatusForm').submit();
             }
         }
