@@ -411,6 +411,15 @@ return [
                         'province*',
                     ],
                 ],
+
+                [
+                    'text' => 'District',
+                    'url' => 'district',
+                    'icon' => 'fas fa-fw fa-map-pin',
+                    'active' => [
+                        'district*',
+                    ],
+                ],
             ],
         ],
         [

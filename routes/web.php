@@ -26,6 +26,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\LivingInBusController;
 use App\Http\Controllers\DestinationLocationController;
 use App\Http\Controllers\ProvinceController;
+use App\Http\Controllers\DistrictController;
 
 Route::get('/', function () {
     return view('auth.login');
@@ -151,6 +152,9 @@ Route::middleware('auth')->group(function () {
 
         // Province routes
         Route::resource('province', ProvinceController::class);
+
+        // District routes
+        Route::resource('district', DistrictController::class);
         
 
     });
