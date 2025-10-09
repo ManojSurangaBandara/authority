@@ -420,6 +420,15 @@ return [
                         'district*',
                     ],
                 ],
+
+                  [
+                    'text' => 'Gs Devision',
+                    'url' => 'gs-devision',
+                    'icon' => 'fas fa-fw fa-landmark',
+                    'active' => [
+                        'gs-devision*',
+                    ],
+                ],
             ],
         ],
         [

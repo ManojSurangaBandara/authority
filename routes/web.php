@@ -27,6 +27,7 @@ use App\Http\Controllers\LivingInBusController;
 use App\Http\Controllers\DestinationLocationController;
 use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\DistrictController;
+use App\Http\Controllers\GsDivisionController;
 
 Route::get('/', function () {
     return view('auth.login');
@@ -155,6 +156,9 @@ Route::middleware('auth')->group(function () {
 
         // District routes
         Route::resource('district', DistrictController::class);
+
+        // Gs Devision routes
+        Route::resource('gs-devision', GsDivisionController::class);
         
 
     });
