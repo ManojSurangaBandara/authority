@@ -25,6 +25,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\LivingInBusController;
 use App\Http\Controllers\DestinationLocationController;
+use App\Http\Controllers\ProvinceController;
+use App\Http\Controllers\DistrictController;
 
 Route::get('/', function () {
     return view('auth.login');
@@ -147,6 +149,12 @@ Route::middleware('auth')->group(function () {
 
         // Destination Locations routes
         Route::resource('destination-locations', DestinationLocationController::class);
+
+        // Province routes
+        Route::resource('province', ProvinceController::class);
+
+        // District routes
+        Route::resource('district', DistrictController::class);
         
 
     });

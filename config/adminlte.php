@@ -402,6 +402,24 @@ return [
                         'destination-locations*',
                     ],
                 ],
+
+                [
+                    'text' => 'Provinces',
+                    'url' => 'province',
+                    'icon' => 'fas fa-fw fa-map',
+                    'active' => [
+                        'province*',
+                    ],
+                ],
+
+                [
+                    'text' => 'District',
+                    'url' => 'district',
+                    'icon' => 'fas fa-fw fa-map-pin',
+                    'active' => [
+                        'district*',
+                    ],
+                ],
             ],
         ],
         [
