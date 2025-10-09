@@ -421,12 +421,21 @@ return [
                     ],
                 ],
 
-                  [
+                [
                     'text' => 'Gs Devision',
                     'url' => 'gs-devision',
                     'icon' => 'fas fa-fw fa-landmark',
                     'active' => [
                         'gs-devision*',
+                    ],
+                ],
+
+                 [
+                    'text' => 'Police Station',
+                    'url' => 'police-station',
+                    'icon' => 'fas fa-shield-alt',
+                    'active' => [
+                        'police-station*',
                     ],
                 ],
             ],

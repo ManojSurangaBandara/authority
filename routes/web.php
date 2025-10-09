@@ -28,6 +28,7 @@ use App\Http\Controllers\DestinationLocationController;
 use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\DistrictController;
 use App\Http\Controllers\GsDivisionController;
+use App\Http\Controllers\PoliceStationController;
 
 Route::get('/', function () {
     return view('auth.login');
@@ -159,6 +160,9 @@ Route::middleware('auth')->group(function () {
 
         // Gs Devision routes
         Route::resource('gs-devision', GsDivisionController::class);
+
+        // Police Station routes
+        Route::resource('police-station', PoliceStationController::class);
         
 
     });
