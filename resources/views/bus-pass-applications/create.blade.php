@@ -141,19 +141,23 @@
                                             @enderror
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="grama_seva_division">Grama Seva Division <span
-                                                    class="text-danger">*</span></label>
-                                            <input type="text"
-                                                class="form-control @error('grama_seva_division') is-invalid @enderror"
-                                                id="grama_seva_division" name="grama_seva_division"
-                                                value="{{ old('grama_seva_division') }}" required>
-                                            @error('grama_seva_division')
-                                                <span class="invalid-feedback">{{ $message }}</span>
-                                            @enderror
-                                        </div>
-                                    </div>
+                                   <div class="form-group">
+                                        <label for="gs_division_id">GS Division <span class="text-danger">*</span></label>
+                                        <select class="form-control @error('gs_division_id') is-invalid @enderror"
+                                                id="gs_division_id"
+                                                name="gs_division_id"
+                                                required>
+                                            <option value="">Select Division</option>
+                                            @foreach($divisions as $division)
+                                                <option value="{{ $division->id }}" {{ old('gs_division_id') == $division->id ? 'selected' : '' }}>
+                                                    {{ $division->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        @error('gs_division_id')
+                                            <span class="invalid-feedback">{{ $message }}</span>
+                                        @enderror
+                                   </div>
                                     <div class="col-md-3">
                                         <div class="form-group">
                                             <label for="nearest_police_station">Nearest Police Station <span

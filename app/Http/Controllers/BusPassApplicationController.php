@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use App\Models\GsDivision;
 
 class BusPassApplicationController extends Controller
 {
@@ -30,9 +31,10 @@ class BusPassApplicationController extends Controller
     public function create()
     {
         $busRoutes = BusRoute::all();
+        $divisions = GsDivision::all();
         $establishment = Establishment::orderBy('name')->get();
 
-        return view('bus-pass-applications.create', compact('busRoutes','establishment'));
+        return view('bus-pass-applications.create', compact('busRoutes','establishment','divisions'));
 
 
     }
@@ -199,9 +201,10 @@ class BusPassApplicationController extends Controller
     public function edit(BusPassApplication $bus_pass_application)
     {
         $busRoutes = BusRoute::all();
+        $divisions = GsDivision::all();
         $establishment = Establishment::orderBy('name')->get();
 
-        return view('bus-pass-applications.edit', compact('bus_pass_application', 'busRoutes', 'establishment'));
+        return view('bus-pass-applications.edit', compact('bus_pass_application', 'busRoutes', 'establishment', 'divisions'));
     }
 
     /**

@@ -72,7 +72,7 @@
                             </div>
                             <div class="col-md-4">
                                 <strong>Grama Seva Division:</strong><br>
-                                {{ $bus_pass_application->person->grama_seva_division }}
+                                {{ $bus_pass_application->person->gsDivision->name ?? 'N/A' }}
                             </div>
                             <div class="col-md-4">
                                 <strong>Nearest Police Station:</strong><br>
