@@ -38,7 +38,6 @@ class DestinationLocationController extends Controller
 
         return redirect()->route('destination-locations.index')
             ->with('success', 'Entry created successfully.');
-
     }
 
     /**
@@ -85,5 +84,27 @@ class DestinationLocationController extends Controller
 
         return redirect()->route('destination-locations.index')
             ->with('success', 'Entry deleted successfully.');
+    }
+
+    /**
+     * Get all destination locations for API
+     */
+    public function api()
+    {
+        try {
+            $locations = DestinationLocation::select('id', 'destination_location as name')
+                ->orderBy('destination_location')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $locations
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch destination locations'
+            ], 500);
+        }
     }
 }

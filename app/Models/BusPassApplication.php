@@ -153,7 +153,14 @@ class BusPassApplication extends Model
     // Bus pass type label accessor
     public function getTypeLabelAttribute()
     {
-        return $this->bus_pass_type === 'daily_travel' ? 'Daily Travel' : 'Weekend/Monthly Travel';
+        $labels = [
+            'daily_travel' => 'Daily Travel (Living out)',
+            'weekend_monthly_travel' => 'Weekend and Living in Bus',
+            'living_in_only' => 'Living in Bus only',
+            'weekend_only' => 'Weekend only'
+        ];
+
+        return $labels[$this->bus_pass_type] ?? ucfirst(str_replace('_', ' ', $this->bus_pass_type));
     }
 
     // Get bus pass type label (legacy method for backward compatibility)

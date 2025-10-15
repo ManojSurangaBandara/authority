@@ -32,14 +32,12 @@ class BusPassApplicationController extends Controller
         $busRoutes = BusRoute::all();
         $establishment = Establishment::orderBy('name')->get();
 
-        return view('bus-pass-applications.create', compact('busRoutes','establishment'));
-
-
+        return view('bus-pass-applications.create', compact('busRoutes', 'establishment'));
     }
 
     /**
      * Store a newly created resource in storage.
-    */
+     */
     public function store(Request $request)
     {
         $validationRules = [
@@ -59,7 +57,7 @@ class BusPassApplicationController extends Controller
             'date_arrival_ahq' => 'required|date',
             'grama_niladari_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'person_image' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
-            'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel',
+            'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only',
             'rent_allowance_order' => $request->bus_pass_type === 'daily_travel' ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'declaration_1' => 'required|in:yes',
             'declaration_2' => 'required|in:yes',
@@ -72,10 +70,16 @@ class BusPassApplicationController extends Controller
             $validationRules['establishment_id'] = 'required|exists:establishments,id';
         }
 
-        // Add conditional validation for weekend/monthly travel
+        // Add conditional validation based on bus pass type
         if ($request->bus_pass_type === 'weekend_monthly_travel') {
             $validationRules['living_in_bus'] = 'required|string|max:100';
             $validationRules['destination_location_ahq'] = 'required|string|max:100';
+            $validationRules['weekend_bus_name'] = 'required|string|max:100';
+            $validationRules['weekend_destination'] = 'required|string|max:200';
+        } elseif ($request->bus_pass_type === 'living_in_only') {
+            $validationRules['living_in_bus'] = 'required|string|max:100';
+            $validationRules['destination_location_ahq'] = 'required|exists:destination_locations,id';
+        } elseif ($request->bus_pass_type === 'weekend_only') {
             $validationRules['weekend_bus_name'] = 'required|string|max:100';
             $validationRules['weekend_destination'] = 'required|string|max:200';
         }
@@ -126,7 +130,7 @@ class BusPassApplicationController extends Controller
 
         // Prepare application data (excluding person fields)
         $data['person_id'] = $person->id;
-        
+
         // For branch users, automatically use their establishment
         $user = Auth::user();
         $branchRoles = ['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)'];
@@ -135,7 +139,7 @@ class BusPassApplicationController extends Controller
         } else {
             $data['establishment_id'] = $request->establishment_id;
         }
-        
+
         // Set branch_directorate to establishment name for now (since form doesn't have this field)
         $establishment = Establishment::find($data['establishment_id']);
         $data['branch_directorate'] = $establishment ? $establishment->name : 'Unknown';
@@ -149,10 +153,16 @@ class BusPassApplicationController extends Controller
         $data['created_by'] = Auth::user()->name ?? 'System';
         $data['status'] = 'pending_subject_clerk';
 
-        // Add conditional fields for weekend/monthly travel
+        // Add conditional fields based on bus pass type
         if ($request->bus_pass_type === 'weekend_monthly_travel') {
             $data['living_in_bus'] = $request->living_in_bus;
             $data['destination_location_ahq'] = $request->destination_location_ahq;
+            $data['weekend_bus_name'] = $request->weekend_bus_name;
+            $data['weekend_destination'] = $request->weekend_destination;
+        } elseif ($request->bus_pass_type === 'living_in_only') {
+            $data['living_in_bus'] = $request->living_in_bus;
+            $data['destination_location_ahq'] = $request->destination_location_ahq;
+        } elseif ($request->bus_pass_type === 'weekend_only') {
             $data['weekend_bus_name'] = $request->weekend_bus_name;
             $data['weekend_destination'] = $request->weekend_destination;
         }
@@ -168,7 +178,7 @@ class BusPassApplicationController extends Controller
         try {
             BusPassApplication::create($data);
             Log::info('Bus pass application created successfully', ['person_id' => $person->id]);
-            
+
             return redirect()->route('bus-pass-applications.index')
                 ->with('success', 'Bus pass application submitted successfully.');
         } catch (\Exception $e) {
@@ -176,7 +186,7 @@ class BusPassApplicationController extends Controller
                 'error' => $e->getMessage(),
                 'data' => $data
             ]);
-            
+
             return redirect()->back()
                 ->withInput()
                 ->withErrors(['error' => 'Failed to create application: ' . $e->getMessage()]);
@@ -225,7 +235,7 @@ class BusPassApplicationController extends Controller
             'approval_living_out' => 'required|in:yes,no',
             'obtain_sltb_season' => 'required|in:yes,no',
             'date_arrival_ahq' => 'required|date',
-            'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel',
+            'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only',
             'rent_allowance_order' => $request->bus_pass_type === 'daily_travel' && !$bus_pass_application->rent_allowance_order ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'declaration_1' => 'required|in:yes',
             'declaration_2' => 'required|in:yes',
@@ -238,10 +248,16 @@ class BusPassApplicationController extends Controller
             $validationRules['establishment_id'] = 'required|exists:establishments,id';
         }
 
-        // Add conditional validation for weekend/monthly travel
+        // Add conditional validation for different bus pass types
         if ($request->bus_pass_type === 'weekend_monthly_travel') {
             $validationRules['living_in_bus'] = 'required|string|max:100';
             $validationRules['destination_location_ahq'] = 'required|string|max:100';
+            $validationRules['weekend_bus_name'] = 'required|string|max:100';
+            $validationRules['weekend_destination'] = 'required|string|max:200';
+        } elseif ($request->bus_pass_type === 'living_in_only') {
+            $validationRules['living_in_bus'] = 'required|string|max:100';
+            $validationRules['destination_location_ahq'] = 'required|string|max:100';
+        } elseif ($request->bus_pass_type === 'weekend_only') {
             $validationRules['weekend_bus_name'] = 'required|string|max:100';
             $validationRules['weekend_destination'] = 'required|string|max:200';
         }
@@ -301,7 +317,7 @@ class BusPassApplicationController extends Controller
         } else {
             $data['establishment_id'] = $request->establishment_id;
         }
-        
+
         // Set branch_directorate to establishment name for now (since form doesn't have this field)
         $establishment = Establishment::find($data['establishment_id']);
         $data['branch_directorate'] = $establishment ? $establishment->name : 'Unknown';
@@ -313,10 +329,16 @@ class BusPassApplicationController extends Controller
         $data['declaration_1'] = $request->declaration_1;
         $data['declaration_2'] = $request->declaration_2;
 
-        // Add conditional fields for weekend/monthly travel
+        // Add conditional fields based on bus pass type
         if ($request->bus_pass_type === 'weekend_monthly_travel') {
             $data['living_in_bus'] = $request->living_in_bus;
             $data['destination_location_ahq'] = $request->destination_location_ahq;
+            $data['weekend_bus_name'] = $request->weekend_bus_name;
+            $data['weekend_destination'] = $request->weekend_destination;
+        } elseif ($request->bus_pass_type === 'living_in_only') {
+            $data['living_in_bus'] = $request->living_in_bus;
+            $data['destination_location_ahq'] = $request->destination_location_ahq;
+        } elseif ($request->bus_pass_type === 'weekend_only') {
             $data['weekend_bus_name'] = $request->weekend_bus_name;
             $data['weekend_destination'] = $request->weekend_destination;
         }
@@ -332,7 +354,7 @@ class BusPassApplicationController extends Controller
         try {
             $bus_pass_application->update($data);
             Log::info('Bus pass application updated successfully', ['id' => $bus_pass_application->id]);
-            
+
             return redirect()->route('bus-pass-applications.index')
                 ->with('success', 'Bus pass application updated successfully.');
         } catch (\Exception $e) {
@@ -341,7 +363,7 @@ class BusPassApplicationController extends Controller
                 'error' => $e->getMessage(),
                 'data' => $data
             ]);
-            
+
             return redirect()->back()
                 ->withInput()
                 ->withErrors(['error' => 'Failed to update application: ' . $e->getMessage()]);

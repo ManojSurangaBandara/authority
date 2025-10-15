@@ -43,6 +43,9 @@ Route::middleware('auth')->group(function () {
     // Dashboard routes
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // API routes for dropdowns (accessible by all authenticated users)
+    Route::get('destination-locations-api/all', [App\Http\Controllers\DestinationLocationController::class, 'api'])->name('destination-locations.api');
+
     // Add other protected routes here
     Route::resource('buses', BusController::class);
     Route::resource('bus-routes', BusRouteController::class);
@@ -163,8 +166,6 @@ Route::middleware('auth')->group(function () {
 
         // Police Station routes
         Route::resource('police-station', PoliceStationController::class);
-        
-
     });
 
     Route::get('rejected-applications', [ReportController::class, 'rejected'])->name('rejected-applications.index');
@@ -186,7 +187,6 @@ Route::middleware('auth')->group(function () {
     Route::get('profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::get('profile/change-password', [ProfileController::class, 'editPassword'])->name('profile.change-password');
     Route::post('profile/update-password', [ProfileController::class, 'updatePassword'])->name('profile.update-password');
-
 });
 
 Route::get('/logout', function () {

@@ -188,37 +188,40 @@
 
                                 <div class="row">
                                     <div class="col-md-6">
-                                         <div class="form-group">
-                                        <label for="establishment_id">Establishment <span class="text-danger">*</span></label>
-                                        @if(auth()->user()->hasAnyRole(['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)']))
-                                            <!-- Read-only field for branch users -->
-                                            <input type="text" class="form-control"
-                                                   value="{{ auth()->user()->establishment->name ?? 'No Establishment Assigned' }}"
-                                                   readonly>
-                                            <input type="hidden" name="establishment_id" value="{{ auth()->user()->establishment_id }}">
-                                            <small class="form-text text-muted">
-                                                Your establishment is automatically assigned based on your role
-                                            </small>
-                                        @else
-                                            <!-- Dropdown for other users -->
-                                            <select class="form-control @error('establishment_id') is-invalid @enderror"
-                                                id="establishment_id" name="establishment_id" required>
-                                                <option value="">Select Establishment</option>
-                                                @foreach ($establishment as $est)
-                                                    <option value="{{ $est->id }}"
-                                                        {{ (old('establishment_id', $bus_pass_application->establishment_id) == $est->id) ? 'selected' : '' }}>
-                                                        {{ $est->name }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                            @error('establishment_id')
-                                                <span class="invalid-feedback">{{ $message }}</span>
-                                            @enderror
-                                            <small class="form-text text-muted">
-                                                Select the Establishment from the available options
-                                            </small>
-                                        @endif
-                                    </div>
+                                        <div class="form-group">
+                                            <label for="establishment_id">Establishment <span
+                                                    class="text-danger">*</span></label>
+                                            @if (auth()->user()->hasAnyRole(['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)']))
+                                                <!-- Read-only field for branch users -->
+                                                <input type="text" class="form-control"
+                                                    value="{{ auth()->user()->establishment->name ?? 'No Establishment Assigned' }}"
+                                                    readonly>
+                                                <input type="hidden" name="establishment_id"
+                                                    value="{{ auth()->user()->establishment_id }}">
+                                                <small class="form-text text-muted">
+                                                    Your establishment is automatically assigned based on your role
+                                                </small>
+                                            @else
+                                                <!-- Dropdown for other users -->
+                                                <select
+                                                    class="form-control @error('establishment_id') is-invalid @enderror"
+                                                    id="establishment_id" name="establishment_id" required>
+                                                    <option value="">Select Establishment</option>
+                                                    @foreach ($establishment as $est)
+                                                        <option value="{{ $est->id }}"
+                                                            {{ old('establishment_id', $bus_pass_application->establishment_id) == $est->id ? 'selected' : '' }}>
+                                                            {{ $est->name }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                                @error('establishment_id')
+                                                    <span class="invalid-feedback">{{ $message }}</span>
+                                                @enderror
+                                                <small class="form-text text-muted">
+                                                    Select the Establishment from the available options
+                                                </small>
+                                            @endif
+                                        </div>
                                     </div>
                                     <div class="col-md-3">
                                         <div class="form-group">
@@ -311,10 +314,16 @@
                                                 <option value="">Select Type</option>
                                                 <option value="daily_travel"
                                                     {{ old('bus_pass_type', $bus_pass_application->bus_pass_type) == 'daily_travel' ? 'selected' : '' }}>
-                                                    Daily Travel</option>
+                                                    Daily Travel (Living out)</option>
                                                 <option value="weekend_monthly_travel"
                                                     {{ old('bus_pass_type', $bus_pass_application->bus_pass_type) == 'weekend_monthly_travel' ? 'selected' : '' }}>
-                                                    Weekend/Monthly Travel</option>
+                                                    Weekend and Living in Bus</option>
+                                                <option value="living_in_only"
+                                                    {{ old('bus_pass_type', $bus_pass_application->bus_pass_type) == 'living_in_only' ? 'selected' : '' }}>
+                                                    Living in Bus only</option>
+                                                <option value="weekend_only"
+                                                    {{ old('bus_pass_type', $bus_pass_application->bus_pass_type) == 'weekend_only' ? 'selected' : '' }}>
+                                                    Weekend only</option>
                                             </select>
                                             @error('bus_pass_type')
                                                 <span class="invalid-feedback">{{ $message }}</span>
@@ -499,6 +508,106 @@
                                     </div>
                                 </div>
 
+                                <div id="living_in_only_section" style="display: none;">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <h5 class="text-info mb-3">Living in Bus only</h5>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="living_in_bus_only">Living in bus</label>
+                                                <select class="form-control" id="living_in_bus_only"
+                                                    name="living_in_bus">
+                                                    <option value="">Select Living in bus</option>
+                                                    <option value="Kinnadeniya 1"
+                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Kinnadeniya 1' ? 'selected' : '' }}>
+                                                        Kinnadeniya 1</option>
+                                                    <option value="Kinnadeniya 2"
+                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Kinnadeniya 2' ? 'selected' : '' }}>
+                                                        Kinnadeniya 2</option>
+                                                    <option value="Kinnadeniya 3"
+                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Kinnadeniya 3' ? 'selected' : '' }}>
+                                                        Kinnadeniya 3</option>
+                                                    <option value="Panagoda - Officers"
+                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Panagoda - Officers' ? 'selected' : '' }}>
+                                                        Panagoda - Officers</option>
+                                                    <option value="Panagoda - Other Ranks"
+                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Panagoda - Other Ranks' ? 'selected' : '' }}>
+                                                        Panagoda - Other Ranks</option>
+                                                    <option value="Kandalanda"
+                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Kandalanda' ? 'selected' : '' }}>
+                                                        Kandalanda</option>
+                                                    <option value="Pamankada"
+                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Pamankada' ? 'selected' : '' }}>
+                                                        Pamankada</option>
+                                                    <option value="Maharagama"
+                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Maharagama' ? 'selected' : '' }}>
+                                                        Maharagama</option>
+                                                    <option value="Mathegoda"
+                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Mathegoda' ? 'selected' : '' }}>
+                                                        Mathegoda</option>
+                                                    <option value="SLEME - Kompanyaweediya"
+                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'SLEME - Kompanyaweediya' ? 'selected' : '' }}>
+                                                        SLEME - Kompanyaweediya</option>
+                                                    <option value="Rathmalaana"
+                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Rathmalaana' ? 'selected' : '' }}>
+                                                        Rathmalaana</option>
+                                                    <option value="Other"
+                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Other' ? 'selected' : '' }}>
+                                                        Other</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="destination_location_living_in_edit">Destination Location from
+                                                    AHQ (Living in)</label>
+                                                <select class="form-control" id="destination_location_living_in_edit"
+                                                    name="destination_location_ahq">
+                                                    <option value="">Select Destination Location</option>
+                                                    <!-- Options will be populated from destination_locations table -->
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="weekend_only_section" style="display: none;">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <h5 class="text-info mb-3">Weekend only</h5>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="weekend_bus_name_only">Weekend Bus Name</label>
+                                                <select class="form-control" id="weekend_bus_name_only"
+                                                    name="weekend_bus_name">
+                                                    <option value="">Select Bus</option>
+                                                    @if (isset($busRoutes))
+                                                        @foreach ($busRoutes as $route)
+                                                            <option value="{{ $route->name }}"
+                                                                {{ old('weekend_bus_name', $bus_pass_application->weekend_bus_name) == $route->name ? 'selected' : '' }}>
+                                                                {{ $route->name }}</option>
+                                                        @endforeach
+                                                    @endif
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="weekend_destination_only">Destination Location from AHQ</label>
+                                                <input type="text" class="form-control" id="weekend_destination_only"
+                                                    name="weekend_destination"
+                                                    value="{{ old('weekend_destination', $bus_pass_application->weekend_destination) }}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <!-- File Uploads Section -->
                                 <div class="row mt-4">
                                     <div class="col-12">
@@ -568,7 +677,8 @@
                                                     id="declaration_1" name="declaration_1" value="yes" required
                                                     {{ old('declaration_1', $bus_pass_application->declaration_1) == 'yes' ? 'checked' : '' }}>
                                                 <label class="form-check-label" for="declaration_1">
-                                                    The applicant have declared that the information provided above is true and correct to the
+                                                    The applicant have declared that the information provided above is true
+                                                    and correct to the
                                                     best of his/her knowledge. <span class="text-danger">*</span>
                                                 </label>
                                                 @error('declaration_1')
@@ -588,7 +698,8 @@
                                                     id="declaration_2" name="declaration_2" value="yes" required
                                                     {{ old('declaration_2', $bus_pass_application->declaration_2) == 'yes' ? 'checked' : '' }}>
                                                 <label class="form-check-label" for="declaration_2">
-                                                    The applicant understands that any false information may result in the rejection of
+                                                    The applicant understands that any false information may result in the
+                                                    rejection of
                                                     this application and/or disciplinary action. <span
                                                         class="text-danger">*</span>
                                                 </label>
@@ -623,7 +734,8 @@
 
 @section('css')
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@1.5.2/dist/select2-bootstrap4.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@1.5.2/dist/select2-bootstrap4.min.css"
+        rel="stylesheet" />
     <style>
         /* Select2 styling to match your form */
         .select2-container--bootstrap4 .select2-selection {
@@ -652,35 +764,111 @@
 @stop
 
 @push('js')
-
     <script>
         $(document).ready(function() {
 
             // Initialize Select2 for Establishment dropdown only if element exists and is not disabled
-            @if(!auth()->user()->hasAnyRole(['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)']))
-            $('#establishment_id').select2({
-               theme: 'bootstrap4',
-               placeholder: 'Select Establishment',
-               allowClear: true,
-               width: '100%'
-           });
+            @if (!auth()->user()->hasAnyRole(['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)']))
+                $('#establishment_id').select2({
+                    theme: 'bootstrap4',
+                    placeholder: 'Select Establishment',
+                    allowClear: true,
+                    width: '100%'
+                });
             @endif
 
             // Bus pass type change handler
             $('#bus_pass_type').change(function() {
                 var type = $(this).val();
-                $('#daily_travel_section').hide();
-                $('#weekend_monthly_section').hide();
 
+                // Hide all sections and disable their fields
+                $('#daily_travel_section').hide();
+                $('#daily_travel_section input, #daily_travel_section select').prop('disabled', true);
+
+                $('#weekend_monthly_section').hide();
+                $('#weekend_monthly_section input, #weekend_monthly_section select').prop('disabled', true);
+
+                $('#living_in_only_section').hide();
+                $('#living_in_only_section input, #living_in_only_section select').prop('disabled', true);
+
+                $('#weekend_only_section').hide();
+                $('#weekend_only_section input, #weekend_only_section select').prop('disabled', true);
+
+                // Show and enable the appropriate section
                 if (type === 'daily_travel') {
                     $('#daily_travel_section').show();
+                    $('#daily_travel_section input, #daily_travel_section select').prop('disabled', false);
                 } else if (type === 'weekend_monthly_travel') {
                     $('#weekend_monthly_section').show();
+                    $('#weekend_monthly_section input, #weekend_monthly_section select').prop('disabled',
+                        false);
+                } else if (type === 'living_in_only') {
+                    $('#living_in_only_section').show();
+                    $('#living_in_only_section input, #living_in_only_section select').prop('disabled',
+                        false);
+                    // Load destination locations from database
+                    loadDestinationLocationsEdit();
+                } else if (type === 'weekend_only') {
+                    $('#weekend_only_section').show();
+                    $('#weekend_only_section input, #weekend_only_section select').prop('disabled', false);
                 }
             });
 
+            // Function to clear unused fields based on selected bus pass type
+            function clearUnusedFields(selectedType) {
+                // Only clear fields that are NOT being used by the current selection
+                // Don't clear fields that might be shared between sections
+
+                // Fields specific to daily travel only
+                if (selectedType !== 'daily_travel') {
+                    $('#requested_bus_name').val('');
+                    $('#destination_from_ahq').val('');
+                }
+
+                // Fields specific to living in only (but not weekend_monthly)
+                if (selectedType !== 'living_in_only') {
+                    $('#living_in_bus_only').val('');
+                    $('#destination_location_living_in_edit').val('');
+                }
+
+                // Fields specific to weekend only (but not weekend_monthly)
+                if (selectedType !== 'weekend_only') {
+                    $('#weekend_bus_name_only').val('');
+                    $('#weekend_destination_only').val('');
+                }
+
+                // Don't clear shared fields like living_in_bus, destination_location_ahq, weekend_bus_name, weekend_destination
+                // as they are used by weekend_monthly_travel section
+            }
+
+            // Function to load destination locations for edit form
+            function loadDestinationLocationsEdit() {
+                $.ajax({
+                    url: '{{ route('destination-locations.api') }}',
+                    method: 'GET',
+                    success: function(response) {
+                        if (response.success && response.data) {
+                            var options = '<option value="">Select Destination Location</option>';
+                            var currentValue =
+                                '{{ old('destination_location_ahq', $bus_pass_application->destination_location_ahq ?? '') }}';
+                            $.each(response.data, function(index, location) {
+                                var selected = (currentValue == location.id) ? 'selected' : '';
+                                options += '<option value="' + location.id + '" ' + selected +
+                                    '>' + location.name + '</option>';
+                            });
+                            $('#destination_location_living_in_edit').html(options);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log('Failed to load destination locations:', error);
+                    }
+                });
+            }
+
             // Trigger on page load
             $('#bus_pass_type').trigger('change');
+
+
 
             // Fetch person details from API
             $('#fetch-details').click(function() {

@@ -194,6 +194,44 @@
                             </div>
                         @endif
 
+                        @if ($bus_pass_application->bus_pass_type === 'living_in_only')
+                            <div class="row mb-4 mt-5">
+                                <div class="col-12">
+                                    <h4 class="text-info border-bottom pb-2">Living in Bus only</h4>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Living in bus:</strong><br>
+                                    {{ $bus_pass_application->living_in_bus ?? 'N/A' }}
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Destination Location from AHQ (Living in):</strong><br>
+                                    {{ $bus_pass_application->destination_location_ahq ?? 'N/A' }}
+                                </div>
+                            </div>
+                        @endif
+
+                        @if ($bus_pass_application->bus_pass_type === 'weekend_only')
+                            <div class="row mb-4 mt-5">
+                                <div class="col-12">
+                                    <h4 class="text-info border-bottom pb-2">Weekend only</h4>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Weekend Bus Name:</strong><br>
+                                    {{ $bus_pass_application->weekend_bus_name ?? 'N/A' }}
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Destination Location from AHQ:</strong><br>
+                                    {{ $bus_pass_application->weekend_destination ?? 'N/A' }}
+                                </div>
+                            </div>
+                        @endif
+
                     </div>
 
                     <div class="card-body">
@@ -285,9 +323,10 @@
                     @endphp
 
                     @if ($showEditButton)
-                    <a href="{{ route('bus-pass-applications.edit', $bus_pass_application) }}" class="btn btn-warning">
-                        <i class="fas fa-edit"></i> Edit
-                    </a>
+                        <a href="{{ route('bus-pass-applications.edit', $bus_pass_application) }}"
+                            class="btn btn-warning">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
                     @endif
                     <a href="{{ route('bus-pass-applications.index') }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left"></i> Back
@@ -298,4 +337,3 @@
     </div>
     </div>
 @endsection
-
