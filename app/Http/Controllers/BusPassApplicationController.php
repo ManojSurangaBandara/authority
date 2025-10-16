@@ -57,8 +57,9 @@ class BusPassApplicationController extends Controller
             'date_arrival_ahq' => 'required|date',
             'grama_niladari_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'person_image' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
-            'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only',
-            'rent_allowance_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only') ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only,unmarried_daily_travel',
+            'rent_allowance_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only' && $request->bus_pass_type !== 'unmarried_daily_travel') ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'permission_letter' => ($request->bus_pass_type === 'unmarried_daily_travel') ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'declaration_1' => 'required|in:yes',
             'declaration_2' => 'required|in:yes',
         ];
@@ -71,7 +72,10 @@ class BusPassApplicationController extends Controller
         }
 
         // Add conditional validation based on bus pass type
-        if ($request->bus_pass_type === 'weekend_monthly_travel') {
+        if ($request->bus_pass_type === 'daily_travel' || $request->bus_pass_type === 'unmarried_daily_travel') {
+            $validationRules['requested_bus_name'] = 'required|string|max:100';
+            $validationRules['destination_from_ahq'] = 'required|string|max:200';
+        } elseif ($request->bus_pass_type === 'weekend_monthly_travel') {
             $validationRules['living_in_bus'] = 'required|string|max:100';
             $validationRules['destination_location_ahq'] = 'required|string|max:100';
             $validationRules['weekend_bus_name'] = 'required|string|max:100';
@@ -86,11 +90,23 @@ class BusPassApplicationController extends Controller
 
         $request->validate($validationRules);
 
-        // Additional validation: Single personnel can only select "Living in Bus only"
-        if ($request->marital_status === 'single' && $request->bus_pass_type !== 'living_in_only') {
-            return redirect()->back()
-                ->withErrors(['bus_pass_type' => 'Single personnel can only select "Living in Bus only" bus pass type.'])
-                ->withInput();
+        // Additional validation: Single personnel validation
+        if ($request->marital_status === 'single') {
+            // Single personnel can select "Living in Bus only" or "Unmarried Daily Travel" (if approval for living out is yes)
+            $allowedTypes = ['living_in_only'];
+            if ($request->approval_living_out === 'yes') {
+                $allowedTypes[] = 'unmarried_daily_travel';
+            }
+
+            if (!in_array($request->bus_pass_type, $allowedTypes)) {
+                $errorMessage = $request->approval_living_out === 'yes'
+                    ? 'Single personnel can only select "Living in Bus only" or "Unmarried Daily Travel" bus pass types.'
+                    : 'Single personnel can only select "Living in Bus only" bus pass type.';
+
+                return redirect()->back()
+                    ->withErrors(['bus_pass_type' => $errorMessage])
+                    ->withInput();
+            }
         }
 
         // Debug: Log successful validation
@@ -135,6 +151,10 @@ class BusPassApplicationController extends Controller
             $data['rent_allowance_order'] = $request->file('rent_allowance_order')->store('rent_allowances', 'public');
         }
 
+        if ($request->hasFile('permission_letter')) {
+            $data['permission_letter'] = $request->file('permission_letter')->store('permission_letters', 'public');
+        }
+
         // Prepare application data (excluding person fields)
         $data['person_id'] = $person->id;
 
@@ -161,7 +181,10 @@ class BusPassApplicationController extends Controller
         $data['status'] = 'pending_subject_clerk';
 
         // Add conditional fields based on bus pass type
-        if ($request->bus_pass_type === 'weekend_monthly_travel') {
+        if ($request->bus_pass_type === 'daily_travel' || $request->bus_pass_type === 'unmarried_daily_travel') {
+            $data['requested_bus_name'] = $request->requested_bus_name;
+            $data['destination_from_ahq'] = $request->destination_from_ahq;
+        } elseif ($request->bus_pass_type === 'weekend_monthly_travel') {
             $data['living_in_bus'] = $request->living_in_bus;
             $data['destination_location_ahq'] = $request->destination_location_ahq;
             $data['weekend_bus_name'] = $request->weekend_bus_name;
@@ -172,14 +195,6 @@ class BusPassApplicationController extends Controller
         } elseif ($request->bus_pass_type === 'weekend_only') {
             $data['weekend_bus_name'] = $request->weekend_bus_name;
             $data['weekend_destination'] = $request->weekend_destination;
-        }
-
-        // Add daily travel fields if present
-        if ($request->has('requested_bus_name')) {
-            $data['requested_bus_name'] = $request->requested_bus_name;
-        }
-        if ($request->has('destination_from_ahq')) {
-            $data['destination_from_ahq'] = $request->destination_from_ahq;
         }
 
         try {
@@ -246,8 +261,9 @@ class BusPassApplicationController extends Controller
             'approval_living_out' => 'required|in:yes,no',
             'obtain_sltb_season' => 'required|in:yes,no',
             'date_arrival_ahq' => 'required|date',
-            'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only',
-            'rent_allowance_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only' && !$bus_pass_application->rent_allowance_order) ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only,unmarried_daily_travel',
+            'rent_allowance_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only' && $request->bus_pass_type !== 'unmarried_daily_travel' && !$bus_pass_application->rent_allowance_order) ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'permission_letter' => ($request->bus_pass_type === 'unmarried_daily_travel' && !$bus_pass_application->permission_letter) ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'declaration_1' => 'required|in:yes',
             'declaration_2' => 'required|in:yes',
         ];
@@ -259,8 +275,11 @@ class BusPassApplicationController extends Controller
             $validationRules['establishment_id'] = 'required|exists:establishments,id';
         }
 
-        // Add conditional validation for different bus pass types
-        if ($request->bus_pass_type === 'weekend_monthly_travel') {
+        // Add conditional validation based on bus pass type
+        if ($request->bus_pass_type === 'daily_travel' || $request->bus_pass_type === 'unmarried_daily_travel') {
+            $validationRules['requested_bus_name'] = 'required|string|max:100';
+            $validationRules['destination_from_ahq'] = 'required|string|max:200';
+        } elseif ($request->bus_pass_type === 'weekend_monthly_travel') {
             $validationRules['living_in_bus'] = 'required|string|max:100';
             $validationRules['destination_location_ahq'] = 'required|string|max:100';
             $validationRules['weekend_bus_name'] = 'required|string|max:100';
@@ -275,11 +294,23 @@ class BusPassApplicationController extends Controller
 
         $request->validate($validationRules);
 
-        // Additional validation: Single personnel can only select "Living in Bus only"
-        if ($request->marital_status === 'single' && $request->bus_pass_type !== 'living_in_only') {
-            return redirect()->back()
-                ->withErrors(['bus_pass_type' => 'Single personnel can only select "Living in Bus only" bus pass type.'])
-                ->withInput();
+        // Additional validation: Single personnel validation
+        if ($request->marital_status === 'single') {
+            // Single personnel can select "Living in Bus only" or "Unmarried Daily Travel" (if approval for living out is yes)
+            $allowedTypes = ['living_in_only'];
+            if ($request->approval_living_out === 'yes') {
+                $allowedTypes[] = 'unmarried_daily_travel';
+            }
+
+            if (!in_array($request->bus_pass_type, $allowedTypes)) {
+                $errorMessage = $request->approval_living_out === 'yes'
+                    ? 'Single personnel can only select "Living in Bus only" or "Unmarried Daily Travel" bus pass types.'
+                    : 'Single personnel can only select "Living in Bus only" bus pass type.';
+
+                return redirect()->back()
+                    ->withErrors(['bus_pass_type' => $errorMessage])
+                    ->withInput();
+            }
         }
 
         // Debug: Log successful validation
@@ -328,6 +359,13 @@ class BusPassApplicationController extends Controller
             $data['rent_allowance_order'] = $request->file('rent_allowance_order')->store('rent_allowances', 'public');
         }
 
+        if ($request->hasFile('permission_letter')) {
+            if ($bus_pass_application->permission_letter) {
+                Storage::disk('public')->delete($bus_pass_application->permission_letter);
+            }
+            $data['permission_letter'] = $request->file('permission_letter')->store('permission_letters', 'public');
+        }
+
         // Add application-specific fields
         // Set establishment_id based on user role
         if ($user->hasAnyRole($branchRoles)) {
@@ -348,7 +386,10 @@ class BusPassApplicationController extends Controller
         $data['declaration_2'] = $request->declaration_2;
 
         // Add conditional fields based on bus pass type
-        if ($request->bus_pass_type === 'weekend_monthly_travel') {
+        if ($request->bus_pass_type === 'daily_travel' || $request->bus_pass_type === 'unmarried_daily_travel') {
+            $data['requested_bus_name'] = $request->requested_bus_name;
+            $data['destination_from_ahq'] = $request->destination_from_ahq;
+        } elseif ($request->bus_pass_type === 'weekend_monthly_travel') {
             $data['living_in_bus'] = $request->living_in_bus;
             $data['destination_location_ahq'] = $request->destination_location_ahq;
             $data['weekend_bus_name'] = $request->weekend_bus_name;
@@ -359,14 +400,6 @@ class BusPassApplicationController extends Controller
         } elseif ($request->bus_pass_type === 'weekend_only') {
             $data['weekend_bus_name'] = $request->weekend_bus_name;
             $data['weekend_destination'] = $request->weekend_destination;
-        }
-
-        // Add daily travel fields if present
-        if ($request->has('requested_bus_name')) {
-            $data['requested_bus_name'] = $request->requested_bus_name;
-        }
-        if ($request->has('destination_from_ahq')) {
-            $data['destination_from_ahq'] = $request->destination_from_ahq;
         }
 
         try {

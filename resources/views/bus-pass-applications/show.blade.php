@@ -162,6 +162,25 @@
                             </div>
                         @endif
 
+                        @if ($bus_pass_application->bus_pass_type === 'unmarried_daily_travel')
+                            <div class="row mb-4 mt-5">
+                                <div class="col-12">
+                                    <h4 class="text-info border-bottom pb-2">Unmarried Daily Travel</h4>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Requested Bus Name:</strong><br>
+                                    {{ $bus_pass_application->requested_bus_name ?? 'N/A' }}
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Destination location from AHQ:</strong><br>
+                                    {{ $bus_pass_application->destination_from_ahq ?? 'N/A' }}
+                                </div>
+                            </div>
+                        @endif
+
                         @if ($bus_pass_application->bus_pass_type === 'weekend_monthly_travel')
                             <div class="row mb-4 mt-5">
                                 <div class="col-12">
@@ -283,14 +302,34 @@
                         </div>
 
                         <!-- Rent Allowance Document (Conditional) -->
-                        @if ($bus_pass_application->bus_pass_type !== 'living_in_only')
+                        @if (
+                            $bus_pass_application->bus_pass_type !== 'living_in_only' &&
+                                $bus_pass_application->bus_pass_type !== 'unmarried_daily_travel')
                             <div class="row mt-3">
                                 <div class="col-md-12">
                                     <strong>Rent Allowance Part II Order:</strong>
-                                    <span class="text-info">(For Married Personnel - Not applicable for Living in Bus
-                                        only)</span><br>
+                                    <span class="text-info">(For Married Personnel - Not applicable for Living in Bus only
+                                        and Unmarried Daily Travel)</span><br>
                                     @if ($bus_pass_application->rent_allowance_order)
                                         <a href="{{ asset('storage/' . $bus_pass_application->rent_allowance_order) }}"
+                                            target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-file-pdf"></i> View Document
+                                        </a>
+                                    @else
+                                        <span class="text-muted">Not uploaded</span>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- Permission Letter Document (Conditional) -->
+                        @if ($bus_pass_application->bus_pass_type === 'unmarried_daily_travel')
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <strong>Letter of Permission from the Head of Establishment:</strong>
+                                    <span class="text-info">(For Unmarried Daily Travel only)</span><br>
+                                    @if ($bus_pass_application->permission_letter)
+                                        <a href="{{ asset('storage/' . $bus_pass_application->permission_letter) }}"
                                             target="_blank" class="btn btn-sm btn-outline-primary">
                                             <i class="fas fa-file-pdf"></i> View Document
                                         </a>

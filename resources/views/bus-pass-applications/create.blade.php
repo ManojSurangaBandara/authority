@@ -305,6 +305,10 @@
                                                 <option value="weekend_only"
                                                     {{ old('bus_pass_type') == 'weekend_only' ? 'selected' : '' }}>Weekend
                                                     only</option>
+                                                <option value="unmarried_daily_travel"
+                                                    {{ old('bus_pass_type') == 'unmarried_daily_travel' ? 'selected' : '' }}>
+                                                    Unmarried
+                                                    Daily Travel</option>
                                             </select>
                                             @error('bus_pass_type')
                                                 <span class="invalid-feedback">{{ $message }}</span>
@@ -347,6 +351,41 @@
                                         </div>
                                     </div>
 
+                                </div>
+
+                                <div id="unmarried_daily_travel_section" style="display: none;">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <h5 class="text-info mb-3">Unmarried Daily Travel</h5>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="requested_bus_name_unmarried">Requested Bus Name</label>
+                                                <select class="form-control" id="requested_bus_name_unmarried"
+                                                    name="requested_bus_name">
+                                                    <option value="">Select Bus</option>
+                                                    @if (isset($busRoutes))
+                                                        @foreach ($busRoutes as $route)
+                                                            <option value="{{ $route->name }}"
+                                                                {{ old('requested_bus_name') == $route->name ? 'selected' : '' }}>
+                                                                {{ $route->name }}</option>
+                                                        @endforeach
+                                                    @endif
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="destination_from_ahq_unmarried">Destination location from
+                                                    AHQ</label>
+                                                <input type="text" class="form-control"
+                                                    id="destination_from_ahq_unmarried" name="destination_from_ahq"
+                                                    value="{{ old('destination_from_ahq') }}">
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div id="weekend_monthly_section" style="display: none;">
@@ -590,6 +629,26 @@
                                     </div>
                                 </div>
 
+                                <!-- Permission Letter Document (Conditional) -->
+                                <div class="row" id="permission_letter_section" style="display: none;">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="permission_letter">Letter of Permission from the Head of
+                                                Establishment
+                                                <span class="text-info">(For Unmarried Daily Travel only)</span></label>
+                                            <input type="file"
+                                                class="form-control-file @error('permission_letter') is-invalid @enderror"
+                                                id="permission_letter" name="permission_letter"
+                                                accept=".pdf,.jpg,.jpeg,.png">
+                                            <small class="form-text text-muted">Accepted formats: PDF, JPG, PNG (Max:
+                                                2MB)</small>
+                                            @error('permission_letter')
+                                                <span class="invalid-feedback">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div class="row">
                                     <div class="col-md-6" id="grama_niladari_section">
                                         <div class="form-group">
@@ -729,9 +788,10 @@
                 });
             @endif
 
-            // Function to update bus pass type options based on marital status
+            // Function to update bus pass type options based on marital status and approval for living out
             function updateBusPassTypeOptions() {
                 var maritalStatus = $('#marital_status').val();
+                var approvalLivingOut = $('#approval_living_out').val();
                 var busPassTypeSelect = $('#bus_pass_type');
                 var currentValue = busPassTypeSelect.val();
 
@@ -739,19 +799,32 @@
                 busPassTypeSelect.find('option:not(:first)').remove();
 
                 if (maritalStatus === 'single') {
-                    // Only show "Living in Bus only" for single personnel
+                    // For single personnel, show "Living in Bus only" always
                     busPassTypeSelect.append('<option value="living_in_only">Living in Bus only</option>');
+
+                    // If approval for living out is "yes", also show "Unmarried Daily Travel"
+                    if (approvalLivingOut === 'yes') {
+                        busPassTypeSelect.append(
+                            '<option value="unmarried_daily_travel">Unmarried Daily Travel</option>');
+                    }
+
                     // If current selection is not valid for single, clear it
-                    if (currentValue && currentValue !== 'living_in_only') {
+                    var validSingleTypes = ['living_in_only'];
+                    if (approvalLivingOut === 'yes') {
+                        validSingleTypes.push('unmarried_daily_travel');
+                    }
+
+                    if (currentValue && !validSingleTypes.includes(currentValue)) {
                         busPassTypeSelect.val('');
                         // Hide all sections when clearing
                         $('#daily_travel_section').hide();
+                        $('#unmarried_daily_travel_section').hide();
                         $('#weekend_monthly_section').hide();
                         $('#living_in_only_section').hide();
                         $('#weekend_only_section').hide();
                     }
                 } else if (maritalStatus === 'married') {
-                    // Show all bus pass types for married personnel
+                    // Show all bus pass types for married personnel except unmarried daily travel
                     busPassTypeSelect.append('<option value="daily_travel">Daily Travel (Living out)</option>');
                     busPassTypeSelect.append(
                         '<option value="weekend_monthly_travel">Weekend and Living in Bus</option>');
@@ -780,8 +853,9 @@
                 var maritalStatus = $('#marital_status').val();
                 var busPassType = $('#bus_pass_type').val();
 
-                // Show rent allowance if married AND bus pass type is NOT "living_in_only"
-                if (maritalStatus === 'married' && busPassType && busPassType !== 'living_in_only') {
+                // Show rent allowance if married AND bus pass type is NOT "living_in_only" and NOT "unmarried_daily_travel"
+                if (maritalStatus === 'married' && busPassType && busPassType !== 'living_in_only' &&
+                    busPassType !== 'unmarried_daily_travel') {
                     $('#rent_allowance_section').show();
                 } else {
                     $('#rent_allowance_section').hide();
@@ -804,8 +878,28 @@
                 }
             }
 
+            // Function to check and show/hide permission letter section
+            function checkPermissionLetterVisibility() {
+                var busPassType = $('#bus_pass_type').val();
+
+                // Show Permission Letter only for "Unmarried Daily Travel"
+                if (busPassType === 'unmarried_daily_travel') {
+                    $('#permission_letter_section').show();
+                } else {
+                    $('#permission_letter_section').hide();
+                    // Clear the file input when hidden
+                    $('#permission_letter').val('');
+                }
+            }
+
             // Marital status change handler
             $('#marital_status').change(function() {
+                updateBusPassTypeOptions();
+                checkRentAllowanceVisibility();
+            });
+
+            // Approval for living out change handler
+            $('#approval_living_out').change(function() {
                 updateBusPassTypeOptions();
                 checkRentAllowanceVisibility();
             });
@@ -820,12 +914,15 @@
             $('#bus_pass_type').change(function() {
                 var type = $(this).val();
                 $('#daily_travel_section').hide();
+                $('#unmarried_daily_travel_section').hide();
                 $('#weekend_monthly_section').hide();
                 $('#living_in_only_section').hide();
                 $('#weekend_only_section').hide();
 
                 if (type === 'daily_travel') {
                     $('#daily_travel_section').show();
+                } else if (type === 'unmarried_daily_travel') {
+                    $('#unmarried_daily_travel_section').show();
                 } else if (type === 'weekend_monthly_travel') {
                     $('#weekend_monthly_section').show();
                 } else if (type === 'living_in_only') {
@@ -840,6 +937,8 @@
                 checkRentAllowanceVisibility();
                 // Check grama niladari certificate visibility when bus pass type changes
                 checkGramaNiladariVisibility();
+                // Check permission letter visibility when bus pass type changes
+                checkPermissionLetterVisibility();
             });
 
             // Function to load destination locations from database
@@ -870,6 +969,7 @@
 
             // Check visibility on page load
             checkGramaNiladariVisibility();
+            checkPermissionLetterVisibility();
 
             // Fetch person details from API
             $('#fetch-details').click(function() {

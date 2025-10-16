@@ -34,6 +34,7 @@ class BusPassApplication extends Model
         'requested_bus_name',
         'destination_from_ahq',
         'rent_allowance_order',
+        'permission_letter',
         'living_in_bus',
         'destination_location_ahq',
         'weekend_bus_name',
@@ -163,7 +164,8 @@ class BusPassApplication extends Model
             'daily_travel' => 'Daily Travel (Living out)',
             'weekend_monthly_travel' => 'Weekend and Living in Bus',
             'living_in_only' => 'Living in Bus only',
-            'weekend_only' => 'Weekend only'
+            'weekend_only' => 'Weekend only',
+            'unmarried_daily_travel' => 'Unmarried Daily Travel'
         ];
 
         return $labels[$this->bus_pass_type] ?? ucfirst(str_replace('_', ' ', $this->bus_pass_type));
