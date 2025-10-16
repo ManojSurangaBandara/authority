@@ -178,7 +178,13 @@
                                 </div>
                                 <div class="col-md-6">
                                     <strong>Destination Location from AHQ:</strong><br>
-                                    {{ $bus_pass_application->destination_location_ahq ?? 'N/A' }}
+                                    @if ($bus_pass_application->destinationLocation)
+                                        {{ $bus_pass_application->destinationLocation->destination_location }}
+                                    @elseif ($bus_pass_application->destination_location_ahq)
+                                        {{ $bus_pass_application->destination_location_ahq }}
+                                    @else
+                                        N/A
+                                    @endif
                                 </div>
                             </div>
 
@@ -208,7 +214,13 @@
                                 </div>
                                 <div class="col-md-6">
                                     <strong>Destination Location from AHQ (Living in):</strong><br>
-                                    {{ $bus_pass_application->destination_location_ahq ?? 'N/A' }}
+                                    @if ($bus_pass_application->destinationLocation)
+                                        {{ $bus_pass_application->destinationLocation->destination_location }}
+                                    @elseif ($bus_pass_application->destination_location_ahq)
+                                        {{ $bus_pass_application->destination_location_ahq }}
+                                    @else
+                                        N/A
+                                    @endif
                                 </div>
                             </div>
                         @endif
@@ -243,18 +255,21 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6">
-                                <strong>Grama Niladari Certificate:</strong><br>
-                                @if ($bus_pass_application->grama_niladari_certificate)
-                                    <a href="{{ asset('storage/' . $bus_pass_application->grama_niladari_certificate) }}"
-                                        target="_blank" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-file-pdf"></i> View Document
-                                    </a>
-                                @else
-                                    <span class="text-muted">Not uploaded</span>
-                                @endif
-                            </div>
-                            <div class="col-md-6">
+                            @if ($bus_pass_application->bus_pass_type !== 'living_in_only')
+                                <div class="col-md-6">
+                                    <strong>Grama Niladari Certificate:</strong><br>
+                                    @if ($bus_pass_application->grama_niladari_certificate)
+                                        <a href="{{ asset('storage/' . $bus_pass_application->grama_niladari_certificate) }}"
+                                            target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-file-pdf"></i> View Document
+                                        </a>
+                                    @else
+                                        <span class="text-muted">Not uploaded</span>
+                                    @endif
+                                </div>
+                            @endif
+                            <div
+                                class="col-md-{{ $bus_pass_application->bus_pass_type === 'living_in_only' ? '12' : '6' }}">
                                 <strong>Person Image:</strong><br>
                                 @if ($bus_pass_application->person_image)
                                     <a href="{{ asset('storage/' . $bus_pass_application->person_image) }}" target="_blank"
@@ -266,6 +281,25 @@
                                 @endif
                             </div>
                         </div>
+
+                        <!-- Rent Allowance Document (Conditional) -->
+                        @if ($bus_pass_application->bus_pass_type !== 'living_in_only')
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <strong>Rent Allowance Part II Order:</strong>
+                                    <span class="text-info">(For Married Personnel - Not applicable for Living in Bus
+                                        only)</span><br>
+                                    @if ($bus_pass_application->rent_allowance_order)
+                                        <a href="{{ asset('storage/' . $bus_pass_application->rent_allowance_order) }}"
+                                            target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-file-pdf"></i> View Document
+                                        </a>
+                                    @else
+                                        <span class="text-muted">Not uploaded</span>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
 
                     </div>
 

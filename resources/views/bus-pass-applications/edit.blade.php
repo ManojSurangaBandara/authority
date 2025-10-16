@@ -365,31 +365,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <div class="form-group">
-                                                <label for="rent_allowance_order_daily">Rent Allowance Part II
-                                                    Order</label>
-                                                @if ($bus_pass_application->rent_allowance_order)
-                                                    <div class="mb-2">
-                                                        <a href="{{ asset('storage/' . $bus_pass_application->rent_allowance_order) }}"
-                                                            target="_blank" class="btn btn-sm btn-outline-primary">
-                                                            <i class="fas fa-file-pdf"></i> View Current
-                                                        </a>
-                                                    </div>
-                                                @endif
-                                                <input type="file"
-                                                    class="form-control-file @error('rent_allowance_order') is-invalid @enderror"
-                                                    id="rent_allowance_order_daily" name="rent_allowance_order"
-                                                    accept=".pdf,.jpg,.jpeg,.png">
-                                                <small class="form-text text-muted">Accepted formats: PDF, JPG, PNG (Max:
-                                                    2MB)</small>
-                                                @error('rent_allowance_order')
-                                                    <span class="invalid-feedback">{{ $message }}</span>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                    </div>
+
                                 </div>
 
                                 <div id="weekend_monthly_section" style="display: none;">
@@ -615,8 +591,36 @@
                                     </div>
                                 </div>
 
+                                <!-- Rent Allowance Document (Conditional) -->
+                                <div class="row" id="rent_allowance_section_edit" style="display: none;">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <label for="rent_allowance_order_daily">Rent Allowance Part II Order
+                                                <span class="text-info">(For Married Personnel - Not applicable for Living
+                                                    in Bus only)</span></label>
+                                            @if ($bus_pass_application->rent_allowance_order)
+                                                <div class="mb-2">
+                                                    <a href="{{ asset('storage/' . $bus_pass_application->rent_allowance_order) }}"
+                                                        target="_blank" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-file-pdf"></i> View Current
+                                                    </a>
+                                                </div>
+                                            @endif
+                                            <input type="file"
+                                                class="form-control-file @error('rent_allowance_order') is-invalid @enderror"
+                                                id="rent_allowance_order_daily" name="rent_allowance_order"
+                                                accept=".pdf,.jpg,.jpeg,.png">
+                                            <small class="form-text text-muted">Accepted formats: PDF, JPG, PNG (Max:
+                                                2MB)</small>
+                                            @error('rent_allowance_order')
+                                                <span class="invalid-feedback">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div class="row">
-                                    <div class="col-md-6">
+                                    <div class="col-md-6" id="grama_niladari_section">
                                         <div class="form-group">
                                             <label for="grama_niladari_certificate">Grama Niladari Certificate</label>
                                             @if ($bus_pass_application->grama_niladari_certificate)
@@ -659,9 +663,7 @@
                                             @enderror
                                         </div>
                                     </div>
-                                </div>
-
-                                <!-- Declarations Section -->
+                                </div> <!-- Declarations Section -->
                                 <div class="row mt-4">
                                     <div class="col-12">
                                         <h4 class="text-primary mb-3">Declarations</h4>
@@ -777,6 +779,105 @@
                 });
             @endif
 
+            // Function to update bus pass type options based on marital status in edit form
+            function updateBusPassTypeOptionsEdit() {
+                var maritalStatus = $('#marital_status').val();
+                var busPassTypeSelect = $('#bus_pass_type');
+                var currentValue = busPassTypeSelect.val();
+
+                // Clear current options except the placeholder
+                busPassTypeSelect.find('option:not(:first)').remove();
+
+                if (maritalStatus === 'single') {
+                    // Only show "Living in Bus only" for single personnel
+                    var isSelected = (currentValue === 'living_in_only') ? 'selected' : '';
+                    busPassTypeSelect.append('<option value="living_in_only" ' + isSelected +
+                        '>Living in Bus only</option>');
+                    // If current selection is not valid for single, clear it
+                    if (currentValue && currentValue !== 'living_in_only') {
+                        busPassTypeSelect.val('');
+                        // Hide all sections when clearing
+                        $('#daily_travel_section').hide();
+                        $('#weekend_monthly_section').hide();
+                        $('#living_in_only_section').hide();
+                        $('#weekend_only_section').hide();
+                    }
+                } else if (maritalStatus === 'married') {
+                    // Show all bus pass types for married personnel
+                    var dailySelected = (currentValue === 'daily_travel') ? 'selected' : '';
+                    var weekendMonthlySelected = (currentValue === 'weekend_monthly_travel') ? 'selected' : '';
+                    var livingInSelected = (currentValue === 'living_in_only') ? 'selected' : '';
+                    var weekendOnlySelected = (currentValue === 'weekend_only') ? 'selected' : '';
+
+                    busPassTypeSelect.append('<option value="daily_travel" ' + dailySelected +
+                        '>Daily Travel (Living out)</option>');
+                    busPassTypeSelect.append('<option value="weekend_monthly_travel" ' + weekendMonthlySelected +
+                        '>Weekend and Living in Bus</option>');
+                    busPassTypeSelect.append('<option value="living_in_only" ' + livingInSelected +
+                        '>Living in Bus only</option>');
+                    busPassTypeSelect.append('<option value="weekend_only" ' + weekendOnlySelected +
+                        '>Weekend only</option>');
+                } else {
+                    // No marital status selected, show all options
+                    var dailySelected = (currentValue === 'daily_travel') ? 'selected' : '';
+                    var weekendMonthlySelected = (currentValue === 'weekend_monthly_travel') ? 'selected' : '';
+                    var livingInSelected = (currentValue === 'living_in_only') ? 'selected' : '';
+                    var weekendOnlySelected = (currentValue === 'weekend_only') ? 'selected' : '';
+
+                    busPassTypeSelect.append('<option value="daily_travel" ' + dailySelected +
+                        '>Daily Travel (Living out)</option>');
+                    busPassTypeSelect.append('<option value="weekend_monthly_travel" ' + weekendMonthlySelected +
+                        '>Weekend and Living in Bus</option>');
+                    busPassTypeSelect.append('<option value="living_in_only" ' + livingInSelected +
+                        '>Living in Bus only</option>');
+                    busPassTypeSelect.append('<option value="weekend_only" ' + weekendOnlySelected +
+                        '>Weekend only</option>');
+                }
+
+                // Trigger bus pass type change to update sections
+                busPassTypeSelect.trigger('change');
+            }
+
+            // Function to check and show/hide rent allowance section in edit form
+            function checkRentAllowanceVisibilityEdit() {
+                var maritalStatus = $('#marital_status').val();
+                var busPassType = $('#bus_pass_type').val();
+
+                // Show rent allowance if married AND bus pass type is NOT "living_in_only"
+                if (maritalStatus === 'married' && busPassType && busPassType !== 'living_in_only') {
+                    $('#rent_allowance_section_edit').show();
+                } else {
+                    $('#rent_allowance_section_edit').hide();
+                    // Clear the file input when hidden
+                    $('#rent_allowance_order_daily').val('');
+                }
+            }
+
+            // Function to check and show/hide grama niladari certificate section in edit form
+            function checkGramaNiladariVisibilityEdit() {
+                var busPassType = $('#bus_pass_type').val();
+
+                // Hide Grama Niladari Certificate for "Living in Bus only"
+                if (busPassType === 'living_in_only') {
+                    $('#grama_niladari_section').hide();
+                    // Clear the file input when hidden
+                    $('#grama_niladari_certificate').val('');
+                } else {
+                    $('#grama_niladari_section').show();
+                }
+            }
+
+            // Marital status change handler for edit form
+            $('#marital_status').change(function() {
+                updateBusPassTypeOptionsEdit();
+                checkRentAllowanceVisibilityEdit();
+            });
+
+            // Trigger on page load to show/hide based on current value
+            updateBusPassTypeOptionsEdit();
+            checkRentAllowanceVisibilityEdit();
+            checkGramaNiladariVisibilityEdit();
+
             // Bus pass type change handler
             $('#bus_pass_type').change(function() {
                 var type = $(this).val();
@@ -812,6 +913,11 @@
                     $('#weekend_only_section').show();
                     $('#weekend_only_section input, #weekend_only_section select').prop('disabled', false);
                 }
+
+                // Check rent allowance visibility when bus pass type changes
+                checkRentAllowanceVisibilityEdit();
+                // Check grama niladari certificate visibility when bus pass type changes
+                checkGramaNiladariVisibilityEdit();
             });
 
             // Function to clear unused fields based on selected bus pass type

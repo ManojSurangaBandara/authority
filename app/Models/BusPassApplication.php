@@ -73,6 +73,12 @@ class BusPassApplication extends Model
         return $this->hasMany(BusPassApprovalHistory::class)->ordered();
     }
 
+    // Relationship with destination location
+    public function destinationLocation()
+    {
+        return $this->belongsTo(DestinationLocation::class, 'destination_location_ahq', 'id');
+    }
+
     // Status label accessor
     public function getStatusLabelAttribute()
     {

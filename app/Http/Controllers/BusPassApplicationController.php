@@ -58,7 +58,7 @@ class BusPassApplicationController extends Controller
             'grama_niladari_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'person_image' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
             'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only',
-            'rent_allowance_order' => $request->bus_pass_type === 'daily_travel' ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'rent_allowance_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only') ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'declaration_1' => 'required|in:yes',
             'declaration_2' => 'required|in:yes',
         ];
@@ -85,6 +85,13 @@ class BusPassApplicationController extends Controller
         }
 
         $request->validate($validationRules);
+
+        // Additional validation: Single personnel can only select "Living in Bus only"
+        if ($request->marital_status === 'single' && $request->bus_pass_type !== 'living_in_only') {
+            return redirect()->back()
+                ->withErrors(['bus_pass_type' => 'Single personnel can only select "Living in Bus only" bus pass type.'])
+                ->withInput();
+        }
 
         // Debug: Log successful validation
         Log::info('Validation passed for bus pass application', [
@@ -198,7 +205,8 @@ class BusPassApplicationController extends Controller
      */
     public function show(BusPassApplication $bus_pass_application)
     {
-        // Find the application by ID not to confused with peron table id
+        // Load the destination location relationship if needed
+        $bus_pass_application->load('destinationLocation');
 
         return view('bus-pass-applications.show', compact('bus_pass_application'));
     }
@@ -210,6 +218,9 @@ class BusPassApplicationController extends Controller
     {
         $busRoutes = BusRoute::all();
         $establishment = Establishment::orderBy('name')->get();
+
+        // Load the destination location relationship if needed
+        $bus_pass_application->load('destinationLocation');
 
         return view('bus-pass-applications.edit', compact('bus_pass_application', 'busRoutes', 'establishment'));
     }
@@ -236,7 +247,7 @@ class BusPassApplicationController extends Controller
             'obtain_sltb_season' => 'required|in:yes,no',
             'date_arrival_ahq' => 'required|date',
             'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only',
-            'rent_allowance_order' => $request->bus_pass_type === 'daily_travel' && !$bus_pass_application->rent_allowance_order ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'rent_allowance_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only' && !$bus_pass_application->rent_allowance_order) ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'declaration_1' => 'required|in:yes',
             'declaration_2' => 'required|in:yes',
         ];
@@ -263,6 +274,13 @@ class BusPassApplicationController extends Controller
         }
 
         $request->validate($validationRules);
+
+        // Additional validation: Single personnel can only select "Living in Bus only"
+        if ($request->marital_status === 'single' && $request->bus_pass_type !== 'living_in_only') {
+            return redirect()->back()
+                ->withErrors(['bus_pass_type' => 'Single personnel can only select "Living in Bus only" bus pass type.'])
+                ->withInput();
+        }
 
         // Debug: Log successful validation
         Log::info('Update validation passed for bus pass application', [
