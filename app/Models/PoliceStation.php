@@ -11,4 +11,10 @@ class PoliceStation extends Model
     protected $fillable = [
         'name',
     ];
+
+    // Relationship with Person
+    public function persons()
+    {
+        return $this->hasMany(Person::class);
+    }
 }

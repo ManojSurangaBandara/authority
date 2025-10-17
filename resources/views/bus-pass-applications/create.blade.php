@@ -182,26 +182,40 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="grama_seva_division">Grama Seva Division <span
+                                            <label for="gs_division_id">Grama Seva Division <span
                                                     class="text-danger">*</span></label>
-                                            <input type="text"
-                                                class="form-control @error('grama_seva_division') is-invalid @enderror"
-                                                id="grama_seva_division" name="grama_seva_division"
-                                                value="{{ old('grama_seva_division') }}" required>
-                                            @error('grama_seva_division')
+                                            <select
+                                                class="form-control select2 @error('gs_division_id') is-invalid @enderror"
+                                                id="gs_division_id" name="gs_division_id" required>
+                                                <option value="">Select Grama Seva Division</option>
+                                                @foreach ($gsDivisions as $gsDivision)
+                                                    <option value="{{ $gsDivision->id }}"
+                                                        {{ old('gs_division_id') == $gsDivision->id ? 'selected' : '' }}>
+                                                        {{ $gsDivision->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            @error('gs_division_id')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
                                         </div>
                                     </div>
                                     <div class="col-md-3">
                                         <div class="form-group">
-                                            <label for="nearest_police_station">Nearest Police Station <span
+                                            <label for="police_station_id">Nearest Police Station <span
                                                     class="text-danger">*</span></label>
-                                            <input type="text"
-                                                class="form-control @error('nearest_police_station') is-invalid @enderror"
-                                                id="nearest_police_station" name="nearest_police_station"
-                                                value="{{ old('nearest_police_station') }}" required>
-                                            @error('nearest_police_station')
+                                            <select
+                                                class="form-control select2 @error('police_station_id') is-invalid @enderror"
+                                                id="police_station_id" name="police_station_id" required>
+                                                <option value="">Select Police Station</option>
+                                                @foreach ($policeStations as $policeStation)
+                                                    <option value="{{ $policeStation->id }}"
+                                                        {{ old('police_station_id') == $policeStation->id ? 'selected' : '' }}>
+                                                        {{ $policeStation->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            @error('police_station_id')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
                                         </div>
@@ -817,6 +831,35 @@
 @push('js')
     <script>
         $(document).ready(function() {
+            // Initialize Select2 for all dropdowns
+            $('#province_id').select2({
+                theme: 'bootstrap4',
+                placeholder: 'Select Province',
+                allowClear: true,
+                width: '100%'
+            });
+
+            $('#district_id').select2({
+                theme: 'bootstrap4',
+                placeholder: 'Select District',
+                allowClear: true,
+                width: '100%'
+            });
+
+            $('#police_station_id').select2({
+                theme: 'bootstrap4',
+                placeholder: 'Select Police Station',
+                allowClear: true,
+                width: '100%'
+            });
+
+            $('#gs_division_id').select2({
+                theme: 'bootstrap4',
+                placeholder: 'Select Grama Seva Division',
+                allowClear: true,
+                width: '100%'
+            });
+
             // Initialize Select2 for Establishment dropdown (only for non-branch users)
             @if (!auth()->user()->isBranchUser())
                 $('#establishment_id').select2({
@@ -1042,10 +1085,26 @@
                                 'readonly', !!data.permanent_address);
                             $('#telephone_no').val(data.telephone_no || '').prop('readonly', !!
                                 data.telephone_no);
-                            $('#grama_seva_division').val(data.grama_seva_division || '').prop(
-                                'readonly', !!data.grama_seva_division);
-                            $('#nearest_police_station').val(data.nearest_police_station || '')
-                                .prop('readonly', !!data.nearest_police_station);
+
+                            // Handle dropdown selections for new fields
+                            if (data.gs_division_id) {
+                                $('#gs_division_id').val(data.gs_division_id).trigger('change')
+                                    .prop('disabled', true);
+                            }
+                            if (data.police_station_id) {
+                                $('#police_station_id').val(data.police_station_id).trigger(
+                                    'change').prop('disabled', true);
+                            }
+
+                            // Handle dropdown selections for new fields
+                            if (data.gs_division_id) {
+                                $('#gs_division_id').val(data.gs_division_id).trigger('change')
+                                    .prop('disabled', true);
+                            }
+                            if (data.police_station_id) {
+                                $('#police_station_id').val(data.police_station_id).trigger(
+                                    'change').prop('disabled', true);
+                            }
 
                             // alert('Person details loaded successfully!');
                         } else {

@@ -40,8 +40,10 @@ class PersonController extends Controller
             'army_id' => 'required|max:50',
             'permanent_address' => 'required',
             'telephone_no' => 'required|max:20',
-            'grama_seva_division' => 'required|max:100',
-            'nearest_police_station' => 'required|max:100',
+            'province_id' => 'required|exists:provinces,id',
+            'district_id' => 'required|exists:districts,id',
+            'gs_division_id' => 'required|exists:gs_divisions,id',
+            'police_station_id' => 'required|exists:police_stations,id',
         ]);
 
         Person::create($request->all());
@@ -93,8 +95,10 @@ class PersonController extends Controller
             'army_id' => 'required|max:50',
             'permanent_address' => 'required',
             'telephone_no' => 'required|max:20',
-            'grama_seva_division' => 'required|max:100',
-            'nearest_police_station' => 'required|max:100',
+            'province_id' => 'required|exists:provinces,id',
+            'district_id' => 'required|exists:districts,id',
+            'gs_division_id' => 'required|exists:gs_divisions,id',
+            'police_station_id' => 'required|exists:police_stations,id',
         ];
 
         // Only validate regiment_no if it's not in use (allowing changes)
@@ -108,7 +112,7 @@ class PersonController extends Controller
         $request->validate($rules);
 
         // Prepare data for update
-        $updateData = $request->only(['rank', 'name', 'unit', 'nic', 'army_id', 'permanent_address', 'telephone_no', 'grama_seva_division', 'nearest_police_station']);
+        $updateData = $request->only(['rank', 'name', 'unit', 'nic', 'army_id', 'permanent_address', 'telephone_no', 'province_id', 'district_id', 'gs_division_id', 'police_station_id']);
 
         // Only update regiment_no if not in use
         if (!$isUsed) {
@@ -169,8 +173,8 @@ class PersonController extends Controller
                         'army_id' => $data['army_no'] ?? '',
                         'permanent_address' => $data['permanent_address'] ?? '',
                         'telephone_no' => $data['telephone_no'] ?? '',
-                        'grama_seva_division' => $data['grama_seva_division'] ?? '',
-                        'nearest_police_station' => $data['nearest_police_station'] ?? ''
+                        'gs_division_id' => $data['gs_division_id'] ?? null,
+                        'police_station_id' => $data['police_station_id'] ?? null
                     ];
 
                     return response()->json([

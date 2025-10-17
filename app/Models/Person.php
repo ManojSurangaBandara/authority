@@ -19,8 +19,8 @@ class Person extends Model
         'telephone_no',
         'province_id',
         'district_id',
-        'grama_seva_division',
-        'nearest_police_station',
+        'gs_division_id',
+        'police_station_id',
     ];
 
     // Relationship with Province
@@ -33,6 +33,18 @@ class Person extends Model
     public function district()
     {
         return $this->belongsTo(District::class);
+    }
+
+    // Relationship with GsDivision
+    public function gsDivision()
+    {
+        return $this->belongsTo(GsDivision::class);
+    }
+
+    // Relationship with PoliceStation
+    public function policeStation()
+    {
+        return $this->belongsTo(PoliceStation::class);
     }
 
     // Relationship with BusPassApplication

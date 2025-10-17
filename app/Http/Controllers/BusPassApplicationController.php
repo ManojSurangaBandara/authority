@@ -11,6 +11,8 @@ use App\Models\Establishment;
 use App\Models\Person;
 use App\Models\Province;
 use App\Models\District;
+use App\Models\GsDivision;
+use App\Models\PoliceStation;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -35,8 +37,10 @@ class BusPassApplicationController extends Controller
         $establishment = Establishment::orderBy('name')->get();
         $provinces = Province::orderBy('name')->get();
         $districts = District::orderBy('name')->get();
+        $gsDivisions = GsDivision::orderBy('name')->get();
+        $policeStations = PoliceStation::orderBy('name')->get();
 
-        return view('bus-pass-applications.create', compact('busRoutes', 'establishment', 'provinces', 'districts'));
+        return view('bus-pass-applications.create', compact('busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations'));
     }
 
     /**
@@ -55,8 +59,8 @@ class BusPassApplicationController extends Controller
             'telephone_no' => 'required|string|max:20',
             'province_id' => 'required|exists:provinces,id',
             'district_id' => 'required|exists:districts,id',
-            'grama_seva_division' => 'required|string|max:100',
-            'nearest_police_station' => 'required|string|max:100',
+            'gs_division_id' => 'required|exists:gs_divisions,id',
+            'police_station_id' => 'required|exists:police_stations,id',
             'marital_status' => 'required|in:single,married',
             'approval_living_out' => 'required|in:yes,no',
             'obtain_sltb_season' => 'required|in:yes,no',
@@ -137,8 +141,8 @@ class BusPassApplicationController extends Controller
                 'telephone_no' => $request->telephone_no,
                 'province_id' => $request->province_id,
                 'district_id' => $request->district_id,
-                'grama_seva_division' => $request->grama_seva_division,
-                'nearest_police_station' => $request->nearest_police_station,
+                'gs_division_id' => $request->gs_division_id,
+                'police_station_id' => $request->police_station_id,
             ]);
         } else {
             // Update existing person data
@@ -152,8 +156,8 @@ class BusPassApplicationController extends Controller
                 'telephone_no' => $request->telephone_no,
                 'province_id' => $request->province_id,
                 'district_id' => $request->district_id,
-                'grama_seva_division' => $request->grama_seva_division,
-                'nearest_police_station' => $request->nearest_police_station,
+                'gs_division_id' => $request->gs_division_id,
+                'police_station_id' => $request->police_station_id,
             ]);
         }
 
@@ -243,8 +247,8 @@ class BusPassApplicationController extends Controller
      */
     public function show(BusPassApplication $bus_pass_application)
     {
-        // Load the destination location, province, and district relationships if needed
-        $bus_pass_application->load('destinationLocation', 'person.province', 'person.district');
+        // Load all person relationships including police station
+        $bus_pass_application->load('destinationLocation', 'person.province', 'person.district', 'person.policeStation');
 
         return view('bus-pass-applications.show', compact('bus_pass_application'));
     }
@@ -258,11 +262,13 @@ class BusPassApplicationController extends Controller
         $establishment = Establishment::orderBy('name')->get();
         $provinces = Province::orderBy('name')->get();
         $districts = District::orderBy('name')->get();
+        $gsDivisions = GsDivision::orderBy('name')->get();
+        $policeStations = PoliceStation::orderBy('name')->get();
 
         // Load the destination location relationship if needed
         $bus_pass_application->load('destinationLocation');
 
-        return view('bus-pass-applications.edit', compact('bus_pass_application', 'busRoutes', 'establishment', 'provinces', 'districts'));
+        return view('bus-pass-applications.edit', compact('bus_pass_application', 'busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations'));
     }
 
     /**
@@ -282,8 +288,8 @@ class BusPassApplicationController extends Controller
             'telephone_no' => 'required|string|max:20',
             'province_id' => 'required|exists:provinces,id',
             'district_id' => 'required|exists:districts,id',
-            'grama_seva_division' => 'required|string|max:100',
-            'nearest_police_station' => 'required|string|max:100',
+            'gs_division_id' => 'required|exists:gs_divisions,id',
+            'police_station_id' => 'required|exists:police_stations,id',
             'marital_status' => 'required|in:single,married',
             'approval_living_out' => 'required|in:yes,no',
             'obtain_sltb_season' => 'required|in:yes,no',
@@ -359,8 +365,8 @@ class BusPassApplicationController extends Controller
             'telephone_no' => $request->telephone_no,
             'province_id' => $request->province_id,
             'district_id' => $request->district_id,
-            'grama_seva_division' => $request->grama_seva_division,
-            'nearest_police_station' => $request->nearest_police_station,
+            'gs_division_id' => $request->gs_division_id,
+            'police_station_id' => $request->police_station_id,
         ]);
 
         // Prepare application data (excluding person fields)
@@ -504,8 +510,8 @@ class BusPassApplicationController extends Controller
                         'army_id' => $data['army_no'] ?? '',
                         'permanent_address' => $data['permanent_address'] ?? '',
                         'telephone_no' => $data['telephone_no'] ?? '',
-                        'grama_seva_division' => $data['grama_seva_division'] ?? '',
-                        'nearest_police_station' => $data['nearest_police_station'] ?? ''
+                        'gs_division_id' => $data['gs_division_id'] ?? null,
+                        'police_station_id' => $data['police_station_id'] ?? null
                     ];
 
                     return response()->json([
