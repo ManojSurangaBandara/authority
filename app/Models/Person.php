@@ -17,9 +17,16 @@ class Person extends Model
         'army_id',
         'permanent_address',
         'telephone_no',
+        'province_id',
         'grama_seva_division',
         'nearest_police_station',
     ];
+
+    // Relationship with Province
+    public function province()
+    {
+        return $this->belongsTo(Province::class);
+    }
 
     // Relationship with BusPassApplication
     public function busPassApplications()

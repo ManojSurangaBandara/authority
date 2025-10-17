@@ -66,6 +66,13 @@
                         </div>
 
                         <div class="row mt-3">
+                            <div class="col-md-6">
+                                <strong>Province:</strong><br>
+                                {{ $bus_pass_application->person->province->name ?? 'Not specified' }}
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
                             <div class="col-md-4">
                                 <strong>Telephone No:</strong><br>
                                 {{ $bus_pass_application->person->telephone_no }}

@@ -142,6 +142,27 @@
                                 </div>
 
                                 <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="province_id">Province <span class="text-danger">*</span></label>
+                                            <select class="form-control select2 @error('province_id') is-invalid @enderror"
+                                                id="province_id" name="province_id" required>
+                                                <option value="">Select Province</option>
+                                                @foreach ($provinces as $province)
+                                                    <option value="{{ $province->id }}"
+                                                        {{ old('province_id', $bus_pass_application->person->province_id) == $province->id ? 'selected' : '' }}>
+                                                        {{ $province->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            @error('province_id')
+                                                <span class="invalid-feedback">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
                                     <div class="col-md-3">
                                         <div class="form-group">
                                             <label for="telephone_no">Telephone No <span
@@ -1144,6 +1165,21 @@
                             '<i class="fas fa-search"></i>');
                     }
                 });
+            });
+
+            // Handle form submission - disable fields in hidden sections
+            $('form').on('submit', function(e) {
+                // Disable all form fields in hidden sections to prevent submission of empty values
+                $('#daily_travel_section:hidden input, #daily_travel_section:hidden select').prop(
+                    'disabled', true);
+                $('#unmarried_daily_travel_section:hidden input, #unmarried_daily_travel_section:hidden select')
+                    .prop('disabled', true);
+                $('#weekend_monthly_section:hidden input, #weekend_monthly_section:hidden select').prop(
+                    'disabled', true);
+                $('#living_in_only_section:hidden input, #living_in_only_section:hidden select').prop(
+                    'disabled', true);
+                $('#weekend_only_section:hidden input, #weekend_only_section:hidden select').prop(
+                    'disabled', true);
             });
         });
     </script>

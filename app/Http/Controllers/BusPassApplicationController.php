@@ -9,6 +9,7 @@ use App\Models\BusPassApplication;
 use App\Models\BusRoute;
 use App\Models\Establishment;
 use App\Models\Person;
+use App\Models\Province;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -31,8 +32,9 @@ class BusPassApplicationController extends Controller
     {
         $busRoutes = BusRoute::all();
         $establishment = Establishment::orderBy('name')->get();
+        $provinces = Province::orderBy('name')->get();
 
-        return view('bus-pass-applications.create', compact('busRoutes', 'establishment'));
+        return view('bus-pass-applications.create', compact('busRoutes', 'establishment', 'provinces'));
     }
 
     /**
@@ -49,6 +51,7 @@ class BusPassApplicationController extends Controller
             'army_id' => 'required|string|max:50',
             'permanent_address' => 'required|string',
             'telephone_no' => 'required|string|max:20',
+            'province_id' => 'required|exists:provinces,id',
             'grama_seva_division' => 'required|string|max:100',
             'nearest_police_station' => 'required|string|max:100',
             'marital_status' => 'required|in:single,married',
@@ -129,6 +132,21 @@ class BusPassApplicationController extends Controller
                 'army_id' => $request->army_id,
                 'permanent_address' => $request->permanent_address,
                 'telephone_no' => $request->telephone_no,
+                'province_id' => $request->province_id,
+                'grama_seva_division' => $request->grama_seva_division,
+                'nearest_police_station' => $request->nearest_police_station,
+            ]);
+        } else {
+            // Update existing person data
+            $person->update([
+                'rank' => $request->rank,
+                'name' => $request->name,
+                'unit' => $request->unit,
+                'nic' => $request->nic,
+                'army_id' => $request->army_id,
+                'permanent_address' => $request->permanent_address,
+                'telephone_no' => $request->telephone_no,
+                'province_id' => $request->province_id,
                 'grama_seva_division' => $request->grama_seva_division,
                 'nearest_police_station' => $request->nearest_police_station,
             ]);
@@ -220,8 +238,8 @@ class BusPassApplicationController extends Controller
      */
     public function show(BusPassApplication $bus_pass_application)
     {
-        // Load the destination location relationship if needed
-        $bus_pass_application->load('destinationLocation');
+        // Load the destination location and province relationships if needed
+        $bus_pass_application->load('destinationLocation', 'person.province');
 
         return view('bus-pass-applications.show', compact('bus_pass_application'));
     }
@@ -233,11 +251,12 @@ class BusPassApplicationController extends Controller
     {
         $busRoutes = BusRoute::all();
         $establishment = Establishment::orderBy('name')->get();
+        $provinces = Province::orderBy('name')->get();
 
         // Load the destination location relationship if needed
         $bus_pass_application->load('destinationLocation');
 
-        return view('bus-pass-applications.edit', compact('bus_pass_application', 'busRoutes', 'establishment'));
+        return view('bus-pass-applications.edit', compact('bus_pass_application', 'busRoutes', 'establishment', 'provinces'));
     }
 
     /**
@@ -255,6 +274,7 @@ class BusPassApplicationController extends Controller
             'army_id' => 'required|string|max:50',
             'permanent_address' => 'required|string',
             'telephone_no' => 'required|string|max:20',
+            'province_id' => 'required|exists:provinces,id',
             'grama_seva_division' => 'required|string|max:100',
             'nearest_police_station' => 'required|string|max:100',
             'marital_status' => 'required|in:single,married',
@@ -330,6 +350,7 @@ class BusPassApplicationController extends Controller
             'army_id' => $request->army_id,
             'permanent_address' => $request->permanent_address,
             'telephone_no' => $request->telephone_no,
+            'province_id' => $request->province_id,
             'grama_seva_division' => $request->grama_seva_division,
             'nearest_police_station' => $request->nearest_police_station,
         ]);
