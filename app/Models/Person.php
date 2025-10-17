@@ -18,6 +18,7 @@ class Person extends Model
         'permanent_address',
         'telephone_no',
         'province_id',
+        'district_id',
         'grama_seva_division',
         'nearest_police_station',
     ];
@@ -26,6 +27,12 @@ class Person extends Model
     public function province()
     {
         return $this->belongsTo(Province::class);
+    }
+
+    // Relationship with District
+    public function district()
+    {
+        return $this->belongsTo(District::class);
     }
 
     // Relationship with BusPassApplication

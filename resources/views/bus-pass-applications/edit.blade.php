@@ -160,6 +160,24 @@
                                             @enderror
                                         </div>
                                     </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="district_id">District <span class="text-danger">*</span></label>
+                                            <select class="form-control select2 @error('district_id') is-invalid @enderror"
+                                                id="district_id" name="district_id" required>
+                                                <option value="">Select District</option>
+                                                @foreach ($districts as $district)
+                                                    <option value="{{ $district->id }}"
+                                                        {{ old('district_id', $bus_pass_application->person->district_id) == $district->id ? 'selected' : '' }}>
+                                                        {{ $district->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            @error('district_id')
+                                                <span class="invalid-feedback">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="row">

@@ -10,6 +10,7 @@ use App\Models\BusRoute;
 use App\Models\Establishment;
 use App\Models\Person;
 use App\Models\Province;
+use App\Models\District;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -33,8 +34,9 @@ class BusPassApplicationController extends Controller
         $busRoutes = BusRoute::all();
         $establishment = Establishment::orderBy('name')->get();
         $provinces = Province::orderBy('name')->get();
+        $districts = District::orderBy('name')->get();
 
-        return view('bus-pass-applications.create', compact('busRoutes', 'establishment', 'provinces'));
+        return view('bus-pass-applications.create', compact('busRoutes', 'establishment', 'provinces', 'districts'));
     }
 
     /**
@@ -52,6 +54,7 @@ class BusPassApplicationController extends Controller
             'permanent_address' => 'required|string',
             'telephone_no' => 'required|string|max:20',
             'province_id' => 'required|exists:provinces,id',
+            'district_id' => 'required|exists:districts,id',
             'grama_seva_division' => 'required|string|max:100',
             'nearest_police_station' => 'required|string|max:100',
             'marital_status' => 'required|in:single,married',
@@ -133,6 +136,7 @@ class BusPassApplicationController extends Controller
                 'permanent_address' => $request->permanent_address,
                 'telephone_no' => $request->telephone_no,
                 'province_id' => $request->province_id,
+                'district_id' => $request->district_id,
                 'grama_seva_division' => $request->grama_seva_division,
                 'nearest_police_station' => $request->nearest_police_station,
             ]);
@@ -147,6 +151,7 @@ class BusPassApplicationController extends Controller
                 'permanent_address' => $request->permanent_address,
                 'telephone_no' => $request->telephone_no,
                 'province_id' => $request->province_id,
+                'district_id' => $request->district_id,
                 'grama_seva_division' => $request->grama_seva_division,
                 'nearest_police_station' => $request->nearest_police_station,
             ]);
@@ -238,8 +243,8 @@ class BusPassApplicationController extends Controller
      */
     public function show(BusPassApplication $bus_pass_application)
     {
-        // Load the destination location and province relationships if needed
-        $bus_pass_application->load('destinationLocation', 'person.province');
+        // Load the destination location, province, and district relationships if needed
+        $bus_pass_application->load('destinationLocation', 'person.province', 'person.district');
 
         return view('bus-pass-applications.show', compact('bus_pass_application'));
     }
@@ -252,11 +257,12 @@ class BusPassApplicationController extends Controller
         $busRoutes = BusRoute::all();
         $establishment = Establishment::orderBy('name')->get();
         $provinces = Province::orderBy('name')->get();
+        $districts = District::orderBy('name')->get();
 
         // Load the destination location relationship if needed
         $bus_pass_application->load('destinationLocation');
 
-        return view('bus-pass-applications.edit', compact('bus_pass_application', 'busRoutes', 'establishment', 'provinces'));
+        return view('bus-pass-applications.edit', compact('bus_pass_application', 'busRoutes', 'establishment', 'provinces', 'districts'));
     }
 
     /**
@@ -275,6 +281,7 @@ class BusPassApplicationController extends Controller
             'permanent_address' => 'required|string',
             'telephone_no' => 'required|string|max:20',
             'province_id' => 'required|exists:provinces,id',
+            'district_id' => 'required|exists:districts,id',
             'grama_seva_division' => 'required|string|max:100',
             'nearest_police_station' => 'required|string|max:100',
             'marital_status' => 'required|in:single,married',
@@ -351,6 +358,7 @@ class BusPassApplicationController extends Controller
             'permanent_address' => $request->permanent_address,
             'telephone_no' => $request->telephone_no,
             'province_id' => $request->province_id,
+            'district_id' => $request->district_id,
             'grama_seva_division' => $request->grama_seva_division,
             'nearest_police_station' => $request->nearest_police_station,
         ]);

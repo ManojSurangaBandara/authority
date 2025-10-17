@@ -70,6 +70,10 @@
                                 <strong>Province:</strong><br>
                                 {{ $bus_pass_application->person->province->name ?? 'Not specified' }}
                             </div>
+                            <div class="col-md-6">
+                                <strong>District:</strong><br>
+                                {{ $bus_pass_application->person->district->name ?? 'Not specified' }}
+                            </div>
                         </div>
 
                         <div class="row mt-3">
