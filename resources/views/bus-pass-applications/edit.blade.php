@@ -890,28 +890,48 @@
                 theme: 'bootstrap4',
                 placeholder: 'Select Province',
                 allowClear: true,
-                width: '100%'
+                width: '100%',
+                sorter: function(data) {
+                    return data.sort(function(a, b) {
+                        return a.text.localeCompare(b.text);
+                    });
+                }
             });
 
             $('#district_id').select2({
                 theme: 'bootstrap4',
                 placeholder: 'Select District',
                 allowClear: true,
-                width: '100%'
+                width: '100%',
+                sorter: function(data) {
+                    return data.sort(function(a, b) {
+                        return a.text.localeCompare(b.text);
+                    });
+                }
             });
 
             $('#police_station_id').select2({
                 theme: 'bootstrap4',
                 placeholder: 'Select Police Station',
                 allowClear: true,
-                width: '100%'
+                width: '100%',
+                sorter: function(data) {
+                    return data.sort(function(a, b) {
+                        return a.text.localeCompare(b.text);
+                    });
+                }
             });
 
             $('#gs_division_id').select2({
                 theme: 'bootstrap4',
                 placeholder: 'Select Grama Seva Division',
                 allowClear: true,
-                width: '100%'
+                width: '100%',
+                sorter: function(data) {
+                    return data.sort(function(a, b) {
+                        return a.text.localeCompare(b.text);
+                    });
+                }
             });
 
             // Initialize Select2 for Establishment dropdown only if element exists and is not disabled
@@ -920,7 +940,12 @@
                     theme: 'bootstrap4',
                     placeholder: 'Select Establishment',
                     allowClear: true,
-                    width: '100%'
+                    width: '100%',
+                    sorter: function(data) {
+                        return data.sort(function(a, b) {
+                            return a.text.localeCompare(b.text);
+                        });
+                    }
                 });
             @endif
 
