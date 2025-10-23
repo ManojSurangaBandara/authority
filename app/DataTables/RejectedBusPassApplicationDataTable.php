@@ -33,6 +33,9 @@ class RejectedBusPassApplicationDataTable extends DataTable
             ->addColumn('applied_date', function ($row) {
                 return $row->created_at ? $row->created_at->format('d M Y') : '';
             })
+            ->addColumn('person_rank', function ($row) {
+                return $row->person && $row->person->rank ? $row->person->rank->abb_name : '';
+            })
             // ->addColumn('action', function ($row) {
             //     $viewBtn = '<a href="' . route('bus-pass-applications.show', $row->id) . '" class="btn btn-xs btn-info" title="View"><i class="fas fa-eye"></i></a>';
             //     $editBtn = '<a href="' . route('bus-pass-applications.edit', $row->id) . '" class="btn btn-xs btn-primary mx-1" title="Edit"><i class="fas fa-edit"></i></a>';
@@ -51,7 +54,7 @@ class RejectedBusPassApplicationDataTable extends DataTable
                     $query->where('establishment_id', $estId);
                 }
             })
-            ->rawColumns(['action', 'status_badge', 'type_label', 'applied_date'])
+            ->rawColumns(['action', 'status_badge', 'type_label', 'applied_date', 'person_rank'])
             ->setRowId('id');
     }
 
@@ -62,15 +65,15 @@ class RejectedBusPassApplicationDataTable extends DataTable
      */
     public function query(BusPassApplication $model): QueryBuilder
     {
-        $query = $model->newQuery()->with(['person', 'establishment'])->where('status', 'rejected');
-        
+        $query = $model->newQuery()->with(['person.rank', 'establishment'])->where('status', 'rejected');
+
         // Filter by establishment for branch users
         $user = Auth::user();
         $branchRoles = ['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)'];
         if ($user && $user->hasAnyRole($branchRoles) && $user->establishment_id) {
             $query->where('establishment_id', $user->establishment_id);
         }
-        
+
         return $query->orderBy('bus_pass_applications.created_at', 'desc');
     }
 
@@ -108,7 +111,7 @@ class RejectedBusPassApplicationDataTable extends DataTable
             Column::make('DT_RowIndex')->title('#')->searchable(false)->orderable(false),
             Column::make('person.regiment_no')->title('Regiment No')->name('person.regiment_no'),
             Column::make('person.name')->title('Name')->name('person.name'),
-            Column::make('person.rank')->title('Rank')->name('person.rank'),
+            Column::make('person_rank')->title('Rank')->searchable(false),
             Column::make('establishment.name')->title('Establishment')->name('establishment.name'),
             Column::make('type_label')->title('Pass Type')->searchable(false),
             Column::make('status_badge')->title('Status')->searchable(false)->orderable(false),

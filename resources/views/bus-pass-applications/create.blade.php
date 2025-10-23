@@ -59,10 +59,18 @@
                                     </div>
                                     <div class="col-md-3">
                                         <div class="form-group">
-                                            <label for="rank">Rank <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control @error('rank') is-invalid @enderror"
-                                                id="rank" name="rank" value="{{ old('rank') }}" required>
-                                            @error('rank')
+                                            <label for="rank_id">Rank <span class="text-danger">*</span></label>
+                                            <select class="form-control select2 @error('rank_id') is-invalid @enderror"
+                                                id="rank_id" name="rank_id" required>
+                                                <option value="">Select Rank</option>
+                                                @foreach ($ranks as $rank)
+                                                    <option value="{{ $rank->id }}"
+                                                        {{ old('rank_id') == $rank->id ? 'selected' : '' }}>
+                                                        {{ $rank->abb_name }} - {{ $rank->full_name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            @error('rank_id')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
                                         </div>
@@ -832,6 +840,13 @@
     <script>
         $(document).ready(function() {
             // Initialize Select2 for all dropdowns
+            $('#rank_id').select2({
+                theme: 'bootstrap4',
+                placeholder: 'Select Rank',
+                allowClear: true,
+                width: '100%'
+            });
+
             $('#province_id').select2({
                 theme: 'bootstrap4',
                 placeholder: 'Select Province',
@@ -1100,7 +1115,19 @@
                             var data = response.data;
 
                             // Auto-populate fields
-                            $('#rank').val(data.rank || '').prop('readonly', !!data.rank);
+                            if (data.rank_id) {
+                                $('#rank_id').val(data.rank_id).trigger('change').prop(
+                                    'disabled', true);
+                                // Add hidden input to ensure value is submitted when disabled
+                                if ($('#rank_id_hidden').length === 0) {
+                                    $('<input>').attr({
+                                        type: 'hidden',
+                                        id: 'rank_id_hidden',
+                                        name: 'rank_id',
+                                        value: data.rank_id
+                                    }).insertAfter('#rank_id');
+                                }
+                            }
                             $('#name').val(data.name || '').prop('readonly', !!data.name);
                             $('#unit').val(data.unit || '').prop('readonly', !!data.unit);
                             $('#nic').val(data.nic || '').prop('readonly', !!data.nic);

@@ -23,7 +23,8 @@
                             </tr>
                             <tr>
                                 <td><strong>Rank:</strong></td>
-                                <td>{{ $application->person->rank }}</td>
+                                <td>{{ $application->person->rank ? $application->person->rank->abb_name : 'Not specified' }}
+                                </td>
                             </tr>
                             <tr>
                                 <td><strong>Regiment No:</strong></td>

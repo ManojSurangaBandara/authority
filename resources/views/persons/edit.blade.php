@@ -53,10 +53,17 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label for="rank">Rank:</label>
-                                            <input type="text" name="rank" id="rank" required
-                                                class="form-control" value="{{ $person->rank }}">
-                                            @error('rank')
+                                            <label for="rank_id">Rank:</label>
+                                            <select name="rank_id" id="rank_id" required class="form-control">
+                                                <option value="">Select Rank</option>
+                                                @foreach ($ranks as $rank)
+                                                    <option value="{{ $rank->id }}"
+                                                        {{ old('rank_id', $person->rank_id) == $rank->id ? 'selected' : '' }}>
+                                                        {{ $rank->abb_name }} - {{ $rank->full_name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            @error('rank_id')
                                                 <div class="text-danger">{{ $message }}</div>
                                             @enderror
                                         </div>

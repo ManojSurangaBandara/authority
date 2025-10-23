@@ -26,6 +26,9 @@ class BusPassApplicationDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addIndexColumn()
+            ->addColumn('person_rank', function ($row) {
+                return $row->person->rank ? $row->person->rank->abb_name : 'Not specified';
+            })
             ->addColumn('type_label', function ($row) {
                 return $row->type_label;
             })
@@ -78,7 +81,7 @@ class BusPassApplicationDataTable extends DataTable
 
                 return $viewBtn . $editBtn . $deleteBtn;
             })
-            ->rawColumns(['action', 'status_badge', 'type_label', 'applied_date', 'establishment_name'])
+            ->rawColumns(['action', 'status_badge', 'type_label', 'applied_date', 'establishment_name', 'person_rank'])
             ->setRowId('id');
     }
 
@@ -89,7 +92,7 @@ class BusPassApplicationDataTable extends DataTable
      */
     public function query(BusPassApplication $model): QueryBuilder
     {
-        $query = $model->newQuery()->with(['person', 'establishment']);
+        $query = $model->newQuery()->with(['person.rank', 'establishment']);
 
         // Filter by establishment for branch users
         $user = Auth::user();
@@ -142,7 +145,7 @@ class BusPassApplicationDataTable extends DataTable
             Column::make('DT_RowIndex')->title('#')->searchable(false)->orderable(false),
             Column::make('person.regiment_no')->title('Regiment No')->name('person.regiment_no'),
             Column::make('person.name')->title('Name')->name('person.name'),
-            Column::make('person.rank')->title('Rank')->name('person.rank'),
+            Column::make('person_rank')->title('Rank')->searchable(false)->orderable(false),
             Column::make('establishment_name')->title('Branch/Directorate')->searchable(false)->orderable(false),
             Column::make('type_label')->title('Pass Type')->searchable(false),
             Column::make('status_badge')->title('Status')->searchable(false)->orderable(false),

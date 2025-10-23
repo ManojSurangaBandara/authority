@@ -23,6 +23,9 @@ class PersonDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addIndexColumn()
+            ->addColumn('person_rank', function ($row) {
+                return $row->rank ? $row->rank->abb_name : 'Not specified';
+            })
             ->addColumn('action', function ($row) {
                 // Check if person has bus pass applications
                 $busPassApplicationsCount = $row->busPassApplications()->count();
@@ -59,7 +62,7 @@ class PersonDataTable extends DataTable
                 // return $viewBtn . $editBtn . $deleteBtn;
                 return $viewBtn;
             })
-            ->rawColumns(['action'])
+            ->rawColumns(['action', 'person_rank'])
             ->setRowId('id');
     }
 
@@ -70,7 +73,7 @@ class PersonDataTable extends DataTable
      */
     public function query(Person $model): QueryBuilder
     {
-        return $model->newQuery();
+        return $model->newQuery()->with(['rank']);
     }
 
     /**
@@ -102,7 +105,7 @@ class PersonDataTable extends DataTable
         return [
             Column::make('DT_RowIndex')->title('#')->searchable(false)->orderable(false),
             Column::make('regiment_no')->title('Regiment No'),
-            Column::make('rank')->title('Rank'),
+            Column::make('person_rank')->title('Rank')->searchable(false),
             Column::make('name')->title('Name'),
             Column::make('unit')->title('Unit'),
             Column::make('nic')->title('NIC'),

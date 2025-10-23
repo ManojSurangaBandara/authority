@@ -10,7 +10,7 @@ class Person extends Model
 
     protected $fillable = [
         'regiment_no',
-        'rank',
+        'rank_id',
         'name',
         'unit',
         'nic',
@@ -22,6 +22,12 @@ class Person extends Model
         'gs_division_id',
         'police_station_id',
     ];
+
+    // Relationship with Rank
+    public function rank()
+    {
+        return $this->belongsTo(Rank::class);
+    }
 
     // Relationship with Province
     public function province()

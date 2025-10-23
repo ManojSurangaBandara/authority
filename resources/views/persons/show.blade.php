@@ -23,7 +23,7 @@
                                     </tr>
                                     <tr>
                                         <th>Rank</th>
-                                        <td>{{ $person->rank }}</td>
+                                        <td>{{ $person->rank ? $person->rank->abb_name : 'Not specified' }}</td>
                                     </tr>
                                     <tr>
                                         <th>Name</th>
