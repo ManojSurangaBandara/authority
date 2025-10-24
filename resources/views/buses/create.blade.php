@@ -17,10 +17,16 @@
                                 <div class="mb-3">
                                     <label for="">Bus Number:</label>
                                     <input type="text" name="no" required class="form-control" />
+                                    @error('no')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="mb-3">
                                     <label for="">Bus Name:</label>
                                     <input type="text" name="name" required class="form-control" />
+                                    @error('name')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
                                 </div>
 
                                 <div class="mb-3">

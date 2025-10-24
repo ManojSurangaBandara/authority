@@ -35,7 +35,7 @@ class BusController extends Controller
     {
         $request->validate([
             'no' => 'required|unique:buses,no|max:20',
-            'name' => 'required|max:50',
+            'name' => 'required|unique:buses,name|max:50',
             'type_id' => 'required|integer|min:1',
             'no_of_seats' => 'required|integer|min:1',
             'total_capacity' => 'required|integer|min:1',
@@ -91,7 +91,7 @@ class BusController extends Controller
 
         // Validation rules
         $rules = [
-            'name' => 'required|max:50',
+            'name' => 'required|unique:buses,name,' . $id . '|max:50',
             'type_id' => 'required|integer|min:1',
             'no_of_seats' => 'required|integer|min:1',
             'total_capacity' => 'required|integer|min:1',

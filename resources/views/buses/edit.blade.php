@@ -27,6 +27,9 @@
                                     <label for="">Bus Number:</label>
                                     <input type="text" name="no" required class="form-control"
                                         value="{{ $bus->no }}" {{ $isUsed ?? false ? 'readonly' : '' }} />
+                                    @error('no')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
                                     @if ($isUsed ?? false)
                                         <small class="form-text text-muted">
                                             <i class="fas fa-lock"></i> Bus number is locked because this bus is in use.
@@ -37,6 +40,9 @@
                                     <label for="">Bus Name:</label>
                                     <input type="text" name="name" required class="form-control"
                                         value="{{ $bus->name }}" />
+                                    @error('name')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
                                 </div>
 
                                 <div class="mb-3">
