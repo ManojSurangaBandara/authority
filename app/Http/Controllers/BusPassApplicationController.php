@@ -163,6 +163,47 @@ class BusPassApplicationController extends Controller
             ]);
         }
 
+        // Check for existing bus pass applications for this person
+        $existingApplications = BusPassApplication::where('person_id', $person->id)->get();
+
+        if ($existingApplications->isNotEmpty()) {
+            // Check for active (approved) bus passes
+            $activeBusPass = $existingApplications->whereIn('status', [
+                'approved_for_integration',
+                'approved_for_temp_card',
+                'integrated_to_branch_card',
+                'temp_card_printed',
+                'temp_card_handed_over'
+            ])->first();
+
+            if ($activeBusPass) {
+                return redirect()->back()
+                    ->withErrors(['regiment_no' => 'This person already has an active bus pass. Only one active bus pass is allowed per person.'])
+                    ->withInput();
+            }
+
+            // Check for pending applications
+            $pendingApplication = $existingApplications->whereIn('status', [
+                'pending_subject_clerk',
+                'pending_staff_officer_branch',
+                'pending_director_branch',
+                'forwarded_to_movement',
+                'pending_staff_officer_2_mov',
+                'pending_staff_officer_1_mov',
+                'pending_col_mov',
+                'pending_director_mov'
+            ])->first();
+
+            if ($pendingApplication) {
+                return redirect()->back()
+                    ->withErrors(['regiment_no' => 'This person already has a pending bus pass application. Please wait for the current application to be processed before submitting a new one.'])
+                    ->withInput();
+            }
+
+            // If we reach here, all existing applications are either rejected or deactivated, so allow new application
+
+        }
+
 
 
         // Handle file uploads
@@ -356,21 +397,108 @@ class BusPassApplicationController extends Controller
             'establishment_id' => $request->establishment_id
         ]);
 
-        // Update person data
-        $bus_pass_application->person->update([
-            'regiment_no' => $request->regiment_no,
-            'rank_id' => $request->rank_id,
-            'name' => $request->name,
-            'unit' => $request->unit,
-            'nic' => $request->nic,
-            'army_id' => $request->army_id,
-            'permanent_address' => $request->permanent_address,
-            'telephone_no' => $request->telephone_no,
-            'province_id' => $request->province_id,
-            'district_id' => $request->district_id,
-            'gs_division_id' => $request->gs_division_id,
-            'police_station_id' => $request->police_station_id,
-        ]);
+        // Check if regiment number is being changed and validate for duplicates BEFORE updating
+        $originalPersonId = $bus_pass_application->person_id;
+        $originalRegimentNo = $bus_pass_application->person->regiment_no;
+
+        // If regiment number is changing, validate the new one
+        if ($request->regiment_no !== $originalRegimentNo) {
+            $existingPersonWithSameRegiment = Person::where('regiment_no', $request->regiment_no)
+                ->where('id', '!=', $originalPersonId)
+                ->first();
+
+            if ($existingPersonWithSameRegiment) {
+                // Check for existing bus pass applications for the person with this regiment number
+                $existingApplications = BusPassApplication::where('person_id', $existingPersonWithSameRegiment->id)
+                    ->where('id', '!=', $bus_pass_application->id) // Exclude current application
+                    ->get();
+
+                if ($existingApplications->isNotEmpty()) {
+                    // Check for active (approved) bus passes
+                    $activeBusPass = $existingApplications->whereIn('status', [
+                        'approved_for_integration',
+                        'approved_for_temp_card',
+                        'integrated_to_branch_card',
+                        'temp_card_printed',
+                        'temp_card_handed_over'
+                    ])->first();
+
+                    if ($activeBusPass) {
+                        return redirect()->back()
+                            ->withErrors(['regiment_no' => 'This person already has an active bus pass. Only one active bus pass is allowed per person.'])
+                            ->withInput();
+                    }
+
+                    // Check for pending applications
+                    $pendingApplication = $existingApplications->whereIn('status', [
+                        'pending_subject_clerk',
+                        'pending_staff_officer_branch',
+                        'pending_director_branch',
+                        'forwarded_to_movement',
+                        'pending_staff_officer_2_mov',
+                        'pending_staff_officer_1_mov',
+                        'pending_col_mov',
+                        'pending_director_mov'
+                    ])->first();
+
+                    if ($pendingApplication) {
+                        return redirect()->back()
+                            ->withErrors(['regiment_no' => 'This person already has a pending bus pass application. Cannot change to this regiment number.'])
+                            ->withInput();
+                    }
+                }
+
+                // If we reach here, the existing person has no active/pending applications
+                // So we should update the application to use the existing person instead of updating person data
+                $bus_pass_application->person_id = $existingPersonWithSameRegiment->id;
+
+                // Update the existing person's data with the new information
+                $existingPersonWithSameRegiment->update([
+                    'rank_id' => $request->rank_id,
+                    'name' => $request->name,
+                    'unit' => $request->unit,
+                    'nic' => $request->nic,
+                    'army_id' => $request->army_id,
+                    'permanent_address' => $request->permanent_address,
+                    'telephone_no' => $request->telephone_no,
+                    'province_id' => $request->province_id,
+                    'district_id' => $request->district_id,
+                    'gs_division_id' => $request->gs_division_id,
+                    'police_station_id' => $request->police_station_id,
+                ]);
+            } else {
+                // Regiment number doesn't exist, safe to update current person
+                $bus_pass_application->person->update([
+                    'regiment_no' => $request->regiment_no,
+                    'rank_id' => $request->rank_id,
+                    'name' => $request->name,
+                    'unit' => $request->unit,
+                    'nic' => $request->nic,
+                    'army_id' => $request->army_id,
+                    'permanent_address' => $request->permanent_address,
+                    'telephone_no' => $request->telephone_no,
+                    'province_id' => $request->province_id,
+                    'district_id' => $request->district_id,
+                    'gs_division_id' => $request->gs_division_id,
+                    'police_station_id' => $request->police_station_id,
+                ]);
+            }
+        } else {
+            // Regiment number is not changing, safe to update other fields
+            $bus_pass_application->person->update([
+                'rank_id' => $request->rank_id,
+                'name' => $request->name,
+                'unit' => $request->unit,
+                'nic' => $request->nic,
+                'army_id' => $request->army_id,
+                'permanent_address' => $request->permanent_address,
+                'telephone_no' => $request->telephone_no,
+                'province_id' => $request->province_id,
+                'district_id' => $request->district_id,
+                'gs_division_id' => $request->gs_division_id,
+                'police_station_id' => $request->police_station_id,
+            ]);
+        }
 
         // Prepare application data (excluding person fields)
         $data = [];
