@@ -69,7 +69,8 @@
                                         <div class="form-group">
                                             <label for="rank_id">Rank <span class="text-danger">*</span></label>
                                             <select class="form-control select2 @error('rank_id') is-invalid @enderror"
-                                                id="rank_id" name="rank_id" required>
+                                                id="rank_id" name="rank_id" required disabled
+                                                style="background-color: #f8f9fa;">
                                                 <option value="">Select Rank</option>
                                                 @foreach ($ranks as $rank)
                                                     <option value="{{ $rank->id }}"
@@ -81,6 +82,9 @@
                                             @error('rank_id')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
+                                            <small class="form-text text-muted">
+                                                <i class="fas fa-info-circle"></i> Auto-filled from Regiment No search
+                                            </small>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -88,10 +92,15 @@
                                             <label for="name">Name <span class="text-danger">*</span></label>
                                             <input type="text" class="form-control @error('name') is-invalid @enderror"
                                                 id="name" name="name"
-                                                value="{{ old('name', $bus_pass_application->person->name) }}" required>
+                                                value="{{ old('name', $bus_pass_application->person->name) }}" required
+                                                readonly style="background-color: #f8f9fa;"
+                                                placeholder="Auto-filled from Regiment No search">
                                             @error('name')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
+                                            <small class="form-text text-muted">
+                                                <i class="fas fa-info-circle"></i> Auto-filled from Regiment No search
+                                            </small>
                                         </div>
                                     </div>
                                 </div>
@@ -102,10 +111,15 @@
                                             <label for="unit">Unit <span class="text-danger">*</span></label>
                                             <input type="text" class="form-control @error('unit') is-invalid @enderror"
                                                 id="unit" name="unit"
-                                                value="{{ old('unit', $bus_pass_application->person->unit) }}" required>
+                                                value="{{ old('unit', $bus_pass_application->person->unit) }}" required
+                                                readonly style="background-color: #f8f9fa;"
+                                                placeholder="Auto-filled from Regiment No search">
                                             @error('unit')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
+                                            <small class="form-text text-muted">
+                                                <i class="fas fa-info-circle"></i> Auto-filled from Regiment No search
+                                            </small>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
@@ -113,10 +127,15 @@
                                             <label for="nic">NIC <span class="text-danger">*</span></label>
                                             <input type="text" class="form-control @error('nic') is-invalid @enderror"
                                                 id="nic" name="nic"
-                                                value="{{ old('nic', $bus_pass_application->person->nic) }}" required>
+                                                value="{{ old('nic', $bus_pass_application->person->nic) }}" required
+                                                readonly style="background-color: #f8f9fa;"
+                                                placeholder="Auto-filled from Regiment No search">
                                             @error('nic')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
+                                            <small class="form-text text-muted">
+                                                <i class="fas fa-info-circle"></i> Auto-filled from Regiment No search
+                                            </small>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
@@ -1228,10 +1247,10 @@
                         if (response.success) {
                             var data = response.data;
 
-                            // Auto-populate fields
+                            // Enable and populate fields from API response
                             if (data.rank_id) {
-                                $('#rank_id').val(data.rank_id).trigger('change').prop(
-                                    'disabled', true);
+                                $('#rank_id').prop('disabled', false).val(data.rank_id).trigger(
+                                    'change').prop('disabled', true);
                                 // Add hidden input to ensure value is submitted when disabled
                                 if ($('#rank_id_hidden').length === 0) {
                                     $('<input>').attr({
@@ -1240,11 +1259,19 @@
                                         name: 'rank_id',
                                         value: data.rank_id
                                     }).insertAfter('#rank_id');
+                                } else {
+                                    $('#rank_id_hidden').val(data.rank_id);
                                 }
                             }
-                            $('#name').val(data.name || '').prop('readonly', !!data.name);
-                            $('#unit').val(data.unit || '').prop('readonly', !!data.unit);
-                            $('#nic').val(data.nic || '').prop('readonly', !!data.nic);
+
+                            // Enable fields temporarily to populate them, then disable again
+                            $('#name').prop('readonly', false).val(data.name || '').prop(
+                                'readonly', true);
+                            $('#unit').prop('readonly', false).val(data.unit || '').prop(
+                                'readonly', true);
+                            $('#nic').prop('readonly', false).val(data.nic || '').prop(
+                                'readonly', true);
+
                             $('#army_id').val(data.army_id || '').prop('readonly', !!data
                                 .army_id);
                             $('#permanent_address').val(data.permanent_address || '').prop(
@@ -1284,6 +1311,12 @@
 
             // Handle form submission - disable fields in hidden sections
             $('form').on('submit', function(e) {
+                // Enable disabled fields temporarily for form submission
+                $('#rank_id').prop('disabled', false);
+                $('#name').prop('readonly', false);
+                $('#unit').prop('readonly', false);
+                $('#nic').prop('readonly', false);
+
                 // Disable all form fields in hidden sections to prevent submission of empty values
                 $('#daily_travel_section:hidden input, #daily_travel_section:hidden select').prop(
                     'disabled', true);
