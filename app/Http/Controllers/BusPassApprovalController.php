@@ -39,18 +39,29 @@ class BusPassApprovalController extends Controller
         }
 
         DB::transaction(function () use ($application, $user, $request) {
-            // Record approval in history
-            $this->recordApprovalAction($application, $user, 'approved', $request->remarks);
+            // Determine action type based on user role
+            $action = 'approved';
+            if ($user->hasRole(['Bus Pass Subject Clerk (Branch)', 'Subject Clerk (DMOV)'])) {
+                $action = 'forwarded';
+            }
+
+            // Record action in history
+            $this->recordApprovalAction($application, $user, $action, $request->remarks);
 
             // Update application status based on workflow
-            $newStatus = $this->getNextApprovalStatus($application->status, 'approved');
+            $newStatus = $this->getNextApprovalStatus($application->status, $action);
             $application->update([
                 'status' => $newStatus,
                 'remarks' => $request->remarks
             ]);
         });
 
-        return redirect()->back()->with('success', 'Application approved successfully.');
+        // Customize success message based on action
+        $message = $user->hasRole(['Bus Pass Subject Clerk (Branch)', 'Subject Clerk (DMOV)'])
+            ? 'Application forwarded successfully.'
+            : 'Application approved successfully.';
+
+        return redirect()->back()->with('success', $message);
     }
 
     /**
@@ -166,7 +177,7 @@ class BusPassApprovalController extends Controller
         }
 
         $query = BusPassApplication::where('status', $status)
-            ->with(['person', 'statusData', 'establishment', 'approvalHistory.user']);
+            ->with(['person.gsDivision', 'person.policeStation', 'statusData', 'establishment', 'approvalHistory.user']);
 
         // Filter by establishment for branch roles
         if ($user->isBranchUser()) {
@@ -248,6 +259,11 @@ class BusPassApprovalController extends Controller
             return 'rejected';
         }
 
+        // Treat 'forwarded' the same as 'approved' for status progression
+        if ($action === 'forwarded') {
+            $action = 'approved';
+        }
+
         // Branch workflow
         if ($currentStatus === 'pending_subject_clerk') {
             return 'pending_staff_officer_branch';
@@ -296,7 +312,7 @@ class BusPassApprovalController extends Controller
             $newStatus = 'rejected';
         } elseif ($action === 'not_recommended') {
             $newStatus = 'pending_subject_clerk';
-        } elseif ($action === 'recommended' || $action === 'approved') {
+        } elseif ($action === 'recommended' || $action === 'approved' || $action === 'forwarded') {
             $newStatus = $this->getNextApprovalStatus($application->status, $action);
         }
 

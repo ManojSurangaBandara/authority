@@ -178,11 +178,11 @@
                             </tr>
                             <tr>
                                 <td><strong>Grama Seva Division:</strong></td>
-                                <td>{{ $application->person->grama_seva_division }}</td>
+                                <td>{{ $application->person->gsDivision->name ?? 'N/A' }}</td>
                             </tr>
                             <tr>
                                 <td><strong>Nearest Police Station:</strong></td>
-                                <td>{{ $application->person->nearest_police_station }}</td>
+                                <td>{{ $application->person->policeStation->name ?? 'N/A' }}</td>
                             </tr>
                         </table>
                     </div>
