@@ -56,7 +56,7 @@
                                                 <small class="text-muted">{{ $application->person->telephone_no }}</small>
                                             </td>
                                             <td>
-                                                <strong>{{ $application->person->rank ? $application->person->rank->abb_name : 'Not specified' }}</strong><br>
+                                                <strong>{{ $application->person->rank ?: 'Not specified' }}</strong><br>
                                                 <small
                                                     class="text-muted">{{ $application->person->regiment_no }}</small><br>
                                                 <small class="text-muted">{{ $application->person->unit }}</small>

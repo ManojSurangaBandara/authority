@@ -35,7 +35,7 @@
                             </div>
                             <div class="col-md-3">
                                 <strong>Rank:</strong><br>
-                                {{ $bus_pass_application->person->rank ? $bus_pass_application->person->rank->abb_name : 'Not specified' }}
+                                {{ $bus_pass_application->person->rank ?: 'Not specified' }}
                             </div>
                             <div class="col-md-6">
                                 <strong>Name:</strong><br>

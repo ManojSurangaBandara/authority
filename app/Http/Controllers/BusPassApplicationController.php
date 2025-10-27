@@ -40,9 +40,8 @@ class BusPassApplicationController extends Controller
         $districts = District::orderBy('name')->get();
         $gsDivisions = GsDivision::orderBy('name')->get();
         $policeStations = PoliceStation::orderBy('name')->get();
-        $ranks = Rank::orderBy('id')->get();
 
-        return view('bus-pass-applications.create', compact('busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations', 'ranks'));
+        return view('bus-pass-applications.create', compact('busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations'));
     }
 
     /**
@@ -52,7 +51,7 @@ class BusPassApplicationController extends Controller
     {
         $validationRules = [
             'regiment_no' => 'required|string|max:20',
-            'rank_id' => 'required|exists:ranks,id',
+            'rank' => 'required|string|max:50',
             'name' => 'required|string|max:100',
             'unit' => 'required|string|max:100',
             'nic' => 'required|string|max:15',
@@ -134,7 +133,7 @@ class BusPassApplicationController extends Controller
             // Create new person if doesn't exist
             $person = Person::create([
                 'regiment_no' => $request->regiment_no,
-                'rank_id' => $request->rank_id,
+                'rank' => $request->rank,
                 'name' => $request->name,
                 'unit' => $request->unit,
                 'nic' => $request->nic,
@@ -149,7 +148,7 @@ class BusPassApplicationController extends Controller
         } else {
             // Update existing person data
             $person->update([
-                'rank_id' => $request->rank_id,
+                'rank' => $request->rank,
                 'name' => $request->name,
                 'unit' => $request->unit,
                 'nic' => $request->nic,
@@ -290,8 +289,8 @@ class BusPassApplicationController extends Controller
      */
     public function show(BusPassApplication $bus_pass_application)
     {
-        // Load all person relationships including rank and police station
-        $bus_pass_application->load('destinationLocation', 'person.rank', 'person.province', 'person.district', 'person.policeStation');
+        // Load all person relationships including police station
+        $bus_pass_application->load('destinationLocation', 'person.province', 'person.district', 'person.policeStation');
 
         return view('bus-pass-applications.show', compact('bus_pass_application'));
     }
@@ -307,12 +306,11 @@ class BusPassApplicationController extends Controller
         $districts = District::orderBy('name')->get();
         $gsDivisions = GsDivision::orderBy('name')->get();
         $policeStations = PoliceStation::orderBy('name')->get();
-        $ranks = Rank::orderBy('id')->get();
 
         // Load the destination location relationship if needed
         $bus_pass_application->load('destinationLocation');
 
-        return view('bus-pass-applications.edit', compact('bus_pass_application', 'busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations', 'ranks'));
+        return view('bus-pass-applications.edit', compact('bus_pass_application', 'busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations'));
     }
 
     /**
@@ -323,7 +321,7 @@ class BusPassApplicationController extends Controller
 
         $validationRules = [
             'regiment_no' => 'required|string|max:20',
-            'rank_id' => 'required|exists:ranks,id',
+            'rank' => 'required|string|max:50',
             'name' => 'required|string|max:100',
             'unit' => 'required|string|max:100',
             'nic' => 'required|string|max:15',
@@ -454,7 +452,7 @@ class BusPassApplicationController extends Controller
 
                 // Update the existing person's data with the new information
                 $existingPersonWithSameRegiment->update([
-                    'rank_id' => $request->rank_id,
+                    'rank' => $request->rank,
                     'name' => $request->name,
                     'unit' => $request->unit,
                     'nic' => $request->nic,
@@ -470,7 +468,7 @@ class BusPassApplicationController extends Controller
                 // Regiment number doesn't exist, safe to update current person
                 $bus_pass_application->person->update([
                     'regiment_no' => $request->regiment_no,
-                    'rank_id' => $request->rank_id,
+                    'rank' => $request->rank,
                     'name' => $request->name,
                     'unit' => $request->unit,
                     'nic' => $request->nic,
@@ -486,7 +484,7 @@ class BusPassApplicationController extends Controller
         } else {
             // Regiment number is not changing, safe to update other fields
             $bus_pass_application->person->update([
-                'rank_id' => $request->rank_id,
+                'rank' => $request->rank,
                 'name' => $request->name,
                 'unit' => $request->unit,
                 'nic' => $request->nic,
@@ -633,14 +631,11 @@ class BusPassApplicationController extends Controller
                 if (is_array($responseData) && !empty($responseData)) {
                     $data = $responseData[0];
 
-                    // Find rank_id based on rank text from API
+                    // Get rank text from API
                     $rankText = $data['rank'] ?? '';
-                    $rank = Rank::where('abb_name', $rankText)->orWhere('full_name', $rankText)->first();
-                    $rankId = $rank ? $rank->id : null;
 
                     $personData = [
                         'rank' => $rankText,
-                        'rank_id' => $rankId,
                         'name' => $data['name'] ?? '',
                         'unit' => $data['unit'] ?? '',
                         'nic' => $data['nic'] ?? '',

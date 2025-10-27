@@ -166,7 +166,7 @@ class BusPassApprovalController extends Controller
         }
 
         $query = BusPassApplication::where('status', $status)
-            ->with(['person.rank', 'statusData', 'establishment', 'approvalHistory.user']);
+            ->with(['person', 'statusData', 'establishment', 'approvalHistory.user']);
 
         // Filter by establishment for branch roles
         if ($user->isBranchUser()) {

@@ -34,17 +34,10 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label for="rank_id">Rank:</label>
-                                            <select name="rank_id" id="rank_id" required class="form-control">
-                                                <option value="">Select Rank</option>
-                                                @foreach ($ranks as $rank)
-                                                    <option value="{{ $rank->id }}"
-                                                        {{ old('rank_id') == $rank->id ? 'selected' : '' }}>
-                                                        {{ $rank->abb_name }} - {{ $rank->full_name }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                            @error('rank_id')
+                                            <label for="rank">Rank:</label>
+                                            <input type="text" name="rank" id="rank" required
+                                                class="form-control" value="{{ old('rank') }}">
+                                            @error('rank')
                                                 <div class="text-danger">{{ $message }}</div>
                                             @enderror
                                         </div>
@@ -182,9 +175,7 @@
                     success: function(response) {
                         if (response.success) {
                             // Fill form fields with returned data
-                            if (response.data.rank_id) {
-                                $('#rank_id').val(response.data.rank_id);
-                            }
+                            $('#rank').val(response.data.rank || '');
                             $('#name').val(response.data.name || '');
                             $('#unit').val(response.data.unit || '');
                             $('#nic').val(response.data.nic || '');
@@ -197,9 +188,8 @@
                                 .nearest_police_station || '');
 
                             // Set readonly based on whether API returned data
-                            if (response.data.rank_id) {
-                                $('#rank_id').prop('disabled', true);
-                            }
+                            $('#rank').prop('readonly', response.data.rank && response.data.rank
+                                .trim() !== '');
                             $('#name').prop('readonly', response.data.name && response.data.name
                                 .trim() !== '');
                             $('#unit').prop('readonly', response.data.unit && response.data.unit

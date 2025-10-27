@@ -34,7 +34,7 @@ class NotyetHandedOverBussPassApplicationDataTable extends DataTable
                 return $row->created_at ? $row->created_at->format('d M Y') : '';
             })
             ->addColumn('person_rank', function ($row) {
-                return $row->person && $row->person->rank ? $row->person->rank->abb_name : '';
+                return $row->person ? $row->person->rank : '';
             })
             // ->addColumn('action', function ($row) {
             //     $viewBtn = '<a href="' . route('bus-pass-applications.show', $row->id) . '" class="btn btn-xs btn-info" title="View"><i class="fas fa-eye"></i></a>';
@@ -65,7 +65,7 @@ class NotyetHandedOverBussPassApplicationDataTable extends DataTable
      */
     public function query(BusPassApplication $model): QueryBuilder
     {
-        $query = $model->newQuery()->with(['person.rank', 'establishment'])->where('status', 'temp_card_printed');
+        $query = $model->newQuery()->with(['person', 'establishment'])->where('status', 'temp_card_printed');
 
         // Filter by establishment for branch users
         $user = Auth::user();

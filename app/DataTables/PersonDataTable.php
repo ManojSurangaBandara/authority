@@ -24,7 +24,7 @@ class PersonDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addIndexColumn()
             ->addColumn('person_rank', function ($row) {
-                return $row->rank ? $row->rank->abb_name : 'Not specified';
+                return $row->rank ?: 'Not specified';
             })
             ->addColumn('action', function ($row) {
                 // Check if person has bus pass applications
@@ -73,7 +73,7 @@ class PersonDataTable extends DataTable
      */
     public function query(Person $model): QueryBuilder
     {
-        return $model->newQuery()->with(['rank']);
+        return $model->newQuery();
     }
 
     /**

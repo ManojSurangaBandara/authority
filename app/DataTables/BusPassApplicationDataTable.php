@@ -27,7 +27,7 @@ class BusPassApplicationDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addIndexColumn()
             ->addColumn('person_rank', function ($row) {
-                return $row->person->rank ? $row->person->rank->abb_name : 'Not specified';
+                return $row->person->rank ?: 'Not specified';
             })
             ->addColumn('type_label', function ($row) {
                 return $row->type_label;
@@ -92,7 +92,7 @@ class BusPassApplicationDataTable extends DataTable
      */
     public function query(BusPassApplication $model): QueryBuilder
     {
-        $query = $model->newQuery()->with(['person.rank', 'establishment']);
+        $query = $model->newQuery()->with(['person', 'establishment']);
 
         // Filter by establishment for branch users
         $user = Auth::user();

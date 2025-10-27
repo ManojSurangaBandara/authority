@@ -67,19 +67,13 @@
                                     </div>
                                     <div class="col-md-3">
                                         <div class="form-group">
-                                            <label for="rank_id">Rank <span class="text-danger">*</span></label>
-                                            <select class="form-control select2 @error('rank_id') is-invalid @enderror"
-                                                id="rank_id" name="rank_id" required disabled
-                                                style="background-color: #f8f9fa;">
-                                                <option value="">Select Rank</option>
-                                                @foreach ($ranks as $rank)
-                                                    <option value="{{ $rank->id }}"
-                                                        {{ old('rank_id', $bus_pass_application->person->rank_id) == $rank->id ? 'selected' : '' }}>
-                                                        {{ $rank->abb_name }} - {{ $rank->full_name }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                            @error('rank_id')
+                                            <label for="rank">Rank <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control @error('rank') is-invalid @enderror"
+                                                id="rank" name="rank"
+                                                value="{{ old('rank', $bus_pass_application->person->rank) }}" required
+                                                readonly style="background-color: #f8f9fa;"
+                                                placeholder="Auto-filled from Regiment No search">
+                                            @error('rank')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
                                             <small class="form-text text-muted">
@@ -1248,23 +1242,9 @@
                             var data = response.data;
 
                             // Enable and populate fields from API response
-                            if (data.rank_id) {
-                                $('#rank_id').prop('disabled', false).val(data.rank_id).trigger(
-                                    'change').prop('disabled', true);
-                                // Add hidden input to ensure value is submitted when disabled
-                                if ($('#rank_id_hidden').length === 0) {
-                                    $('<input>').attr({
-                                        type: 'hidden',
-                                        id: 'rank_id_hidden',
-                                        name: 'rank_id',
-                                        value: data.rank_id
-                                    }).insertAfter('#rank_id');
-                                } else {
-                                    $('#rank_id_hidden').val(data.rank_id);
-                                }
-                            }
-
                             // Enable fields temporarily to populate them, then disable again
+                            $('#rank').prop('readonly', false).val(data.rank || '').prop(
+                                'readonly', true);
                             $('#name').prop('readonly', false).val(data.name || '').prop(
                                 'readonly', true);
                             $('#unit').prop('readonly', false).val(data.unit || '').prop(
@@ -1312,7 +1292,7 @@
             // Handle form submission - disable fields in hidden sections
             $('form').on('submit', function(e) {
                 // Enable disabled fields temporarily for form submission
-                $('#rank_id').prop('disabled', false);
+                $('#rank').prop('readonly', false);
                 $('#name').prop('readonly', false);
                 $('#unit').prop('readonly', false);
                 $('#nic').prop('readonly', false);

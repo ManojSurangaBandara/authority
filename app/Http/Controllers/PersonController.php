@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\DataTables\PersonDataTable;
 use App\Models\Person;
-use App\Models\Rank;
 use Illuminate\Support\Facades\Http;
 
 class PersonController extends Controller
@@ -24,8 +23,7 @@ class PersonController extends Controller
      */
     public function create()
     {
-        $ranks = Rank::orderBy('id')->get();
-        return view('persons.create', compact('ranks'));
+        return view('persons.create');
     }
 
     /**
@@ -59,7 +57,7 @@ class PersonController extends Controller
      */
     public function show(string $id)
     {
-        $person = Person::with('rank')->findOrFail($id);
+        $person = Person::findOrFail($id);
         return view('persons.show', compact('person'));
     }
 
@@ -69,13 +67,12 @@ class PersonController extends Controller
     public function edit(string $id)
     {
         $person = Person::withCount('busPassApplications')->findOrFail($id);
-        $ranks = Rank::orderBy('id')->get();
 
         // Check if person has bus pass applications
         $busPassApplicationsCount = $person->bus_pass_applications_count ?? 0;
         $isUsed = $busPassApplicationsCount > 0;
 
-        return view('persons.edit', compact('person', 'isUsed', 'busPassApplicationsCount', 'ranks'));
+        return view('persons.edit', compact('person', 'isUsed', 'busPassApplicationsCount'));
     }
 
     /**
