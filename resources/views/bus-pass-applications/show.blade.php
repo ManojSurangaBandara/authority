@@ -135,6 +135,22 @@
                             </div>
                         </div>
 
+                        @if (auth()->user()->getHierarchyLevel() >= 4)
+                            <div class="row mt-3">
+                                <div class="col-md-4">
+                                    <strong>Branch Card Availability:</strong><br>
+                                    @if ($bus_pass_application->branch_card_availability)
+                                        <span
+                                            class="badge badge-{{ $bus_pass_application->branch_card_availability === 'has_branch_card' ? 'success' : 'warning' }}">
+                                            {{ $bus_pass_application->branch_card_availability === 'has_branch_card' ? 'Has Branch Card (Integration)' : 'No Branch Card (Temporary)' }}
+                                        </span>
+                                    @else
+                                        <span class="badge badge-secondary">Not Set</span>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+
                     </div>
 
                     <div class="card-body">
@@ -302,8 +318,8 @@
                                 class="col-md-{{ $bus_pass_application->bus_pass_type === 'living_in_only' ? '12' : '6' }}">
                                 <strong>Person Image:</strong><br>
                                 @if ($bus_pass_application->person_image)
-                                    <a href="{{ asset('storage/' . $bus_pass_application->person_image) }}" target="_blank"
-                                        class="btn btn-sm btn-outline-primary">
+                                    <a href="{{ asset('storage/' . $bus_pass_application->person_image) }}"
+                                        target="_blank" class="btn btn-sm btn-outline-primary">
                                         <i class="fas fa-image"></i> View Image
                                     </a>
                                 @else
