@@ -27,9 +27,16 @@ class BusPassApprovalController extends Controller
      */
     public function approve(Request $request, BusPassApplication $application)
     {
-        $request->validate([
+        $validationRules = [
             'remarks' => 'nullable|string|max:500'
-        ]);
+        ];
+
+        // Add SLTB season validation for Subject Clerk (DMOV)
+        if (Auth::user()->hasRole('Subject Clerk (DMOV)')) {
+            $validationRules['obtain_sltb_season'] = 'required|in:yes,no';
+        }
+
+        $request->validate($validationRules);
 
         $user = Auth::user();
 
@@ -45,15 +52,35 @@ class BusPassApprovalController extends Controller
                 $action = 'forwarded';
             }
 
+            // Prepare remarks with SLTB season update info if applicable
+            $remarks = $request->remarks;
+            if ($user->hasRole('Subject Clerk (DMOV)') && $request->has('obtain_sltb_season')) {
+                $oldValue = $application->obtain_sltb_season == 'yes' ? 'Available' : 'Not Available';
+                $newValue = $request->obtain_sltb_season == 'yes' ? 'Available' : 'Not Available';
+                if ($oldValue !== $newValue) {
+                    $sltbUpdate = "SLTB Season updated from '{$oldValue}' to '{$newValue}'.";
+                    $remarks = $remarks ? $remarks . "\n\n" . $sltbUpdate : $sltbUpdate;
+                }
+            }
+
             // Record action in history
-            $this->recordApprovalAction($application, $user, $action, $request->remarks);
+            $this->recordApprovalAction($application, $user, $action, $remarks);
 
             // Update application status based on workflow
             $newStatus = $this->getNextApprovalStatus($application->status, $action);
-            $application->update([
+
+            // Prepare update data
+            $updateData = [
                 'status' => $newStatus,
                 'remarks' => $request->remarks
-            ]);
+            ];
+
+            // Update SLTB season if provided by Subject Clerk (DMOV)
+            if ($user->hasRole('Subject Clerk (DMOV)') && $request->has('obtain_sltb_season')) {
+                $updateData['obtain_sltb_season'] = $request->obtain_sltb_season;
+            }
+
+            $application->update($updateData);
         });
 
         // Customize success message based on action
