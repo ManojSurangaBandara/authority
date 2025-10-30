@@ -55,6 +55,33 @@
                                 <strong>{{ $application->obtain_sltb_season == 'yes' ? 'Season Available' : 'Season Not Available' }}</strong>
                             </small>
                         </div>
+
+                        <div class="form-group">
+                            <label for="branch_card_availability{{ $application->id }}">
+                                <i class="fas fa-id-card"></i> Branch Card Availability <span
+                                    class="text-danger">*</span>
+                            </label>
+                            <select class="form-control" id="branch_card_availability{{ $application->id }}"
+                                name="branch_card_availability" required>
+                                <option value="">-- Select Branch Card Status --</option>
+                                <option value="has_branch_card"
+                                    {{ $application->branch_card_availability == 'has_branch_card' ? 'selected' : '' }}>
+                                    Has Branch Card - Integrate Bus Pass</option>
+                                <option value="no_branch_card"
+                                    {{ $application->branch_card_availability == 'no_branch_card' ? 'selected' : '' }}>
+                                    No Branch Card - Print Temporary Card</option>
+                            </select>
+                            <small class="form-text text-muted">
+                                <i class="fas fa-info-circle"></i>
+                                @if ($application->branch_card_availability)
+                                    Current Status:
+                                    <strong>{{ $application->branch_card_availability == 'has_branch_card' ? 'Has Branch Card (Integration)' : 'No Branch Card (Temporary Print)' }}</strong>
+                                @else
+                                    This determines whether the bus pass will be integrated into the person's branch
+                                    card or printed as a temporary card.
+                                @endif
+                            </small>
+                        </div>
                     @endif
 
                     <div class="form-group">
@@ -81,10 +108,8 @@
                             @elseif(auth()->user()->hasRole('Subject Clerk (DMOV)'))
                                 This forward action will send the application to the next approval level (Staff Officer
                                 2 DMOV).
-                                @if (isset($application->obtain_sltb_season))
-                                    <br><strong>Note:</strong> You can update the SLTB Season availability before
-                                    forwarding.
-                                @endif
+                                <br><strong>Note:</strong> You must specify both SLTB Season availability and Branch
+                                Card availability before forwarding.
                             @else
                                 This approval will move the application to the next stage in the workflow.
                             @endif

@@ -13,6 +13,7 @@ class BusPassApplication extends Model
         'marital_status',
         'approval_living_out',
         'obtain_sltb_season',
+        'branch_card_availability',
         'date_arrival_ahq',
         'grama_niladari_certificate',
         'person_image',

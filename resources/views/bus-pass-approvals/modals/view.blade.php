@@ -80,10 +80,26 @@
                                     </span>
                                 </td>
                             </tr>
+                            @if (auth()->user()->getHierarchyLevel() >= 4)
+                                <tr>
+                                    <td><strong>Branch Card Availability:</strong></td>
+                                    <td>
+                                        @if ($application->branch_card_availability)
+                                            <span
+                                                class="badge badge-{{ $application->branch_card_availability === 'has_branch_card' ? 'success' : 'warning' }}">
+                                                {{ $application->branch_card_availability === 'has_branch_card' ? 'Has Branch Card (Integration)' : 'No Branch Card (Temporary)' }}
+                                            </span>
+                                        @else
+                                            <span class="badge badge-secondary">Not Set</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
                             <tr>
                                 <td><strong>Arrival at AHQ:</strong></td>
                                 <td>{{ $application->date_arrival_ahq ? $application->date_arrival_ahq->format('d M Y') : 'N/A' }}
                                 </td>
+                            </tr>
                             </tr>
                             <tr>
                                 <td><strong>Bus Pass Type:</strong></td>

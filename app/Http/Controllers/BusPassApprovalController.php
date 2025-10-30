@@ -31,9 +31,10 @@ class BusPassApprovalController extends Controller
             'remarks' => 'nullable|string|max:500'
         ];
 
-        // Add SLTB season validation for Subject Clerk (DMOV)
+        // Add SLTB season and branch card availability validation for Subject Clerk (DMOV)
         if (Auth::user()->hasRole('Subject Clerk (DMOV)')) {
             $validationRules['obtain_sltb_season'] = 'required|in:yes,no';
+            $validationRules['branch_card_availability'] = 'required|in:has_branch_card,no_branch_card';
         }
 
         $request->validate($validationRules);
@@ -52,14 +53,37 @@ class BusPassApprovalController extends Controller
                 $action = 'forwarded';
             }
 
-            // Prepare remarks with SLTB season update info if applicable
+            // Prepare remarks with SLTB season and branch card availability update info if applicable
             $remarks = $request->remarks;
-            if ($user->hasRole('Subject Clerk (DMOV)') && $request->has('obtain_sltb_season')) {
-                $oldValue = $application->obtain_sltb_season == 'yes' ? 'Available' : 'Not Available';
-                $newValue = $request->obtain_sltb_season == 'yes' ? 'Available' : 'Not Available';
-                if ($oldValue !== $newValue) {
-                    $sltbUpdate = "SLTB Season updated from '{$oldValue}' to '{$newValue}'.";
-                    $remarks = $remarks ? $remarks . "\n\n" . $sltbUpdate : $sltbUpdate;
+            $updateNotes = [];
+
+            if ($user->hasRole('Subject Clerk (DMOV)')) {
+                // SLTB Season update
+                if ($request->has('obtain_sltb_season')) {
+                    $oldValue = $application->obtain_sltb_season == 'yes' ? 'Available' : 'Not Available';
+                    $newValue = $request->obtain_sltb_season == 'yes' ? 'Available' : 'Not Available';
+                    if ($oldValue !== $newValue) {
+                        $updateNotes[] = "SLTB Season updated from '{$oldValue}' to '{$newValue}'.";
+                    }
+                }
+
+                // Branch Card Availability update
+                if ($request->has('branch_card_availability')) {
+                    $oldValue = $application->branch_card_availability;
+                    $newValue = $request->branch_card_availability;
+
+                    $oldLabel = $oldValue == 'has_branch_card' ? 'Has Branch Card (Integration)' : ($oldValue == 'no_branch_card' ? 'No Branch Card (Temporary)' : 'Not Set');
+                    $newLabel = $newValue == 'has_branch_card' ? 'Has Branch Card (Integration)' : 'No Branch Card (Temporary)';
+
+                    if ($oldValue !== $newValue) {
+                        $updateNotes[] = "Branch Card Availability set to '{$newLabel}'.";
+                    }
+                }
+
+                // Combine update notes with remarks
+                if (!empty($updateNotes)) {
+                    $updateText = implode("\n", $updateNotes);
+                    $remarks = $remarks ? $remarks . "\n\n" . $updateText : $updateText;
                 }
             }
 
@@ -75,9 +99,14 @@ class BusPassApprovalController extends Controller
                 'remarks' => $request->remarks
             ];
 
-            // Update SLTB season if provided by Subject Clerk (DMOV)
-            if ($user->hasRole('Subject Clerk (DMOV)') && $request->has('obtain_sltb_season')) {
-                $updateData['obtain_sltb_season'] = $request->obtain_sltb_season;
+            // Update SLTB season and branch card availability if provided by Subject Clerk (DMOV)
+            if ($user->hasRole('Subject Clerk (DMOV)')) {
+                if ($request->has('obtain_sltb_season')) {
+                    $updateData['obtain_sltb_season'] = $request->obtain_sltb_season;
+                }
+                if ($request->has('branch_card_availability')) {
+                    $updateData['branch_card_availability'] = $request->branch_card_availability;
+                }
             }
 
             $application->update($updateData);
