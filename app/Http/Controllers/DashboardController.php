@@ -21,6 +21,10 @@ class DashboardController extends Controller
             if (Auth::user() && Auth::user()->hasRole('Bus Pass Subject Clerk (Branch)')) {
                 $chartData = $this->getBranchSubjectClerkChartData();
             }
+            // Get chart data for Staff Officer (Branch)
+            elseif (Auth::user() && Auth::user()->hasRole('Staff Officer (Branch)')) {
+                $chartData = $this->getBranchStaffOfficerChartData();
+            }
         } catch (\Exception $e) {
             // Log error and continue with empty chart data
             Log::error('Dashboard chart data error: ' . $e->getMessage());
@@ -78,6 +82,19 @@ class DashboardController extends Controller
             'passTypes' => $this->getPassTypesData($establishmentId),
             'weeklyActivity' => $this->getWeeklyActivityData($establishmentId),
             'rejectionReasons' => $this->getRejectionReasonsData($establishmentId)
+        ];
+    }
+
+    private function getBranchStaffOfficerChartData()
+    {
+        $establishmentId = Auth::user()->establishment_id;
+
+        return [
+            'approvalOverview' => $this->getStaffOfficerApprovalOverview($establishmentId),
+            'monthlyApprovals' => $this->getStaffOfficerMonthlyApprovals($establishmentId),
+            'approvalTime' => $this->getStaffOfficerApprovalTime($establishmentId),
+            'recommendationStatus' => $this->getRecommendationStatusData($establishmentId),
+            'weeklyRecommendations' => $this->getWeeklyRecommendationsData($establishmentId)
         ];
     }
 
@@ -233,5 +250,166 @@ class DashboardController extends Controller
         }
 
         return $reasons;
+    }
+
+    // Staff Officer specific chart data methods
+    private function getStaffOfficerApprovalOverview($establishmentId)
+    {
+        $query = BusPassApplication::where('establishment_id', $establishmentId);
+
+        return [
+            'pending_review' => $query->clone()->where('status', 'pending_staff_officer_branch')->count(),
+            'recommended' => $query->clone()
+                ->whereHas('approvalHistory', function ($q) {
+                    $q->where('action', 'recommended')
+                        ->where('user_id', Auth::id());
+                })->count(),
+            'not_recommended' => $query->clone()
+                ->whereHas('approvalHistory', function ($q) {
+                    $q->where('action', 'not_recommended')
+                        ->where('user_id', Auth::id());
+                })->count(),
+            'pending_director' => $query->clone()->where('status', 'pending_director_branch')->count(),
+            'approved' => $query->clone()->whereIn('status', ['forwarded_to_movement', 'approved_for_integration', 'approved_for_temp_card'])->count(),
+        ];
+    }
+
+    private function getStaffOfficerMonthlyApprovals($establishmentId)
+    {
+        $months = [];
+        $received = [];
+        $recommended = [];
+        $notRecommended = [];
+
+        for ($i = 5; $i >= 0; $i--) {
+            $date = Carbon::now()->subMonths($i);
+            $monthStart = $date->startOfMonth()->toDateString();
+            $monthEnd = $date->endOfMonth()->toDateString();
+
+            $months[] = $date->format('M Y');
+
+            // Applications received for review
+            $receivedCount = BusPassApplication::where('establishment_id', $establishmentId)
+                ->where('status', 'pending_staff_officer_branch')
+                ->whereBetween('updated_at', [$monthStart . ' 00:00:00', $monthEnd . ' 23:59:59'])
+                ->count();
+
+            // Recommended by this staff officer
+            $recommendedCount = DB::table('bus_pass_approval_histories')
+                ->join('bus_pass_applications', 'bus_pass_approval_histories.bus_pass_application_id', '=', 'bus_pass_applications.id')
+                ->where('bus_pass_applications.establishment_id', $establishmentId)
+                ->where('bus_pass_approval_histories.user_id', Auth::id())
+                ->where('bus_pass_approval_histories.action', 'recommended')
+                ->whereBetween('bus_pass_approval_histories.action_date', [$monthStart . ' 00:00:00', $monthEnd . ' 23:59:59'])
+                ->count();
+
+            // Not recommended by this staff officer
+            $notRecommendedCount = DB::table('bus_pass_approval_histories')
+                ->join('bus_pass_applications', 'bus_pass_approval_histories.bus_pass_application_id', '=', 'bus_pass_applications.id')
+                ->where('bus_pass_applications.establishment_id', $establishmentId)
+                ->where('bus_pass_approval_histories.user_id', Auth::id())
+                ->where('bus_pass_approval_histories.action', 'not_recommended')
+                ->whereBetween('bus_pass_approval_histories.action_date', [$monthStart . ' 00:00:00', $monthEnd . ' 23:59:59'])
+                ->count();
+
+            $received[] = $receivedCount;
+            $recommended[] = $recommendedCount;
+            $notRecommended[] = $notRecommendedCount;
+        }
+
+        return [
+            'labels' => $months,
+            'received' => $received,
+            'recommended' => $recommended,
+            'not_recommended' => $notRecommended
+        ];
+    }
+
+    private function getStaffOfficerApprovalTime($establishmentId)
+    {
+        // Get applications this staff officer has acted on
+        $approvalHistories = DB::table('bus_pass_approval_histories')
+            ->join('bus_pass_applications', 'bus_pass_approval_histories.bus_pass_application_id', '=', 'bus_pass_applications.id')
+            ->where('bus_pass_applications.establishment_id', $establishmentId)
+            ->where('bus_pass_approval_histories.user_id', Auth::id())
+            ->whereIn('bus_pass_approval_histories.action', ['recommended', 'not_recommended'])
+            ->select('bus_pass_applications.created_at', 'bus_pass_approval_histories.action_date')
+            ->get();
+
+        $timeRanges = [
+            'same_day' => 0,
+            'one_to_two' => 0,
+            'three_to_five' => 0,
+            'over_five' => 0
+        ];
+
+        foreach ($approvalHistories as $history) {
+            $created = Carbon::parse($history->created_at);
+            $actionDate = Carbon::parse($history->action_date);
+            $days = $created->diffInDays($actionDate);
+
+            if ($days == 0) {
+                $timeRanges['same_day']++;
+            } elseif ($days <= 2) {
+                $timeRanges['one_to_two']++;
+            } elseif ($days <= 5) {
+                $timeRanges['three_to_five']++;
+            } else {
+                $timeRanges['over_five']++;
+            }
+        }
+
+        return $timeRanges;
+    }
+
+    private function getRecommendationStatusData($establishmentId)
+    {
+        // Applications recommended by staff officer
+        $recommended = DB::table('bus_pass_approval_histories')
+            ->join('bus_pass_applications', 'bus_pass_approval_histories.bus_pass_application_id', '=', 'bus_pass_applications.id')
+            ->where('bus_pass_applications.establishment_id', $establishmentId)
+            ->where('bus_pass_approval_histories.user_id', Auth::id())
+            ->where('bus_pass_approval_histories.action', 'recommended')
+            ->select('bus_pass_applications.status', DB::raw('count(*) as count'))
+            ->groupBy('bus_pass_applications.status')
+            ->pluck('count', 'status')
+            ->toArray();
+
+        return [
+            'pending_director' => $recommended['pending_director_branch'] ?? 0,
+            'approved_by_director' => ($recommended['forwarded_to_movement'] ?? 0) + ($recommended['approved_for_integration'] ?? 0) + ($recommended['approved_for_temp_card'] ?? 0),
+            'rejected_by_director' => $recommended['rejected'] ?? 0
+        ];
+    }
+
+    private function getWeeklyRecommendationsData($establishmentId)
+    {
+        $weekStart = Carbon::now()->startOfWeek();
+        $days = [];
+        $data = [];
+
+        for ($i = 0; $i < 7; $i++) {
+            $date = $weekStart->copy()->addDays($i);
+            $days[] = $date->format('D');
+
+            $dayStart = $date->startOfDay();
+            $dayEnd = $date->endOfDay();
+
+            // Total recommendations (both recommended and not recommended) for this day
+            $totalCount = DB::table('bus_pass_approval_histories')
+                ->join('bus_pass_applications', 'bus_pass_approval_histories.bus_pass_application_id', '=', 'bus_pass_applications.id')
+                ->where('bus_pass_applications.establishment_id', $establishmentId)
+                ->where('bus_pass_approval_histories.user_id', Auth::id())
+                ->whereIn('bus_pass_approval_histories.action', ['recommended', 'not_recommended'])
+                ->whereBetween('bus_pass_approval_histories.action_date', [$dayStart, $dayEnd])
+                ->count();
+
+            $data[] = $totalCount;
+        }
+
+        return [
+            'labels' => $days,
+            'data' => $data
+        ];
     }
 }

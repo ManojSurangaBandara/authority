@@ -129,10 +129,109 @@
                 </div>
             </div>
         </div>
-    @elseif(auth()->user()->hasRole('Staff Officer (Branch)') || auth()->user()->hasRole('Director (Branch)'))
-        <!-- Quick Stats Row for other branch roles -->
+    @elseif(auth()->user()->hasRole('Staff Officer (Branch)') && !empty($chartData))
+        <!-- Charts Section for Staff Officer (Branch) -->
         <div class="row mt-4">
-            <!-- Branch user stats -->
+            <!-- Approval Overview -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-tasks"></i> My Approval Overview
+                        </h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="approvalChart" style="height: 250px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monthly Approvals Trend -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-chart-line"></i> Monthly Approval Activity (Last 6 Months)
+                        </h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="monthlyApprovalsChart" style="height: 250px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Approval Time -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-clock"></i> My Response Time
+                        </h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="approvalTimeChart" style="height: 200px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recommendation Status -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-chart-pie"></i> Recommendation Outcomes
+                        </h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="recommendationChart" style="height: 200px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weekly Recommendations -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-calendar-week"></i> This Week's Activity
+                        </h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="weeklyRecommendationsChart" style="height: 200px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @elseif(auth()->user()->hasRole('Director (Branch)'))
+        <!-- Quick Stats for Director (Branch) -->
+        <div class="row mt-4">
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-info">
                     <div class="inner">
@@ -460,6 +559,203 @@
                             data: {!! json_encode($chartData['weeklyActivity']['forwarded']) !!},
                             borderColor: '#28a745',
                             backgroundColor: 'rgba(40, 167, 69, 0.3)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
+    @elseif(auth()->user()->hasRole('Staff Officer (Branch)') && !empty($chartData))
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            $(document).ready(function() {
+                // Approval Overview Chart (Doughnut)
+                const approvalCtx = document.getElementById('approvalChart').getContext('2d');
+                const approvalData = @json($chartData['approvalOverview']);
+                const approvalChart = new Chart(approvalCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Pending Review', 'Recommended', 'Not Recommended', 'Pending Director',
+                            'Approved'
+                        ],
+                        datasets: [{
+                            data: [
+                                approvalData.pending_review,
+                                approvalData.recommended,
+                                approvalData.not_recommended,
+                                approvalData.pending_director,
+                                approvalData.approved
+                            ],
+                            backgroundColor: [
+                                '#ffc107',
+                                '#28a745',
+                                '#dc3545',
+                                '#17a2b8',
+                                '#007bff'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+
+                // Monthly Approvals Chart (Line)
+                const monthlyApprovalsCtx = document.getElementById('monthlyApprovalsChart').getContext('2d');
+                const monthlyData = @json($chartData['monthlyApprovals']);
+
+                const monthlyApprovalsChart = new Chart(monthlyApprovalsCtx, {
+                    type: 'line',
+                    data: {
+                        labels: monthlyData.labels,
+                        datasets: [{
+                                label: 'Received',
+                                data: monthlyData.received,
+                                borderColor: '#007bff',
+                                backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Recommended',
+                                data: monthlyData.recommended,
+                                borderColor: '#28a745',
+                                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Not Recommended',
+                                data: monthlyData.not_recommended,
+                                borderColor: '#dc3545',
+                                backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Approval Time Chart (Bar)
+                const approvalTimeCtx = document.getElementById('approvalTimeChart').getContext('2d');
+                const approvalTimeData = @json($chartData['approvalTime']);
+
+                const approvalTimeChart = new Chart(approvalTimeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Same Day', '1-2 Days', '3-5 Days', '5+ Days'],
+                        datasets: [{
+                            label: 'Applications',
+                            data: [
+                                approvalTimeData.same_day,
+                                approvalTimeData.one_to_two,
+                                approvalTimeData.three_to_five,
+                                approvalTimeData.over_five
+                            ],
+                            backgroundColor: [
+                                '#28a745',
+                                '#ffc107',
+                                '#fd7e14',
+                                '#dc3545'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Recommendation Status Chart (Doughnut)
+                const recommendationCtx = document.getElementById('recommendationChart').getContext('2d');
+                const recommendationData = @json($chartData['recommendationStatus']);
+
+                const recommendationChart = new Chart(recommendationCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Pending Director', 'Approved by Director', 'Rejected by Director'],
+                        datasets: [{
+                            data: [
+                                recommendationData.pending_director,
+                                recommendationData.approved_by_director,
+                                recommendationData.rejected_by_director
+                            ],
+                            backgroundColor: [
+                                '#ffc107',
+                                '#28a745',
+                                '#dc3545'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+
+                // Weekly Recommendations Chart (Area)
+                const weeklyRecommendationsCtx = document.getElementById('weeklyRecommendationsChart').getContext('2d');
+                const weeklyData = @json($chartData['weeklyRecommendations']);
+
+                const weeklyRecommendationsChart = new Chart(weeklyRecommendationsCtx, {
+                    type: 'line',
+                    data: {
+                        labels: weeklyData.labels,
+                        datasets: [{
+                            label: 'Recommendations',
+                            data: weeklyData.data,
+                            borderColor: '#007bff',
+                            backgroundColor: 'rgba(0, 123, 255, 0.3)',
                             fill: true,
                             tension: 0.4
                         }]
