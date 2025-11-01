@@ -25,9 +25,16 @@ class DashboardController extends Controller
             elseif (Auth::user() && Auth::user()->hasRole('Staff Officer (Branch)')) {
                 $chartData = $this->getBranchStaffOfficerChartData();
             }
+            // Get chart data for Director (Branch)
+            elseif (Auth::user() && Auth::user()->hasRole('Director (Branch)')) {
+                Log::info('Loading Director (Branch) chart data for user: ' . Auth::user()->email);
+                $chartData = $this->getBranchDirectorChartData();
+                Log::info('Director chart data loaded: ' . json_encode(array_keys($chartData)));
+            }
         } catch (\Exception $e) {
             // Log error and continue with empty chart data
             Log::error('Dashboard chart data error: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
             $chartData = $this->getEmptyChartData();
         }
 
@@ -401,6 +408,216 @@ class DashboardController extends Controller
                 ->where('bus_pass_applications.establishment_id', $establishmentId)
                 ->where('bus_pass_approval_histories.user_id', Auth::id())
                 ->whereIn('bus_pass_approval_histories.action', ['recommended', 'not_recommended'])
+                ->whereBetween('bus_pass_approval_histories.action_date', [$dayStart, $dayEnd])
+                ->count();
+
+            $data[] = $totalCount;
+        }
+
+        return [
+            'labels' => $days,
+            'data' => $data
+        ];
+    }
+
+    // Branch Director Dashboard Methods
+    private function getBranchDirectorChartData()
+    {
+        $establishmentId = Auth::user()->establishment_id;
+        Log::info('Building Director chart data for establishment: ' . $establishmentId);
+
+        try {
+            $approvalOverview = $this->getDirectorApprovalOverview($establishmentId);
+            Log::info('Approval overview data: ' . json_encode($approvalOverview));
+
+            $monthlyApprovals = $this->getDirectorMonthlyApprovals($establishmentId);
+            Log::info('Monthly approvals data keys: ' . implode(', ', array_keys($monthlyApprovals)));
+
+            $approvalTime = $this->getDirectorApprovalTime($establishmentId);
+            Log::info('Approval time data: ' . json_encode($approvalTime));
+
+            $passTypeDistribution = $this->getDirectorPassTypeDistribution($establishmentId);
+            Log::info('Pass type distribution: ' . json_encode($passTypeDistribution));
+
+            $weeklyApprovals = $this->getDirectorWeeklyApprovals($establishmentId);
+            Log::info('Weekly approvals keys: ' . implode(', ', array_keys($weeklyApprovals)));
+
+            return [
+                'approvalOverview' => $approvalOverview,
+                'monthlyApprovals' => $monthlyApprovals,
+                'approvalTime' => $approvalTime,
+                'passTypeDistribution' => $passTypeDistribution,
+                'weeklyApprovals' => $weeklyApprovals
+            ];
+        } catch (\Exception $e) {
+            Log::error('Error in getBranchDirectorChartData: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+            throw $e;
+        }
+    }
+
+    private function getDirectorApprovalOverview($establishmentId)
+    {
+        // Get applications approved/rejected by this director
+        $pendingReview = BusPassApplication::where('establishment_id', $establishmentId)
+            ->where('status', 'pending_director_branch')
+            ->count();
+
+        $approved = DB::table('bus_pass_approval_histories')
+            ->join('bus_pass_applications', 'bus_pass_approval_histories.bus_pass_application_id', '=', 'bus_pass_applications.id')
+            ->where('bus_pass_applications.establishment_id', $establishmentId)
+            ->where('bus_pass_approval_histories.user_id', Auth::id())
+            ->where('bus_pass_approval_histories.action', 'approved')
+            ->count();
+
+        $rejected = DB::table('bus_pass_approval_histories')
+            ->join('bus_pass_applications', 'bus_pass_approval_histories.bus_pass_application_id', '=', 'bus_pass_applications.id')
+            ->where('bus_pass_applications.establishment_id', $establishmentId)
+            ->where('bus_pass_approval_histories.user_id', Auth::id())
+            ->where('bus_pass_approval_histories.action', 'rejected')
+            ->count();
+
+        $forwardedToMovement = BusPassApplication::where('establishment_id', $establishmentId)
+            ->where('status', 'forwarded_to_movement')
+            ->count();
+
+        $totalProcessed = $approved + $rejected;
+
+        return [
+            'pending_review' => $pendingReview,
+            'approved' => $approved,
+            'rejected' => $rejected,
+            'forwarded_to_movement' => $forwardedToMovement,
+            'total_processed' => $totalProcessed
+        ];
+    }
+
+    private function getDirectorMonthlyApprovals($establishmentId)
+    {
+        $months = [];
+        $received = [];
+        $approved = [];
+        $rejected = [];
+
+        for ($i = 5; $i >= 0; $i--) {
+            $date = Carbon::now()->subMonths($i);
+            $monthStart = $date->startOfMonth()->toDateString();
+            $monthEnd = $date->endOfMonth()->toDateString();
+
+            $months[] = $date->format('M Y');
+
+            // Applications received for director review
+            $receivedCount = BusPassApplication::where('establishment_id', $establishmentId)
+                ->where('status', 'pending_director_branch')
+                ->whereBetween('updated_at', [$monthStart . ' 00:00:00', $monthEnd . ' 23:59:59'])
+                ->count();
+
+            // Approved by this director
+            $approvedCount = DB::table('bus_pass_approval_histories')
+                ->join('bus_pass_applications', 'bus_pass_approval_histories.bus_pass_application_id', '=', 'bus_pass_applications.id')
+                ->where('bus_pass_applications.establishment_id', $establishmentId)
+                ->where('bus_pass_approval_histories.user_id', Auth::id())
+                ->where('bus_pass_approval_histories.action', 'approved')
+                ->whereBetween('bus_pass_approval_histories.action_date', [$monthStart . ' 00:00:00', $monthEnd . ' 23:59:59'])
+                ->count();
+
+            // Rejected by this director
+            $rejectedCount = DB::table('bus_pass_approval_histories')
+                ->join('bus_pass_applications', 'bus_pass_approval_histories.bus_pass_application_id', '=', 'bus_pass_applications.id')
+                ->where('bus_pass_applications.establishment_id', $establishmentId)
+                ->where('bus_pass_approval_histories.user_id', Auth::id())
+                ->where('bus_pass_approval_histories.action', 'rejected')
+                ->whereBetween('bus_pass_approval_histories.action_date', [$monthStart . ' 00:00:00', $monthEnd . ' 23:59:59'])
+                ->count();
+
+            $received[] = $receivedCount;
+            $approved[] = $approvedCount;
+            $rejected[] = $rejectedCount;
+        }
+
+        return [
+            'labels' => $months,
+            'received' => $received,
+            'approved' => $approved,
+            'rejected' => $rejected
+        ];
+    }
+
+    private function getDirectorApprovalTime($establishmentId)
+    {
+        // Get applications this director has acted on
+        $approvalHistories = DB::table('bus_pass_approval_histories')
+            ->join('bus_pass_applications', 'bus_pass_approval_histories.bus_pass_application_id', '=', 'bus_pass_applications.id')
+            ->where('bus_pass_applications.establishment_id', $establishmentId)
+            ->where('bus_pass_approval_histories.user_id', Auth::id())
+            ->whereIn('bus_pass_approval_histories.action', ['approved', 'rejected'])
+            ->select('bus_pass_applications.created_at', 'bus_pass_approval_histories.action_date')
+            ->get();
+
+        $timeRanges = [
+            'same_day' => 0,
+            'one_to_two' => 0,
+            'three_to_five' => 0,
+            'over_five' => 0
+        ];
+
+        foreach ($approvalHistories as $history) {
+            $created = Carbon::parse($history->created_at);
+            $actionDate = Carbon::parse($history->action_date);
+            $days = $created->diffInDays($actionDate);
+
+            if ($days == 0) {
+                $timeRanges['same_day']++;
+            } elseif ($days <= 2) {
+                $timeRanges['one_to_two']++;
+            } elseif ($days <= 5) {
+                $timeRanges['three_to_five']++;
+            } else {
+                $timeRanges['over_five']++;
+            }
+        }
+
+        return $timeRanges;
+    }
+
+    private function getDirectorPassTypeDistribution($establishmentId)
+    {
+        // Get pass types for applications approved by this director
+        $passTypes = DB::table('bus_pass_approval_histories')
+            ->join('bus_pass_applications', 'bus_pass_approval_histories.bus_pass_application_id', '=', 'bus_pass_applications.id')
+            ->where('bus_pass_applications.establishment_id', $establishmentId)
+            ->where('bus_pass_approval_histories.user_id', Auth::id())
+            ->where('bus_pass_approval_histories.action', 'approved')
+            ->select('bus_pass_applications.bus_pass_type', DB::raw('count(*) as count'))
+            ->groupBy('bus_pass_applications.bus_pass_type')
+            ->pluck('count', 'bus_pass_type')
+            ->toArray();
+
+        return [
+            'daily_travel' => $passTypes['daily_travel'] ?? 0,
+            'weekend_monthly_travel' => $passTypes['weekend_monthly_travel'] ?? 0
+        ];
+    }
+
+    private function getDirectorWeeklyApprovals($establishmentId)
+    {
+        $weekStart = Carbon::now()->startOfWeek();
+        $days = [];
+        $data = [];
+
+        for ($i = 0; $i < 7; $i++) {
+            $date = $weekStart->copy()->addDays($i);
+            $days[] = $date->format('D');
+
+            $dayStart = $date->startOfDay();
+            $dayEnd = $date->endOfDay();
+
+            // Total approvals/rejections for this day
+            $totalCount = DB::table('bus_pass_approval_histories')
+                ->join('bus_pass_applications', 'bus_pass_approval_histories.bus_pass_application_id', '=', 'bus_pass_applications.id')
+                ->where('bus_pass_applications.establishment_id', $establishmentId)
+                ->where('bus_pass_approval_histories.user_id', Auth::id())
+                ->whereIn('bus_pass_approval_histories.action', ['approved', 'rejected'])
                 ->whereBetween('bus_pass_approval_histories.action_date', [$dayStart, $dayEnd])
                 ->count();
 

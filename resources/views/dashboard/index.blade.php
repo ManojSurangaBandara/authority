@@ -39,36 +39,28 @@
                         <h3 class="card-title">
                             <i class="fas fa-chart-pie"></i> Application Status Overview
                         </h3>
-                        {{-- <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                        </div> --}}
-                    </div>
-                    <div class="card-body">
-                        <canvas id="statusChart" style="height: 250px;"></canvas>
                     </div>
                 </div>
+                <div class="card-body">
+                    <canvas id="statusChart" style="height: 250px;"></canvas>
+                </div>
             </div>
+        </div>
 
-            <!-- Monthly Application Trends -->
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <i class="fas fa-chart-line"></i> Monthly Application Trends
-                        </h3>
-                        {{-- <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                        </div> --}}
-                    </div>
-                    <div class="card-body">
-                        <canvas id="trendsChart" style="height: 250px;"></canvas>
-                    </div>
+        <!-- Monthly Application Trends -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-line"></i> Monthly Application Trends
+                    </h3>
                 </div>
             </div>
+            <div class="card-body">
+                <canvas id="trendsChart" style="height: 250px;"></canvas>
+            </div>
+        </div>
+        </div>
         </div>
 
         <div class="row">
@@ -98,11 +90,7 @@
                         <h3 class="card-title">
                             <i class="fas fa-chart-bar"></i> Bus Pass Types
                         </h3>
-                        {{-- <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                        </div> --}}
+
                     </div>
                     <div class="card-body">
                         <canvas id="passTypesChart" style="height: 200px;"></canvas>
@@ -117,11 +105,7 @@
                         <h3 class="card-title">
                             <i class="fas fa-chart-area"></i> Weekly Activity
                         </h3>
-                        {{-- <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                        </div> --}}
+
                     </div>
                     <div class="card-body">
                         <canvas id="weeklyChart" style="height: 200px;"></canvas>
@@ -139,11 +123,6 @@
                         <h3 class="card-title">
                             <i class="fas fa-tasks"></i> My Approval Overview
                         </h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                        </div>
                     </div>
                     <div class="card-body">
                         <canvas id="approvalChart" style="height: 250px;"></canvas>
@@ -158,11 +137,7 @@
                         <h3 class="card-title">
                             <i class="fas fa-chart-line"></i> Monthly Approval Activity (Last 6 Months)
                         </h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                        </div>
+
                     </div>
                     <div class="card-body">
                         <canvas id="monthlyApprovalsChart" style="height: 250px;"></canvas>
@@ -179,11 +154,7 @@
                         <h3 class="card-title">
                             <i class="fas fa-clock"></i> My Response Time
                         </h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                        </div>
+
                     </div>
                     <div class="card-body">
                         <canvas id="approvalTimeChart" style="height: 200px;"></canvas>
@@ -198,11 +169,7 @@
                         <h3 class="card-title">
                             <i class="fas fa-chart-pie"></i> Recommendation Outcomes
                         </h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                        </div>
+
                     </div>
                     <div class="card-body">
                         <canvas id="recommendationChart" style="height: 200px;"></canvas>
@@ -217,11 +184,7 @@
                         <h3 class="card-title">
                             <i class="fas fa-calendar-week"></i> This Week's Activity
                         </h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                        </div>
+
                     </div>
                     <div class="card-body">
                         <canvas id="weeklyRecommendationsChart" style="height: 200px;"></canvas>
@@ -229,63 +192,83 @@
                 </div>
             </div>
         </div>
-    @elseif(auth()->user()->hasRole('Director (Branch)'))
-        <!-- Quick Stats for Director (Branch) -->
+    @elseif(auth()->user()->hasRole('Director (Branch)') && !empty($chartData))
+        <!-- Charts Section for Director (Branch) -->
         <div class="row mt-4">
-            <div class="col-lg-3 col-6">
-                <div class="small-box bg-info">
-                    <div class="inner">
-                        <h3>{{ \App\Models\BusPassApplication::where('establishment_id', auth()->user()->establishment_id)->count() }}
+            <!-- Approval Overview -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-chart-pie"></i> My Approval Overview
                         </h3>
-                        <p>My Applications</p>
+
                     </div>
-                    <div class="icon">
-                        <i class="fas fa-id-card"></i>
+                    <div class="card-body">
+                        <canvas id="directorApprovalChart" style="height: 250px;"></canvas>
                     </div>
-                    <a href="{{ route('bus-pass-applications.index') }}" class="small-box-footer">More info <i
-                            class="fas fa-arrow-circle-right"></i></a>
                 </div>
             </div>
-            <div class="col-lg-3 col-6">
-                <div class="small-box bg-success">
-                    <div class="inner">
-                        <h3>{{ \App\Models\BusPassApplication::where('establishment_id', auth()->user()->establishment_id)->where('status', 'approved')->count() }}
+
+            <!-- Monthly Approval Activity -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-chart-line"></i> Monthly Approval Activity (Last 6 Months)
                         </h3>
-                        <p>Approved</p>
+
                     </div>
-                    <div class="icon">
-                        <i class="fas fa-check-circle"></i>
+                    <div class="card-body">
+                        <canvas id="directorMonthlyChart" style="height: 250px;"></canvas>
                     </div>
-                    <a href="{{ route('bus-pass-applications.index') }}" class="small-box-footer">More info <i
-                            class="fas fa-arrow-circle-right"></i></a>
                 </div>
             </div>
-            <div class="col-lg-3 col-6">
-                <div class="small-box bg-warning">
-                    <div class="inner">
-                        <h3>{{ \App\Models\BusPassApplication::where('establishment_id', auth()->user()->establishment_id)->whereIn('status', ['pending_subject_clerk', 'pending_staff_officer_branch', 'pending_director_branch'])->count() }}
+        </div>
+
+        <div class="row">
+            <!-- Approval Time -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-clock"></i> My Response Time
                         </h3>
-                        <p>Pending</p>
+
                     </div>
-                    <div class="icon">
-                        <i class="fas fa-clock"></i>
+                    <div class="card-body">
+                        <canvas id="directorTimeChart" style="height: 200px;"></canvas>
                     </div>
-                    <a href="{{ route('bus-pass-applications.index') }}" class="small-box-footer">More info <i
-                            class="fas fa-arrow-circle-right"></i></a>
                 </div>
             </div>
-            <div class="col-lg-3 col-6">
-                <div class="small-box bg-danger">
-                    <div class="inner">
-                        <h3>{{ \App\Models\BusPassApplication::where('establishment_id', auth()->user()->establishment_id)->where('status', 'rejected')->count() }}
+
+            <!-- Pass Type Distribution -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-chart-pie"></i> Pass Type Distribution
                         </h3>
-                        <p>Rejected</p>
+
                     </div>
-                    <div class="icon">
-                        <i class="fas fa-times-circle"></i>
+                    <div class="card-body">
+                        <canvas id="directorPassTypeChart" style="height: 200px;"></canvas>
                     </div>
-                    <a href="{{ route('rejected-applications.index') }}" class="small-box-footer">More info <i
-                            class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+
+            <!-- Weekly Approvals -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-calendar-week"></i> This Week's Activity
+                        </h3>
+                       
+                    </div>
+                    <div class="card-body">
+                        <canvas id="directorWeeklyChart" style="height: 200px;"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -756,6 +739,209 @@
                             data: weeklyData.data,
                             borderColor: '#007bff',
                             backgroundColor: 'rgba(0, 123, 255, 0.3)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
+    @elseif(auth()->user()->hasRole('Director (Branch)') && !empty($chartData))
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            $(document).ready(function() {
+                // Director Approval Overview Chart (Doughnut)
+                const directorApprovalCtx = document.getElementById('directorApprovalChart').getContext('2d');
+                const directorApprovalData = @json($chartData['approvalOverview']);
+
+                const directorApprovalChart = new Chart(directorApprovalCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Pending Review', 'Approved', 'Rejected', 'Forwarded to Movement',
+                            'Total Processed'
+                        ],
+                        datasets: [{
+                            data: [
+                                directorApprovalData.pending_review,
+                                directorApprovalData.approved,
+                                directorApprovalData.rejected,
+                                directorApprovalData.forwarded_to_movement,
+                                directorApprovalData.total_processed
+                            ],
+                            backgroundColor: [
+                                '#ffc107',
+                                '#28a745',
+                                '#dc3545',
+                                '#17a2b8',
+                                '#6c757d'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+
+                // Director Monthly Approvals Chart (Line)
+                const directorMonthlyCtx = document.getElementById('directorMonthlyChart').getContext('2d');
+                const directorMonthlyData = @json($chartData['monthlyApprovals']);
+
+                const directorMonthlyChart = new Chart(directorMonthlyCtx, {
+                    type: 'line',
+                    data: {
+                        labels: directorMonthlyData.labels,
+                        datasets: [{
+                                label: 'Received',
+                                data: directorMonthlyData.received,
+                                borderColor: '#007bff',
+                                backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Approved',
+                                data: directorMonthlyData.approved,
+                                borderColor: '#28a745',
+                                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Rejected',
+                                data: directorMonthlyData.rejected,
+                                borderColor: '#dc3545',
+                                backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Director Approval Time Chart (Bar)
+                const directorTimeCtx = document.getElementById('directorTimeChart').getContext('2d');
+                const directorTimeData = @json($chartData['approvalTime']);
+
+                const directorTimeChart = new Chart(directorTimeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Same Day', '1-2 Days', '3-5 Days', '5+ Days'],
+                        datasets: [{
+                            label: 'Applications',
+                            data: [
+                                directorTimeData.same_day,
+                                directorTimeData.one_to_two,
+                                directorTimeData.three_to_five,
+                                directorTimeData.over_five
+                            ],
+                            backgroundColor: [
+                                '#28a745',
+                                '#ffc107',
+                                '#fd7e14',
+                                '#dc3545'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Director Pass Type Distribution Chart (Horizontal Bar)
+                const directorPassTypeCtx = document.getElementById('directorPassTypeChart').getContext('2d');
+                const directorPassTypeData = @json($chartData['passTypeDistribution']);
+
+                const directorPassTypeChart = new Chart(directorPassTypeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Daily Travel', 'Weekend/Monthly'],
+                        datasets: [{
+                            label: 'Applications',
+                            data: [
+                                directorPassTypeData.daily_travel,
+                                directorPassTypeData.weekend_monthly_travel
+                            ],
+                            backgroundColor: [
+                                '#007bff',
+                                '#28a745'
+                            ]
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Director Weekly Approvals Chart (Area)
+                const directorWeeklyCtx = document.getElementById('directorWeeklyChart').getContext('2d');
+                const directorWeeklyData = @json($chartData['weeklyApprovals']);
+
+                const directorWeeklyChart = new Chart(directorWeeklyCtx, {
+                    type: 'line',
+                    data: {
+                        labels: directorWeeklyData.labels,
+                        datasets: [{
+                            label: 'Approvals',
+                            data: directorWeeklyData.data,
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.3)',
                             fill: true,
                             tension: 0.4
                         }]
