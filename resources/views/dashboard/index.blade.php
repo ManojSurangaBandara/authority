@@ -27,7 +27,266 @@
     </div>
 @stop
 
+@section('adminlte_js')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    @if (Auth::user() && Auth::user()->hasRole('Subject Clerk (DMOV)') && !empty($chartData))
+        <script>
+            $(document).ready(function() {
+                console.log('DMOV Dashboard JavaScript Loading...');
+                console.log('Chart.js available:', typeof Chart !== 'undefined');
+                console.log('jQuery available:', typeof $ !== 'undefined');
+
+                console.log('Chart data available, initializing charts...');
+                // Branch-wise Applications Chart (Horizontal Bar)
+                const dmovBranchCtx = document.getElementById('dmovBranchChart').getContext('2d');
+                const dmovBranchData = @json($chartData['branchWiseApplications'] ?? null) || {
+                    'labels': [],
+                    'data': []
+                };
+
+                const dmovBranchChart = new Chart(dmovBranchCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: dmovBranchData.labels,
+                        datasets: [{
+                            label: 'Applications',
+                            data: dmovBranchData.data,
+                            backgroundColor: '#007bff',
+                            borderColor: '#007bff',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Status Overview Chart (Doughnut)
+                const dmovStatusCtx = document.getElementById('dmovStatusChart').getContext('2d');
+                const dmovStatusData = @json($chartData['overallStatus'] ?? []);
+
+                const dmovStatusChart = new Chart(dmovStatusCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: [
+                            'Forwarded to Movement',
+                            'Pending DMOV Subject Clerk',
+                            'Pending DMOV Staff Officer 2',
+                            'Pending DMOV Staff Officer 1',
+                            'Approved for Integration',
+                            'Rejected'
+                        ],
+                        datasets: [{
+                            data: [
+                                dmovStatusData.forwarded_to_movement,
+                                dmovStatusData.pending_dmov_subject_clerk,
+                                dmovStatusData.pending_dmov_staff_officer_2,
+                                dmovStatusData.pending_dmov_staff_officer_1,
+                                dmovStatusData.approved_for_integration,
+                                dmovStatusData.rejected
+                            ],
+                            backgroundColor: [
+                                '#17a2b8',
+                                '#ffc107',
+                                '#fd7e14',
+                                '#6f42c1',
+                                '#28a745',
+                                '#dc3545'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+
+                // Monthly Trends Chart (Line)
+                const dmovTrendsCtx = document.getElementById('dmovTrendsChart').getContext('2d');
+                const dmovTrendsData = @json($chartData['monthlyTrends'] ?? null) || {
+                    'labels': [],
+                    'received': [],
+                    'processed': []
+                };
+
+                const dmovTrendsChart = new Chart(dmovTrendsCtx, {
+                    type: 'line',
+                    data: {
+                        labels: dmovTrendsData.labels,
+                        datasets: [{
+                            label: 'Received from Branches',
+                            data: dmovTrendsData.received,
+                            borderColor: '#007bff',
+                            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }, {
+                            label: 'Processed by DMOV',
+                            data: dmovTrendsData.processed,
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Processing Time Chart (Bar)
+                const dmovTimeCtx = document.getElementById('dmovTimeChart').getContext('2d');
+                const dmovTimeData = @json($chartData['processingTime'] ?? []);
+
+                const dmovTimeChart = new Chart(dmovTimeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Same Day', '1-2 Days', '3-5 Days', '5+ Days'],
+                        datasets: [{
+                            label: 'Applications',
+                            data: [
+                                dmovTimeData.same_day,
+                                dmovTimeData.one_to_two,
+                                dmovTimeData.three_to_five,
+                                dmovTimeData.over_five
+                            ],
+                            backgroundColor: [
+                                '#28a745',
+                                '#ffc107',
+                                '#fd7e14',
+                                '#dc3545'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Pass Type Distribution Chart (Pie)
+                const dmovPassTypeCtx = document.getElementById('dmovPassTypeChart').getContext('2d');
+                const dmovPassTypeData = @json($chartData['passTypeDistribution'] ?? []);
+
+                const dmovPassTypeChart = new Chart(dmovPassTypeCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Daily Travel', 'Weekend/Monthly Travel'],
+                        datasets: [{
+                            data: [
+                                dmovPassTypeData.daily_travel,
+                                dmovPassTypeData.weekend_monthly_travel
+                            ],
+                            backgroundColor: [
+                                '#007bff',
+                                '#6c757d'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+
+                // Branch Performance Chart (Stacked Bar)
+                const dmovPerformanceCtx = document.getElementById('dmovPerformanceChart').getContext('2d');
+                const dmovPerformanceData = @json($chartData['establishmentPerformance'] ?? null) || {
+                    'labels': [],
+                    'approved': [],
+                    'rejected': [],
+                    'pending': []
+                };
+
+                const dmovPerformanceChart = new Chart(dmovPerformanceCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: dmovPerformanceData.labels,
+                        datasets: [{
+                            label: 'Approved',
+                            data: dmovPerformanceData.approved,
+                            backgroundColor: '#28a745'
+                        }, {
+                            label: 'Rejected',
+                            data: dmovPerformanceData.rejected,
+                            backgroundColor: '#dc3545'
+                        }, {
+                            label: 'Pending',
+                            data: dmovPerformanceData.pending,
+                            backgroundColor: '#ffc107'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            x: {
+                                stacked: true
+                            },
+                            y: {
+                                stacked: true,
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
+    @endif
+@stop
+
 @section('content')
+
+
 
     <!-- Charts Section for Branch Subject Clerk -->
     @if (auth()->user()->hasRole('Bus Pass Subject Clerk (Branch)') && isset($chartData))
@@ -40,27 +299,25 @@
                             <i class="fas fa-chart-pie"></i> Application Status Overview
                         </h3>
                     </div>
-                </div>
-                <div class="card-body">
-                    <canvas id="statusChart" style="height: 250px;"></canvas>
+                    <div class="card-body">
+                        <canvas id="statusChart" style="height: 250px;"></canvas>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Monthly Application Trends -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <i class="fas fa-chart-line"></i> Monthly Application Trends
-                    </h3>
+            <!-- Monthly Application Trends -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-chart-line"></i> Monthly Application Trends
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="trendsChart" style="height: 250px;"></canvas>
+                    </div>
                 </div>
             </div>
-            <div class="card-body">
-                <canvas id="trendsChart" style="height: 250px;"></canvas>
-            </div>
-        </div>
-        </div>
         </div>
 
         <div class="row">
@@ -264,10 +521,91 @@
                         <h3 class="card-title">
                             <i class="fas fa-calendar-week"></i> This Week's Activity
                         </h3>
-                       
+
                     </div>
                     <div class="card-body">
                         <canvas id="directorWeeklyChart" style="height: 200px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @elseif(Auth::user() && Auth::user()->hasRole('Subject Clerk (DMOV)'))
+        {{-- DMOV Subject Clerk Dashboard --}}
+        <div class="row">
+            <!-- Branch-wise Applications -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Applications by Branch</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="dmovBranchChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Overall Status Distribution -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Status Overview</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="dmovStatusChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Monthly Trends -->
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Monthly Processing Trends</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="dmovTrendsChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Processing Time -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Processing Time Distribution</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="dmovTimeChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pass Type Distribution -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Pass Type Distribution</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="dmovPassTypeChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Establishment Performance -->
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Branch Performance Overview</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="dmovPerformanceChart" style="height: 400px;"></canvas>
                     </div>
                 </div>
             </div>
@@ -356,7 +694,6 @@
 
 @section('js')
     @if (auth()->user()->hasRole('Bus Pass Subject Clerk (Branch)') && isset($chartData))
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
             $(document).ready(function() {
                 // Status Overview Chart (Donut)
@@ -564,7 +901,6 @@
             });
         </script>
     @elseif(auth()->user()->hasRole('Staff Officer (Branch)') && !empty($chartData))
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
             $(document).ready(function() {
                 // Approval Overview Chart (Doughnut)
@@ -761,7 +1097,6 @@
             });
         </script>
     @elseif(auth()->user()->hasRole('Director (Branch)') && !empty($chartData))
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
             $(document).ready(function() {
                 // Director Approval Overview Chart (Doughnut)

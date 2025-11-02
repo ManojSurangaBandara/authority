@@ -27,14 +27,15 @@ class DashboardController extends Controller
             }
             // Get chart data for Director (Branch)
             elseif (Auth::user() && Auth::user()->hasRole('Director (Branch)')) {
-                Log::info('Loading Director (Branch) chart data for user: ' . Auth::user()->email);
                 $chartData = $this->getBranchDirectorChartData();
-                Log::info('Director chart data loaded: ' . json_encode(array_keys($chartData)));
+            }
+            // Get chart data for DMOV Subject Clerk
+            elseif (Auth::user() && Auth::user()->hasRole('Subject Clerk (DMOV)')) {
+                $chartData = $this->getDmovSubjectClerkChartData();
             }
         } catch (\Exception $e) {
             // Log error and continue with empty chart data
             Log::error('Dashboard chart data error: ' . $e->getMessage());
-            Log::error($e->getTraceAsString());
             $chartData = $this->getEmptyChartData();
         }
 
@@ -627,6 +628,173 @@ class DashboardController extends Controller
         return [
             'labels' => $days,
             'data' => $data
+        ];
+    }
+
+    // DMOV Subject Clerk Dashboard Methods
+    private function getDmovSubjectClerkChartData()
+    {
+        return [
+            'overallStatus' => $this->getDmovOverallStatus(),
+            'branchWiseApplications' => $this->getBranchWiseApplications(),
+            'monthlyTrends' => $this->getDmovMonthlyTrends(),
+            'processingTime' => $this->getDmovProcessingTime(),
+            'passTypeDistribution' => $this->getDmovPassTypeDistribution(),
+            'establishmentPerformance' => $this->getEstablishmentPerformance()
+        ];
+    }
+
+    private function getDmovOverallStatus()
+    {
+        return [
+            'forwarded_to_movement' => BusPassApplication::where('status', 'forwarded_to_movement')->count(),
+            'pending_dmov_subject_clerk' => BusPassApplication::where('status', 'pending_dmov_subject_clerk')->count(),
+            'pending_dmov_staff_officer_2' => BusPassApplication::where('status', 'pending_dmov_staff_officer_2')->count(),
+            'pending_dmov_staff_officer_1' => BusPassApplication::where('status', 'pending_dmov_staff_officer_1')->count(),
+            'approved_for_integration' => BusPassApplication::where('status', 'approved_for_integration')->count(),
+            'rejected' => BusPassApplication::where('status', 'rejected')->count()
+        ];
+    }
+
+    private function getBranchWiseApplications()
+    {
+        $branchData = DB::table('bus_pass_applications')
+            ->join('establishments', 'bus_pass_applications.establishment_id', '=', 'establishments.id')
+            ->select('establishments.name as branch_name', DB::raw('count(*) as total'))
+            ->groupBy('establishments.id', 'establishments.name')
+            ->get();
+
+        $labels = [];
+        $data = [];
+
+        foreach ($branchData as $branch) {
+            $labels[] = $branch->branch_name;
+            $data[] = $branch->total;
+        }
+
+        return [
+            'labels' => $labels,
+            'data' => $data
+        ];
+    }
+
+    private function getDmovMonthlyTrends()
+    {
+        $months = [];
+        $received = [];
+        $processed = [];
+
+        for ($i = 5; $i >= 0; $i--) {
+            $date = Carbon::now()->subMonths($i);
+            $monthStart = $date->startOfMonth()->toDateString();
+            $monthEnd = $date->endOfMonth()->toDateString();
+
+            $months[] = $date->format('M Y');
+
+            // Applications received from branches (forwarded_to_movement)
+            $receivedCount = BusPassApplication::where('status', 'forwarded_to_movement')
+                ->whereBetween('updated_at', [$monthStart . ' 00:00:00', $monthEnd . ' 23:59:59'])
+                ->count();
+
+            // Applications processed by DMOV (approved or rejected)
+            $processedCount = BusPassApplication::whereIn('status', ['approved_for_integration', 'rejected'])
+                ->whereBetween('updated_at', [$monthStart . ' 00:00:00', $monthEnd . ' 23:59:59'])
+                ->count();
+
+            $received[] = $receivedCount;
+            $processed[] = $processedCount;
+        }
+
+        return [
+            'labels' => $months,
+            'received' => $received,
+            'processed' => $processed
+        ];
+    }
+
+    private function getDmovProcessingTime()
+    {
+        // Get applications that have been processed by DMOV
+        $processedApps = BusPassApplication::whereIn('status', ['approved_for_integration', 'rejected'])
+            ->where('updated_at', '>=', Carbon::now()->subMonths(6))
+            ->get();
+
+        $timeRanges = [
+            'same_day' => 0,
+            'one_to_two' => 0,
+            'three_to_five' => 0,
+            'over_five' => 0
+        ];
+
+        foreach ($processedApps as $app) {
+            // Calculate time from when it was forwarded to movement to final status
+            $forwardedDate = $app->updated_at; // Approximation - when status changed to forwarded
+            $processedDate = $app->updated_at; // Final update date
+
+            // For better accuracy, we should track when it actually reached DMOV
+            // For now, using created_at to updated_at difference
+            $days = $app->created_at->diffInDays($app->updated_at);
+
+            if ($days == 0) {
+                $timeRanges['same_day']++;
+            } elseif ($days <= 2) {
+                $timeRanges['one_to_two']++;
+            } elseif ($days <= 5) {
+                $timeRanges['three_to_five']++;
+            } else {
+                $timeRanges['over_five']++;
+            }
+        }
+
+        return $timeRanges;
+    }
+
+    private function getDmovPassTypeDistribution()
+    {
+        $passTypes = BusPassApplication::select('bus_pass_type', DB::raw('count(*) as count'))
+            ->whereIn('status', ['forwarded_to_movement', 'pending_dmov_subject_clerk', 'pending_dmov_staff_officer_2', 'pending_dmov_staff_officer_1', 'approved_for_integration'])
+            ->groupBy('bus_pass_type')
+            ->pluck('count', 'bus_pass_type')
+            ->toArray();
+
+        return [
+            'daily_travel' => $passTypes['daily_travel'] ?? 0,
+            'weekend_monthly_travel' => $passTypes['weekend_monthly_travel'] ?? 0
+        ];
+    }
+
+    private function getEstablishmentPerformance()
+    {
+        // Get performance data by establishment (approval rates, processing times)
+        $establishmentStats = DB::table('bus_pass_applications')
+            ->join('establishments', 'bus_pass_applications.establishment_id', '=', 'establishments.id')
+            ->select(
+                'establishments.name as establishment_name',
+                DB::raw('count(*) as total_applications'),
+                DB::raw('sum(case when status = "approved_for_integration" then 1 else 0 end) as approved'),
+                DB::raw('sum(case when status = "rejected" then 1 else 0 end) as rejected'),
+                DB::raw('sum(case when status in ("forwarded_to_movement", "pending_dmov_subject_clerk", "pending_dmov_staff_officer_2", "pending_dmov_staff_officer_1") then 1 else 0 end) as pending')
+            )
+            ->groupBy('establishments.id', 'establishments.name')
+            ->get();
+
+        $labels = [];
+        $approved = [];
+        $rejected = [];
+        $pending = [];
+
+        foreach ($establishmentStats as $stat) {
+            $labels[] = $stat->establishment_name;
+            $approved[] = $stat->approved;
+            $rejected[] = $stat->rejected;
+            $pending[] = $stat->pending;
+        }
+
+        return [
+            'labels' => $labels,
+            'approved' => $approved,
+            'rejected' => $rejected,
+            'pending' => $pending
         ];
     }
 }
