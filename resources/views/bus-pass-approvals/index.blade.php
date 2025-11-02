@@ -203,7 +203,3 @@
         });
     </script>
 @stop
-
-@section('adminlte_js')
-    @include('partials.pending-approvals-script')
-@endsection

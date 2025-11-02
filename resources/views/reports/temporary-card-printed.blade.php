@@ -179,7 +179,7 @@
                 // Auto-load data for branch users
                 setTimeout(function() {
                     if (window.LaravelDataTables && window.LaravelDataTables[
-                        'bus-pass-application-table']) {
+                            'bus-pass-application-table']) {
                         window.LaravelDataTables['bus-pass-application-table'].draw();
                     }
                 }, 1000);
@@ -250,7 +250,3 @@
         });
     </script>
 @stop
-
-@section('adminlte_js')
-    @include('partials.pending-approvals-script')
-@endsection

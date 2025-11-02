@@ -42,6 +42,3 @@
     {{ $dataTable->scripts() }}
 @endpush
 
-@section('adminlte_js')
-    @include('partials.pending-approvals-script')
-@endsection
