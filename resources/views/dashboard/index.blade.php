@@ -902,6 +902,734 @@
             });
         </script>
     @endif
+
+    @if (Auth::user() && Auth::user()->hasRole('Staff Officer 2 (DMOV)') && !empty($chartData))
+        <script>
+            $(document).ready(function() {
+                console.log('DMOV Staff Officer 2 Dashboard JavaScript Loading...');
+                console.log('Chart.js available:', typeof Chart !== 'undefined');
+                console.log('Chart data:', @json($chartData));
+
+                // Approval Overview Chart (Doughnut)
+                const so2ApprovalCtx = document.getElementById('so2ApprovalChart').getContext('2d');
+                const so2ApprovalData = @json($chartData['approvalOverview'] ?? []);
+                console.log('SO2 Approval Data:', so2ApprovalData);
+
+                const so2ApprovalChart = new Chart(so2ApprovalCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Pending Review', 'Recommended', 'Not Recommended', 'Pending Next Level',
+                            'Approved for Integration'
+                        ],
+                        datasets: [{
+                            data: [
+                                so2ApprovalData.pending_review || 0,
+                                so2ApprovalData.recommended || 0,
+                                so2ApprovalData.not_recommended || 0,
+                                so2ApprovalData.pending_next_level || 0,
+                                so2ApprovalData.approved_for_integration || 0
+                            ],
+                            backgroundColor: ['#ffc107', '#28a745', '#dc3545', '#17a2b8', '#007bff']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+
+                // Monthly Approvals Chart (Line)
+                const so2MonthlyCtx = document.getElementById('so2MonthlyChart').getContext('2d');
+                const so2MonthlyData = @json($chartData['monthlyApprovals'] ?? []);
+                console.log('SO2 Monthly Data:', so2MonthlyData);
+
+                const so2MonthlyChart = new Chart(so2MonthlyCtx, {
+                    type: 'line',
+                    data: {
+                        labels: so2MonthlyData.labels || [],
+                        datasets: [{
+                            label: 'Received',
+                            data: so2MonthlyData.received || [],
+                            borderColor: '#007bff',
+                            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }, {
+                            label: 'Recommended',
+                            data: so2MonthlyData.recommended || [],
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }, {
+                            label: 'Not Recommended',
+                            data: so2MonthlyData.not_recommended || [],
+                            borderColor: '#dc3545',
+                            backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Approval Time Chart (Bar)
+                const so2TimeCtx = document.getElementById('so2TimeChart').getContext('2d');
+                const so2TimeData = @json($chartData['approvalTime'] ?? []);
+                console.log('SO2 Time Data:', so2TimeData);
+
+                const so2TimeChart = new Chart(so2TimeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Same Day', '1-2 Days', '3-5 Days', '5+ Days'],
+                        datasets: [{
+                            label: 'Applications',
+                            data: [so2TimeData.same_day || 0, so2TimeData.one_to_two || 0, so2TimeData
+                                .three_to_five || 0, so2TimeData.over_five || 0
+                            ],
+                            backgroundColor: ['#28a745', '#ffc107', '#fd7e14', '#dc3545']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Branch-wise Applications Chart (Horizontal Bar)
+                const so2BranchCtx = document.getElementById('so2BranchChart').getContext('2d');
+                const so2BranchData = @json($chartData['branchWiseApplications'] ?? ['labels' => [], 'data' => []]);
+                console.log('SO2 Branch Data:', so2BranchData);
+
+                // Handle empty data case
+                if (!so2BranchData.labels || so2BranchData.labels.length === 0) {
+                    so2BranchData.labels = ['No Data'];
+                    so2BranchData.data = [0];
+                }
+
+                const so2BranchChart = new Chart(so2BranchCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: so2BranchData.labels,
+                        datasets: [{
+                            label: 'Applications',
+                            data: so2BranchData.data,
+                            backgroundColor: '#007bff'
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Recommendation Status Chart (Doughnut)
+                const so2RecommendationCtx = document.getElementById('so2RecommendationChart').getContext('2d');
+                const so2RecommendationData = @json($chartData['recommendationStatus'] ?? []);
+                console.log('SO2 Recommendation Data:', so2RecommendationData);
+
+                const so2RecommendationChart = new Chart(so2RecommendationCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Pending Staff Officer 1', 'Approved for Integration', 'Rejected'],
+                        datasets: [{
+                            data: [
+                                so2RecommendationData.pending_staff_officer_1 || 0,
+                                so2RecommendationData.approved_for_integration || 0,
+                                so2RecommendationData.rejected || 0
+                            ],
+                            backgroundColor: ['#ffc107', '#28a745', '#dc3545']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
+    @endif
+
+    @if (Auth::user() && Auth::user()->hasRole('Staff Officer 1 (DMOV)') && !empty($chartData))
+        <script>
+            $(document).ready(function() {
+                console.log('DMOV Staff Officer 1 Dashboard JavaScript Loading...');
+                console.log('Chart.js available:', typeof Chart !== 'undefined');
+
+                // Approval Overview Chart (Doughnut)
+                const so1ApprovalCtx = document.getElementById('so1ApprovalChart').getContext('2d');
+                const so1ApprovalData = @json($chartData['approvalOverview']);
+
+                const so1ApprovalChart = new Chart(so1ApprovalCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Pending Review', 'Recommended', 'Not Recommended', 'Pending Col Mov',
+                            'Approved for Integration'
+                        ],
+                        datasets: [{
+                            data: [
+                                so1ApprovalData.pending_review,
+                                so1ApprovalData.recommended,
+                                so1ApprovalData.not_recommended,
+                                so1ApprovalData.pending_col_mov,
+                                so1ApprovalData.approved_for_integration
+                            ],
+                            backgroundColor: ['#ffc107', '#28a745', '#dc3545', '#17a2b8', '#007bff']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+
+                // Monthly Approvals Chart (Line)
+                const so1MonthlyCtx = document.getElementById('so1MonthlyChart').getContext('2d');
+                const so1MonthlyData = @json($chartData['monthlyApprovals']);
+
+                const so1MonthlyChart = new Chart(so1MonthlyCtx, {
+                    type: 'line',
+                    data: {
+                        labels: so1MonthlyData.labels,
+                        datasets: [{
+                            label: 'Received',
+                            data: so1MonthlyData.received,
+                            borderColor: '#007bff',
+                            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }, {
+                            label: 'Recommended',
+                            data: so1MonthlyData.recommended,
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }, {
+                            label: 'Not Recommended',
+                            data: so1MonthlyData.not_recommended,
+                            borderColor: '#dc3545',
+                            backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Approval Time Chart (Bar)
+                const so1TimeCtx = document.getElementById('so1TimeChart').getContext('2d');
+                const so1TimeData = @json($chartData['approvalTime']);
+
+                const so1TimeChart = new Chart(so1TimeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Same Day', '1-2 Days', '3-5 Days', '5+ Days'],
+                        datasets: [{
+                            label: 'Applications',
+                            data: [so1TimeData.same_day, so1TimeData.one_to_two, so1TimeData
+                                .three_to_five, so1TimeData.over_five
+                            ],
+                            backgroundColor: ['#28a745', '#ffc107', '#fd7e14', '#dc3545']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Branch-wise Applications Chart (Horizontal Bar)
+                const so1BranchCtx = document.getElementById('so1BranchChart').getContext('2d');
+                const so1BranchData = @json($chartData['branchWiseApplications']);
+
+                const so1BranchChart = new Chart(so1BranchCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: so1BranchData.labels,
+                        datasets: [{
+                            label: 'Applications',
+                            data: so1BranchData.data,
+                            backgroundColor: '#007bff'
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Recommendation Status Chart (Doughnut)
+                const so1RecommendationCtx = document.getElementById('so1RecommendationChart').getContext('2d');
+                const so1RecommendationData = @json($chartData['recommendationStatus']);
+
+                const so1RecommendationChart = new Chart(so1RecommendationCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Pending Col Mov', 'Approved for Integration', 'Rejected'],
+                        datasets: [{
+                            data: [
+                                so1RecommendationData.pending_col_mov,
+                                so1RecommendationData.approved_for_integration,
+                                so1RecommendationData.rejected
+                            ],
+                            backgroundColor: ['#ffc107', '#28a745', '#dc3545']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
+    @endif
+
+    @if (Auth::user() && Auth::user()->hasRole('Col Mov (DMOV)') && !empty($chartData))
+        <script>
+            $(document).ready(function() {
+                console.log('Col Mov Dashboard JavaScript Loading...');
+                console.log('Chart.js available:', typeof Chart !== 'undefined');
+
+                // Approval Overview Chart (Doughnut)
+                const colApprovalCtx = document.getElementById('colApprovalChart').getContext('2d');
+                const colApprovalData = @json($chartData['approvalOverview']);
+
+                const colApprovalChart = new Chart(colApprovalCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Pending Review', 'Recommended', 'Not Recommended', 'Pending Director',
+                            'Approved for Integration'
+                        ],
+                        datasets: [{
+                            data: [
+                                colApprovalData.pending_review,
+                                colApprovalData.recommended,
+                                colApprovalData.not_recommended,
+                                colApprovalData.pending_director,
+                                colApprovalData.approved_for_integration
+                            ],
+                            backgroundColor: ['#ffc107', '#28a745', '#dc3545', '#17a2b8', '#007bff']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+
+                // Monthly Approvals Chart (Line)
+                const colMonthlyCtx = document.getElementById('colMonthlyChart').getContext('2d');
+                const colMonthlyData = @json($chartData['monthlyApprovals']);
+
+                const colMonthlyChart = new Chart(colMonthlyCtx, {
+                    type: 'line',
+                    data: {
+                        labels: colMonthlyData.labels,
+                        datasets: [{
+                            label: 'Received',
+                            data: colMonthlyData.received,
+                            borderColor: '#007bff',
+                            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }, {
+                            label: 'Recommended',
+                            data: colMonthlyData.recommended,
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }, {
+                            label: 'Not Recommended',
+                            data: colMonthlyData.not_recommended,
+                            borderColor: '#dc3545',
+                            backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Approval Time Chart (Bar)
+                const colTimeCtx = document.getElementById('colTimeChart').getContext('2d');
+                const colTimeData = @json($chartData['approvalTime']);
+
+                const colTimeChart = new Chart(colTimeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Same Day', '1-2 Days', '3-5 Days', '5+ Days'],
+                        datasets: [{
+                            label: 'Applications',
+                            data: [colTimeData.same_day, colTimeData.one_to_two, colTimeData
+                                .three_to_five, colTimeData.over_five
+                            ],
+                            backgroundColor: ['#28a745', '#ffc107', '#fd7e14', '#dc3545']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Branch-wise Applications Chart (Horizontal Bar)
+                const colBranchCtx = document.getElementById('colBranchChart').getContext('2d');
+                const colBranchData = @json($chartData['branchWiseApplications']);
+
+                const colBranchChart = new Chart(colBranchCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: colBranchData.labels,
+                        datasets: [{
+                            label: 'Applications',
+                            data: colBranchData.data,
+                            backgroundColor: '#007bff'
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Recommendation Status Chart (Doughnut)
+                const colRecommendationCtx = document.getElementById('colRecommendationChart').getContext('2d');
+                const colRecommendationData = @json($chartData['recommendationStatus']);
+
+                const colRecommendationChart = new Chart(colRecommendationCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Pending Director', 'Approved for Integration', 'Rejected'],
+                        datasets: [{
+                            data: [
+                                colRecommendationData.pending_director,
+                                colRecommendationData.approved_for_integration,
+                                colRecommendationData.rejected
+                            ],
+                            backgroundColor: ['#ffc107', '#28a745', '#dc3545']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
+    @endif
+
+    @if (Auth::user() && Auth::user()->hasRole('Director (DMOV)') && !empty($chartData))
+        <script>
+            $(document).ready(function() {
+                console.log('DMOV Director Dashboard JavaScript Loading...');
+                console.log('Chart.js available:', typeof Chart !== 'undefined');
+
+                // Approval Overview Chart (Doughnut)
+                const dirApprovalCtx = document.getElementById('dirApprovalChart').getContext('2d');
+                const dirApprovalData = @json($chartData['approvalOverview']);
+
+                const dirApprovalChart = new Chart(dirApprovalCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Pending Review', 'Approved', 'Rejected', 'Approved for Integration',
+                            'Total Processed'
+                        ],
+                        datasets: [{
+                            data: [
+                                dirApprovalData.pending_review,
+                                dirApprovalData.approved,
+                                dirApprovalData.rejected,
+                                dirApprovalData.approved_for_integration,
+                                dirApprovalData.total_processed
+                            ],
+                            backgroundColor: ['#ffc107', '#28a745', '#dc3545', '#007bff', '#6c757d']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+
+                // Monthly Approvals Chart (Line)
+                const dirMonthlyCtx = document.getElementById('dirMonthlyChart').getContext('2d');
+                const dirMonthlyData = @json($chartData['monthlyApprovals']);
+
+                const dirMonthlyChart = new Chart(dirMonthlyCtx, {
+                    type: 'line',
+                    data: {
+                        labels: dirMonthlyData.labels,
+                        datasets: [{
+                            label: 'Received',
+                            data: dirMonthlyData.received,
+                            borderColor: '#007bff',
+                            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }, {
+                            label: 'Approved',
+                            data: dirMonthlyData.approved,
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }, {
+                            label: 'Rejected',
+                            data: dirMonthlyData.rejected,
+                            borderColor: '#dc3545',
+                            backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Approval Time Chart (Bar)
+                const dirTimeCtx = document.getElementById('dirTimeChart').getContext('2d');
+                const dirTimeData = @json($chartData['approvalTime']);
+
+                const dirTimeChart = new Chart(dirTimeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Same Day', '1-2 Days', '3-5 Days', '5+ Days'],
+                        datasets: [{
+                            label: 'Applications',
+                            data: [dirTimeData.same_day, dirTimeData.one_to_two, dirTimeData
+                                .three_to_five, dirTimeData.over_five
+                            ],
+                            backgroundColor: ['#28a745', '#ffc107', '#fd7e14', '#dc3545']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Branch-wise Applications Chart (Horizontal Bar)
+                const dirBranchCtx = document.getElementById('dirBranchChart').getContext('2d');
+                const dirBranchData = @json($chartData['branchWiseApplications']);
+
+                const dirBranchChart = new Chart(dirBranchCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: dirBranchData.labels,
+                        datasets: [{
+                            label: 'Applications',
+                            data: dirBranchData.data,
+                            backgroundColor: '#007bff'
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Final Decision Status Chart (Doughnut)
+                const dirDecisionCtx = document.getElementById('dirDecisionChart').getContext('2d');
+                const dirDecisionData = @json($chartData['finalDecisionStatus']);
+
+                const dirDecisionChart = new Chart(dirDecisionCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Approved for Integration', 'Integrated to Branch Card', 'Temp Card Printed'],
+                        datasets: [{
+                            data: [
+                                dirDecisionData.approved_for_integration,
+                                dirDecisionData.integrated_to_branch_card,
+                                dirDecisionData.temp_card_printed
+                            ],
+                            backgroundColor: ['#007bff', '#28a745', '#ffc107']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
+    @endif
 @stop
 
 @section('content')
@@ -1230,6 +1958,274 @@
                 </div>
             </div>
         </div>
+    @elseif(Auth::user() && Auth::user()->hasRole('Staff Officer 2 (DMOV)') && !empty($chartData))
+        {{-- DMOV Staff Officer 2 Dashboard --}}
+        <div class="row">
+            <!-- Approval Overview -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Approval Overview</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="so2ApprovalChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Branch-wise Applications -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Applications by Branch</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="so2BranchChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Monthly Approvals -->
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Monthly Approval Trends</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="so2MonthlyChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Approval Time -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Processing Time Distribution</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="so2TimeChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recommendation Status -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Recommendation Status</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="so2RecommendationChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @elseif(Auth::user() && Auth::user()->hasRole('Staff Officer 1 (DMOV)') && !empty($chartData))
+        {{-- DMOV Staff Officer 1 Dashboard --}}
+        <div class="row">
+            <!-- Approval Overview -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Approval Overview</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="so1ApprovalChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Branch-wise Applications -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Applications by Branch</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="so1BranchChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Monthly Approvals -->
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Monthly Approval Trends</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="so1MonthlyChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Approval Time -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Processing Time Distribution</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="so1TimeChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recommendation Status -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Recommendation Status</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="so1RecommendationChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @elseif(Auth::user() && Auth::user()->hasRole('Col Mov (DMOV)') && !empty($chartData))
+        {{-- Col Mov Dashboard --}}
+        <div class="row">
+            <!-- Approval Overview -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Approval Overview</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="colApprovalChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Branch-wise Applications -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Applications by Branch</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="colBranchChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Monthly Approvals -->
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Monthly Approval Trends</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="colMonthlyChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Approval Time -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Processing Time Distribution</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="colTimeChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recommendation Status -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Recommendation Status</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="colRecommendationChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @elseif(Auth::user() && Auth::user()->hasRole('Director (DMOV)') && !empty($chartData))
+        {{-- DMOV Director Dashboard --}}
+        <div class="row">
+            <!-- Approval Overview -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Approval Overview</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="dirApprovalChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Branch-wise Applications -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Applications by Branch</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="dirBranchChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Monthly Approvals -->
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Monthly Approval Trends</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="dirMonthlyChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Approval Time -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Processing Time Distribution</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="dirTimeChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Final Decision Status -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Final Decision Status</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="dirDecisionChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
     @elseif(auth()->user()->isMovementUser())
         <!-- Movement user stats -->
         <div class="row mt-4">
@@ -1289,6 +2285,8 @@
         </div>
     @endif
 @stop
+
+{{-- @endsection --}}
 
 @section('css')
     <style>

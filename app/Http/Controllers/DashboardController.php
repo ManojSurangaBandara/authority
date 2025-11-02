@@ -33,6 +33,22 @@ class DashboardController extends Controller
             elseif (Auth::user() && Auth::user()->hasRole('Subject Clerk (DMOV)')) {
                 $chartData = $this->getDmovSubjectClerkChartData();
             }
+            // Get chart data for DMOV Staff Officer 2
+            elseif (Auth::user() && Auth::user()->hasRole('Staff Officer 2 (DMOV)')) {
+                $chartData = $this->getDmovStaffOfficer2ChartData();
+            }
+            // Get chart data for DMOV Staff Officer 1
+            elseif (Auth::user() && Auth::user()->hasRole('Staff Officer 1 (DMOV)')) {
+                $chartData = $this->getDmovStaffOfficer1ChartData();
+            }
+            // Get chart data for Col Mov (DMOV)
+            elseif (Auth::user() && Auth::user()->hasRole('Col Mov (DMOV)')) {
+                $chartData = $this->getColMovChartData();
+            }
+            // Get chart data for Director (DMOV)
+            elseif (Auth::user() && Auth::user()->hasRole('Director (DMOV)')) {
+                $chartData = $this->getDmovDirectorChartData();
+            }
         } catch (\Exception $e) {
             // Log error and continue with empty chart data
             Log::error('Dashboard chart data error: ' . $e->getMessage());
@@ -795,6 +811,601 @@ class DashboardController extends Controller
             'approved' => $approved,
             'rejected' => $rejected,
             'pending' => $pending
+        ];
+    }
+
+    // DMOV Staff Officer 2 Dashboard Methods
+    private function getDmovStaffOfficer2ChartData()
+    {
+        return [
+            'approvalOverview' => $this->getDmovStaffOfficer2ApprovalOverview(),
+            'monthlyApprovals' => $this->getDmovStaffOfficer2MonthlyApprovals(),
+            'approvalTime' => $this->getDmovStaffOfficer2ApprovalTime(),
+            'branchWiseApplications' => $this->getDmovStaffOfficer2BranchWise(),
+            'recommendationStatus' => $this->getDmovStaffOfficer2RecommendationStatus(),
+        ];
+    }
+
+    private function getDmovStaffOfficer2ApprovalOverview()
+    {
+        return [
+            'pending_review' => BusPassApplication::where('status', 'pending_dmov_staff_officer_2')->count(),
+            'recommended' => DB::table('bus_pass_approval_histories')
+                ->where('user_id', Auth::id())
+                ->where('action', 'recommended')
+                ->count(),
+            'not_recommended' => DB::table('bus_pass_approval_histories')
+                ->where('user_id', Auth::id())
+                ->where('action', 'not_recommended')
+                ->count(),
+            'pending_next_level' => BusPassApplication::where('status', 'pending_dmov_staff_officer_1')->count(),
+            'approved_for_integration' => BusPassApplication::where('status', 'approved_for_integration')->count(),
+        ];
+    }
+
+    private function getDmovStaffOfficer2MonthlyApprovals()
+    {
+        $months = [];
+        $received = [];
+        $recommended = [];
+        $notRecommended = [];
+
+        for ($i = 5; $i >= 0; $i--) {
+            $date = Carbon::now()->subMonths($i);
+            $monthStart = $date->startOfMonth()->toDateString();
+            $monthEnd = $date->endOfMonth()->toDateString();
+
+            $months[] = $date->format('M Y');
+
+            $receivedCount = BusPassApplication::where('status', 'pending_dmov_staff_officer_2')
+                ->whereBetween('updated_at', [$monthStart . ' 00:00:00', $monthEnd . ' 23:59:59'])
+                ->count();
+
+            $recommendedCount = DB::table('bus_pass_approval_histories')
+                ->where('user_id', Auth::id())
+                ->where('action', 'recommended')
+                ->whereBetween('action_date', [$monthStart . ' 00:00:00', $monthEnd . ' 23:59:59'])
+                ->count();
+
+            $notRecommendedCount = DB::table('bus_pass_approval_histories')
+                ->where('user_id', Auth::id())
+                ->where('action', 'not_recommended')
+                ->whereBetween('action_date', [$monthStart . ' 00:00:00', $monthEnd . ' 23:59:59'])
+                ->count();
+
+            $received[] = $receivedCount;
+            $recommended[] = $recommendedCount;
+            $notRecommended[] = $notRecommendedCount;
+        }
+
+        return [
+            'labels' => $months,
+            'received' => $received,
+            'recommended' => $recommended,
+            'not_recommended' => $notRecommended
+        ];
+    }
+
+    private function getDmovStaffOfficer2ApprovalTime()
+    {
+        $approvalHistories = DB::table('bus_pass_approval_histories')
+            ->join('bus_pass_applications', 'bus_pass_approval_histories.bus_pass_application_id', '=', 'bus_pass_applications.id')
+            ->where('bus_pass_approval_histories.user_id', Auth::id())
+            ->whereIn('bus_pass_approval_histories.action', ['recommended', 'not_recommended'])
+            ->select('bus_pass_applications.created_at', 'bus_pass_approval_histories.action_date')
+            ->get();
+
+        $timeRanges = [
+            'same_day' => 0,
+            'one_to_two' => 0,
+            'three_to_five' => 0,
+            'over_five' => 0
+        ];
+
+        foreach ($approvalHistories as $history) {
+            $created = Carbon::parse($history->created_at);
+            $actionDate = Carbon::parse($history->action_date);
+            $days = $created->diffInDays($actionDate);
+
+            if ($days == 0) {
+                $timeRanges['same_day']++;
+            } elseif ($days <= 2) {
+                $timeRanges['one_to_two']++;
+            } elseif ($days <= 5) {
+                $timeRanges['three_to_five']++;
+            } else {
+                $timeRanges['over_five']++;
+            }
+        }
+
+        return $timeRanges;
+    }
+
+    private function getDmovStaffOfficer2BranchWise()
+    {
+        $branchData = DB::table('bus_pass_applications')
+            ->join('establishments', 'bus_pass_applications.establishment_id', '=', 'establishments.id')
+            ->where('bus_pass_applications.status', 'pending_dmov_staff_officer_2')
+            ->select('establishments.name as branch_name', DB::raw('count(*) as total'))
+            ->groupBy('establishments.id', 'establishments.name')
+            ->get();
+
+        $labels = [];
+        $data = [];
+
+        foreach ($branchData as $branch) {
+            $labels[] = $branch->branch_name;
+            $data[] = $branch->total;
+        }
+
+        return [
+            'labels' => $labels,
+            'data' => $data
+        ];
+    }
+
+    private function getDmovStaffOfficer2RecommendationStatus()
+    {
+        $recommended = DB::table('bus_pass_approval_histories')
+            ->join('bus_pass_applications', 'bus_pass_approval_histories.bus_pass_application_id', '=', 'bus_pass_applications.id')
+            ->where('bus_pass_approval_histories.user_id', Auth::id())
+            ->where('bus_pass_approval_histories.action', 'recommended')
+            ->select('bus_pass_applications.status', DB::raw('count(*) as count'))
+            ->groupBy('bus_pass_applications.status')
+            ->pluck('count', 'status')
+            ->toArray();
+
+        return [
+            'pending_staff_officer_1' => $recommended['pending_dmov_staff_officer_1'] ?? 0,
+            'approved_for_integration' => $recommended['approved_for_integration'] ?? 0,
+            'rejected' => $recommended['rejected'] ?? 0
+        ];
+    }
+
+    // DMOV Staff Officer 1 Dashboard Methods
+    private function getDmovStaffOfficer1ChartData()
+    {
+        return [
+            'approvalOverview' => $this->getDmovStaffOfficer1ApprovalOverview(),
+            'monthlyApprovals' => $this->getDmovStaffOfficer1MonthlyApprovals(),
+            'approvalTime' => $this->getDmovStaffOfficer1ApprovalTime(),
+            'branchWiseApplications' => $this->getDmovStaffOfficer1BranchWise(),
+            'recommendationStatus' => $this->getDmovStaffOfficer1RecommendationStatus(),
+        ];
+    }
+
+    private function getDmovStaffOfficer1ApprovalOverview()
+    {
+        return [
+            'pending_review' => BusPassApplication::where('status', 'pending_dmov_staff_officer_1')->count(),
+            'recommended' => DB::table('bus_pass_approval_histories')
+                ->where('user_id', Auth::id())
+                ->where('action', 'recommended')
+                ->count(),
+            'not_recommended' => DB::table('bus_pass_approval_histories')
+                ->where('user_id', Auth::id())
+                ->where('action', 'not_recommended')
+                ->count(),
+            'pending_col_mov' => BusPassApplication::where('status', 'pending_col_mov')->count(),
+            'approved_for_integration' => BusPassApplication::where('status', 'approved_for_integration')->count(),
+        ];
+    }
+
+    private function getDmovStaffOfficer1MonthlyApprovals()
+    {
+        $months = [];
+        $received = [];
+        $recommended = [];
+        $notRecommended = [];
+
+        for ($i = 5; $i >= 0; $i--) {
+            $date = Carbon::now()->subMonths($i);
+            $monthStart = $date->startOfMonth()->toDateString();
+            $monthEnd = $date->endOfMonth()->toDateString();
+
+            $months[] = $date->format('M Y');
+
+            $receivedCount = BusPassApplication::where('status', 'pending_dmov_staff_officer_1')
+                ->whereBetween('updated_at', [$monthStart . ' 00:00:00', $monthEnd . ' 23:59:59'])
+                ->count();
+
+            $recommendedCount = DB::table('bus_pass_approval_histories')
+                ->where('user_id', Auth::id())
+                ->where('action', 'recommended')
+                ->whereBetween('action_date', [$monthStart . ' 00:00:00', $monthEnd . ' 23:59:59'])
+                ->count();
+
+            $notRecommendedCount = DB::table('bus_pass_approval_histories')
+                ->where('user_id', Auth::id())
+                ->where('action', 'not_recommended')
+                ->whereBetween('action_date', [$monthStart . ' 00:00:00', $monthEnd . ' 23:59:59'])
+                ->count();
+
+            $received[] = $receivedCount;
+            $recommended[] = $recommendedCount;
+            $notRecommended[] = $notRecommendedCount;
+        }
+
+        return [
+            'labels' => $months,
+            'received' => $received,
+            'recommended' => $recommended,
+            'not_recommended' => $notRecommended
+        ];
+    }
+
+    private function getDmovStaffOfficer1ApprovalTime()
+    {
+        $approvalHistories = DB::table('bus_pass_approval_histories')
+            ->join('bus_pass_applications', 'bus_pass_approval_histories.bus_pass_application_id', '=', 'bus_pass_applications.id')
+            ->where('bus_pass_approval_histories.user_id', Auth::id())
+            ->whereIn('bus_pass_approval_histories.action', ['recommended', 'not_recommended'])
+            ->select('bus_pass_applications.created_at', 'bus_pass_approval_histories.action_date')
+            ->get();
+
+        $timeRanges = [
+            'same_day' => 0,
+            'one_to_two' => 0,
+            'three_to_five' => 0,
+            'over_five' => 0
+        ];
+
+        foreach ($approvalHistories as $history) {
+            $created = Carbon::parse($history->created_at);
+            $actionDate = Carbon::parse($history->action_date);
+            $days = $created->diffInDays($actionDate);
+
+            if ($days == 0) {
+                $timeRanges['same_day']++;
+            } elseif ($days <= 2) {
+                $timeRanges['one_to_two']++;
+            } elseif ($days <= 5) {
+                $timeRanges['three_to_five']++;
+            } else {
+                $timeRanges['over_five']++;
+            }
+        }
+
+        return $timeRanges;
+    }
+
+    private function getDmovStaffOfficer1BranchWise()
+    {
+        $branchData = DB::table('bus_pass_applications')
+            ->join('establishments', 'bus_pass_applications.establishment_id', '=', 'establishments.id')
+            ->where('bus_pass_applications.status', 'pending_dmov_staff_officer_1')
+            ->select('establishments.name as branch_name', DB::raw('count(*) as total'))
+            ->groupBy('establishments.id', 'establishments.name')
+            ->get();
+
+        $labels = [];
+        $data = [];
+
+        foreach ($branchData as $branch) {
+            $labels[] = $branch->branch_name;
+            $data[] = $branch->total;
+        }
+
+        return [
+            'labels' => $labels,
+            'data' => $data
+        ];
+    }
+
+    private function getDmovStaffOfficer1RecommendationStatus()
+    {
+        $recommended = DB::table('bus_pass_approval_histories')
+            ->join('bus_pass_applications', 'bus_pass_approval_histories.bus_pass_application_id', '=', 'bus_pass_applications.id')
+            ->where('bus_pass_approval_histories.user_id', Auth::id())
+            ->where('bus_pass_approval_histories.action', 'recommended')
+            ->select('bus_pass_applications.status', DB::raw('count(*) as count'))
+            ->groupBy('bus_pass_applications.status')
+            ->pluck('count', 'status')
+            ->toArray();
+
+        return [
+            'pending_col_mov' => $recommended['pending_col_mov'] ?? 0,
+            'approved_for_integration' => $recommended['approved_for_integration'] ?? 0,
+            'rejected' => $recommended['rejected'] ?? 0
+        ];
+    }
+
+    // Col Mov (DMOV) Dashboard Methods
+    private function getColMovChartData()
+    {
+        return [
+            'approvalOverview' => $this->getColMovApprovalOverview(),
+            'monthlyApprovals' => $this->getColMovMonthlyApprovals(),
+            'approvalTime' => $this->getColMovApprovalTime(),
+            'branchWiseApplications' => $this->getColMovBranchWise(),
+            'recommendationStatus' => $this->getColMovRecommendationStatus(),
+        ];
+    }
+
+    private function getColMovApprovalOverview()
+    {
+        return [
+            'pending_review' => BusPassApplication::where('status', 'pending_col_mov')->count(),
+            'recommended' => DB::table('bus_pass_approval_histories')
+                ->where('user_id', Auth::id())
+                ->where('action', 'recommended')
+                ->count(),
+            'not_recommended' => DB::table('bus_pass_approval_histories')
+                ->where('user_id', Auth::id())
+                ->where('action', 'not_recommended')
+                ->count(),
+            'pending_director' => BusPassApplication::where('status', 'pending_director_mov')->count(),
+            'approved_for_integration' => BusPassApplication::where('status', 'approved_for_integration')->count(),
+        ];
+    }
+
+    private function getColMovMonthlyApprovals()
+    {
+        $months = [];
+        $received = [];
+        $recommended = [];
+        $notRecommended = [];
+
+        for ($i = 5; $i >= 0; $i--) {
+            $date = Carbon::now()->subMonths($i);
+            $monthStart = $date->startOfMonth()->toDateString();
+            $monthEnd = $date->endOfMonth()->toDateString();
+
+            $months[] = $date->format('M Y');
+
+            $receivedCount = BusPassApplication::where('status', 'pending_col_mov')
+                ->whereBetween('updated_at', [$monthStart . ' 00:00:00', $monthEnd . ' 23:59:59'])
+                ->count();
+
+            $recommendedCount = DB::table('bus_pass_approval_histories')
+                ->where('user_id', Auth::id())
+                ->where('action', 'recommended')
+                ->whereBetween('action_date', [$monthStart . ' 00:00:00', $monthEnd . ' 23:59:59'])
+                ->count();
+
+            $notRecommendedCount = DB::table('bus_pass_approval_histories')
+                ->where('user_id', Auth::id())
+                ->where('action', 'not_recommended')
+                ->whereBetween('action_date', [$monthStart . ' 00:00:00', $monthEnd . ' 23:59:59'])
+                ->count();
+
+            $received[] = $receivedCount;
+            $recommended[] = $recommendedCount;
+            $notRecommended[] = $notRecommendedCount;
+        }
+
+        return [
+            'labels' => $months,
+            'received' => $received,
+            'recommended' => $recommended,
+            'not_recommended' => $notRecommended
+        ];
+    }
+
+    private function getColMovApprovalTime()
+    {
+        $approvalHistories = DB::table('bus_pass_approval_histories')
+            ->join('bus_pass_applications', 'bus_pass_approval_histories.bus_pass_application_id', '=', 'bus_pass_applications.id')
+            ->where('bus_pass_approval_histories.user_id', Auth::id())
+            ->whereIn('bus_pass_approval_histories.action', ['recommended', 'not_recommended'])
+            ->select('bus_pass_applications.created_at', 'bus_pass_approval_histories.action_date')
+            ->get();
+
+        $timeRanges = [
+            'same_day' => 0,
+            'one_to_two' => 0,
+            'three_to_five' => 0,
+            'over_five' => 0
+        ];
+
+        foreach ($approvalHistories as $history) {
+            $created = Carbon::parse($history->created_at);
+            $actionDate = Carbon::parse($history->action_date);
+            $days = $created->diffInDays($actionDate);
+
+            if ($days == 0) {
+                $timeRanges['same_day']++;
+            } elseif ($days <= 2) {
+                $timeRanges['one_to_two']++;
+            } elseif ($days <= 5) {
+                $timeRanges['three_to_five']++;
+            } else {
+                $timeRanges['over_five']++;
+            }
+        }
+
+        return $timeRanges;
+    }
+
+    private function getColMovBranchWise()
+    {
+        $branchData = DB::table('bus_pass_applications')
+            ->join('establishments', 'bus_pass_applications.establishment_id', '=', 'establishments.id')
+            ->where('bus_pass_applications.status', 'pending_col_mov')
+            ->select('establishments.name as branch_name', DB::raw('count(*) as total'))
+            ->groupBy('establishments.id', 'establishments.name')
+            ->get();
+
+        $labels = [];
+        $data = [];
+
+        foreach ($branchData as $branch) {
+            $labels[] = $branch->branch_name;
+            $data[] = $branch->total;
+        }
+
+        return [
+            'labels' => $labels,
+            'data' => $data
+        ];
+    }
+
+    private function getColMovRecommendationStatus()
+    {
+        $recommended = DB::table('bus_pass_approval_histories')
+            ->join('bus_pass_applications', 'bus_pass_approval_histories.bus_pass_application_id', '=', 'bus_pass_applications.id')
+            ->where('bus_pass_approval_histories.user_id', Auth::id())
+            ->where('bus_pass_approval_histories.action', 'recommended')
+            ->select('bus_pass_applications.status', DB::raw('count(*) as count'))
+            ->groupBy('bus_pass_applications.status')
+            ->pluck('count', 'status')
+            ->toArray();
+
+        return [
+            'pending_director' => $recommended['pending_director_mov'] ?? 0,
+            'approved_for_integration' => $recommended['approved_for_integration'] ?? 0,
+            'rejected' => $recommended['rejected'] ?? 0
+        ];
+    }
+
+    // Director (DMOV) Dashboard Methods
+    private function getDmovDirectorChartData()
+    {
+        return [
+            'approvalOverview' => $this->getDmovDirectorApprovalOverview(),
+            'monthlyApprovals' => $this->getDmovDirectorMonthlyApprovals(),
+            'approvalTime' => $this->getDmovDirectorApprovalTime(),
+            'branchWiseApplications' => $this->getDmovDirectorBranchWise(),
+            'finalDecisionStatus' => $this->getDmovDirectorFinalDecisionStatus(),
+        ];
+    }
+
+    private function getDmovDirectorApprovalOverview()
+    {
+        return [
+            'pending_review' => BusPassApplication::where('status', 'pending_director_mov')->count(),
+            'approved' => DB::table('bus_pass_approval_histories')
+                ->where('user_id', Auth::id())
+                ->where('action', 'approved')
+                ->count(),
+            'rejected' => DB::table('bus_pass_approval_histories')
+                ->where('user_id', Auth::id())
+                ->where('action', 'rejected')
+                ->count(),
+            'approved_for_integration' => BusPassApplication::where('status', 'approved_for_integration')->count(),
+            'total_processed' => DB::table('bus_pass_approval_histories')
+                ->where('user_id', Auth::id())
+                ->whereIn('action', ['approved', 'rejected'])
+                ->count(),
+        ];
+    }
+
+    private function getDmovDirectorMonthlyApprovals()
+    {
+        $months = [];
+        $received = [];
+        $approved = [];
+        $rejected = [];
+
+        for ($i = 5; $i >= 0; $i--) {
+            $date = Carbon::now()->subMonths($i);
+            $monthStart = $date->startOfMonth()->toDateString();
+            $monthEnd = $date->endOfMonth()->toDateString();
+
+            $months[] = $date->format('M Y');
+
+            $receivedCount = BusPassApplication::where('status', 'pending_director_mov')
+                ->whereBetween('updated_at', [$monthStart . ' 00:00:00', $monthEnd . ' 23:59:59'])
+                ->count();
+
+            $approvedCount = DB::table('bus_pass_approval_histories')
+                ->where('user_id', Auth::id())
+                ->where('action', 'approved')
+                ->whereBetween('action_date', [$monthStart . ' 00:00:00', $monthEnd . ' 23:59:59'])
+                ->count();
+
+            $rejectedCount = DB::table('bus_pass_approval_histories')
+                ->where('user_id', Auth::id())
+                ->where('action', 'rejected')
+                ->whereBetween('action_date', [$monthStart . ' 00:00:00', $monthEnd . ' 23:59:59'])
+                ->count();
+
+            $received[] = $receivedCount;
+            $approved[] = $approvedCount;
+            $rejected[] = $rejectedCount;
+        }
+
+        return [
+            'labels' => $months,
+            'received' => $received,
+            'approved' => $approved,
+            'rejected' => $rejected
+        ];
+    }
+
+    private function getDmovDirectorApprovalTime()
+    {
+        $approvalHistories = DB::table('bus_pass_approval_histories')
+            ->join('bus_pass_applications', 'bus_pass_approval_histories.bus_pass_application_id', '=', 'bus_pass_applications.id')
+            ->where('bus_pass_approval_histories.user_id', Auth::id())
+            ->whereIn('bus_pass_approval_histories.action', ['approved', 'rejected'])
+            ->select('bus_pass_applications.created_at', 'bus_pass_approval_histories.action_date')
+            ->get();
+
+        $timeRanges = [
+            'same_day' => 0,
+            'one_to_two' => 0,
+            'three_to_five' => 0,
+            'over_five' => 0
+        ];
+
+        foreach ($approvalHistories as $history) {
+            $created = Carbon::parse($history->created_at);
+            $actionDate = Carbon::parse($history->action_date);
+            $days = $created->diffInDays($actionDate);
+
+            if ($days == 0) {
+                $timeRanges['same_day']++;
+            } elseif ($days <= 2) {
+                $timeRanges['one_to_two']++;
+            } elseif ($days <= 5) {
+                $timeRanges['three_to_five']++;
+            } else {
+                $timeRanges['over_five']++;
+            }
+        }
+
+        return $timeRanges;
+    }
+
+    private function getDmovDirectorBranchWise()
+    {
+        $branchData = DB::table('bus_pass_applications')
+            ->join('establishments', 'bus_pass_applications.establishment_id', '=', 'establishments.id')
+            ->where('bus_pass_applications.status', 'pending_director_mov')
+            ->select('establishments.name as branch_name', DB::raw('count(*) as total'))
+            ->groupBy('establishments.id', 'establishments.name')
+            ->get();
+
+        $labels = [];
+        $data = [];
+
+        foreach ($branchData as $branch) {
+            $labels[] = $branch->branch_name;
+            $data[] = $branch->total;
+        }
+
+        return [
+            'labels' => $labels,
+            'data' => $data
+        ];
+    }
+
+    private function getDmovDirectorFinalDecisionStatus()
+    {
+        $decisions = DB::table('bus_pass_approval_histories')
+            ->join('bus_pass_applications', 'bus_pass_approval_histories.bus_pass_application_id', '=', 'bus_pass_applications.id')
+            ->where('bus_pass_approval_histories.user_id', Auth::id())
+            ->where('bus_pass_approval_histories.action', 'approved')
+            ->select('bus_pass_applications.status', DB::raw('count(*) as count'))
+            ->groupBy('bus_pass_applications.status')
+            ->pluck('count', 'status')
+            ->toArray();
+
+        return [
+            'approved_for_integration' => $decisions['approved_for_integration'] ?? 0,
+            'integrated_to_branch_card' => $decisions['integrated_to_branch_card'] ?? 0,
+            'temp_card_printed' => $decisions['temp_card_printed'] ?? 0
         ];
     }
 }
