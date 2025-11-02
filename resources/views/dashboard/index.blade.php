@@ -282,6 +282,626 @@
             });
         </script>
     @endif
+
+    @if (Auth::user() && Auth::user()->hasRole('Director (Branch)') && !empty($chartData))
+        <script>
+            $(document).ready(function() {
+                console.log('Branch Director Dashboard JavaScript Loading...');
+                console.log('Chart.js available:', typeof Chart !== 'undefined');
+                console.log('jQuery available:', typeof $ !== 'undefined');
+
+                // Director Approval Overview Chart (Doughnut)
+                const directorApprovalCtx = document.getElementById('directorApprovalChart').getContext('2d');
+                const directorApprovalData = @json($chartData['approvalOverview']);
+
+                const directorApprovalChart = new Chart(directorApprovalCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Pending Review', 'Approved', 'Rejected', 'Forwarded to Movement',
+                            'Total Processed'
+                        ],
+                        datasets: [{
+                            data: [
+                                directorApprovalData.pending_review,
+                                directorApprovalData.approved,
+                                directorApprovalData.rejected,
+                                directorApprovalData.forwarded_to_movement,
+                                directorApprovalData.total_processed
+                            ],
+                            backgroundColor: [
+                                '#ffc107',
+                                '#28a745',
+                                '#dc3545',
+                                '#17a2b8',
+                                '#6c757d'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+
+                // Director Monthly Approvals Chart (Line)
+                const directorMonthlyCtx = document.getElementById('directorMonthlyChart').getContext('2d');
+                const directorMonthlyData = @json($chartData['monthlyApprovals']);
+
+                const directorMonthlyChart = new Chart(directorMonthlyCtx, {
+                    type: 'line',
+                    data: {
+                        labels: directorMonthlyData.labels,
+                        datasets: [{
+                            label: 'Received',
+                            data: directorMonthlyData.received,
+                            borderColor: '#007bff',
+                            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }, {
+                            label: 'Approved',
+                            data: directorMonthlyData.approved,
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }, {
+                            label: 'Rejected',
+                            data: directorMonthlyData.rejected,
+                            borderColor: '#dc3545',
+                            backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Director Approval Time Chart (Bar)
+                const directorTimeCtx = document.getElementById('directorTimeChart').getContext('2d');
+                const directorTimeData = @json($chartData['approvalTime']);
+
+                const directorTimeChart = new Chart(directorTimeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Same Day', '1-2 Days', '3-5 Days', '5+ Days'],
+                        datasets: [{
+                            label: 'Applications',
+                            data: [
+                                directorTimeData.same_day,
+                                directorTimeData.one_to_two,
+                                directorTimeData.three_to_five,
+                                directorTimeData.over_five
+                            ],
+                            backgroundColor: [
+                                '#28a745',
+                                '#ffc107',
+                                '#fd7e14',
+                                '#dc3545'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Director Pass Type Distribution Chart (Horizontal Bar)
+                const directorPassTypeCtx = document.getElementById('directorPassTypeChart').getContext('2d');
+                const directorPassTypeData = @json($chartData['passTypeDistribution']);
+
+                const directorPassTypeChart = new Chart(directorPassTypeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Daily Travel', 'Weekend/Monthly'],
+                        datasets: [{
+                            label: 'Applications',
+                            data: [
+                                directorPassTypeData.daily_travel,
+                                directorPassTypeData.weekend_monthly_travel
+                            ],
+                            backgroundColor: [
+                                '#007bff',
+                                '#28a745'
+                            ]
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Director Weekly Approvals Chart (Area)
+                const directorWeeklyCtx = document.getElementById('directorWeeklyChart').getContext('2d');
+                const directorWeeklyData = @json($chartData['weeklyApprovals']);
+
+                const directorWeeklyChart = new Chart(directorWeeklyCtx, {
+                    type: 'line',
+                    data: {
+                        labels: directorWeeklyData.labels,
+                        datasets: [{
+                            label: 'Approvals',
+                            data: directorWeeklyData.data,
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.3)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
+    @endif
+
+    @if (Auth::user() && Auth::user()->hasRole('Staff Officer (Branch)') && !empty($chartData))
+        <script>
+            $(document).ready(function() {
+                console.log('Staff Officer Dashboard JavaScript Loading...');
+                console.log('Chart.js available:', typeof Chart !== 'undefined');
+                console.log('jQuery available:', typeof $ !== 'undefined');
+
+                // Approval Overview Chart (Doughnut)
+                const approvalCtx = document.getElementById('approvalChart').getContext('2d');
+                const approvalData = @json($chartData['approvalOverview']);
+                const approvalChart = new Chart(approvalCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Pending Review', 'Recommended', 'Not Recommended', 'Pending Director',
+                            'Approved'
+                        ],
+                        datasets: [{
+                            data: [
+                                approvalData.pending_review,
+                                approvalData.recommended,
+                                approvalData.not_recommended,
+                                approvalData.pending_director,
+                                approvalData.approved
+                            ],
+                            backgroundColor: [
+                                '#ffc107',
+                                '#28a745',
+                                '#dc3545',
+                                '#17a2b8',
+                                '#007bff'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+
+                // Monthly Approvals Chart (Line)
+                const monthlyApprovalsCtx = document.getElementById('monthlyApprovalsChart').getContext('2d');
+                const monthlyData = @json($chartData['monthlyApprovals']);
+
+                const monthlyApprovalsChart = new Chart(monthlyApprovalsCtx, {
+                    type: 'line',
+                    data: {
+                        labels: monthlyData.labels,
+                        datasets: [{
+                                label: 'Received',
+                                data: monthlyData.received,
+                                borderColor: '#007bff',
+                                backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Recommended',
+                                data: monthlyData.recommended,
+                                borderColor: '#28a745',
+                                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Not Recommended',
+                                data: monthlyData.not_recommended,
+                                borderColor: '#dc3545',
+                                backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Approval Time Chart (Bar)
+                const approvalTimeCtx = document.getElementById('approvalTimeChart').getContext('2d');
+                const approvalTimeData = @json($chartData['approvalTime']);
+
+                const approvalTimeChart = new Chart(approvalTimeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Same Day', '1-2 Days', '3-5 Days', '5+ Days'],
+                        datasets: [{
+                            label: 'Applications',
+                            data: [
+                                approvalTimeData.same_day,
+                                approvalTimeData.one_to_two,
+                                approvalTimeData.three_to_five,
+                                approvalTimeData.over_five
+                            ],
+                            backgroundColor: [
+                                '#28a745',
+                                '#ffc107',
+                                '#fd7e14',
+                                '#dc3545'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Recommendation Status Chart (Doughnut)
+                const recommendationCtx = document.getElementById('recommendationChart').getContext('2d');
+                const recommendationData = @json($chartData['recommendationStatus']);
+
+                const recommendationChart = new Chart(recommendationCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Pending Director', 'Approved by Director', 'Rejected by Director'],
+                        datasets: [{
+                            data: [
+                                recommendationData.pending_director,
+                                recommendationData.approved_by_director,
+                                recommendationData.rejected_by_director
+                            ],
+                            backgroundColor: [
+                                '#ffc107',
+                                '#28a745',
+                                '#dc3545'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+
+                // Weekly Recommendations Chart (Area)
+                const weeklyRecommendationsCtx = document.getElementById('weeklyRecommendationsChart').getContext('2d');
+                const weeklyData = @json($chartData['weeklyRecommendations']);
+
+                const weeklyRecommendationsChart = new Chart(weeklyRecommendationsCtx, {
+                    type: 'line',
+                    data: {
+                        labels: weeklyData.labels,
+                        datasets: [{
+                            label: 'Recommendations',
+                            data: weeklyData.data,
+                            borderColor: '#007bff',
+                            backgroundColor: 'rgba(0, 123, 255, 0.3)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
+    @endif
+
+    @if (Auth::user() && Auth::user()->hasRole('Bus Pass Subject Clerk (Branch)') && !empty($chartData))
+        <script>
+            $(document).ready(function() {
+                console.log('Branch Subject Clerk Dashboard JavaScript Loading...');
+                console.log('Chart.js available:', typeof Chart !== 'undefined');
+                console.log('jQuery available:', typeof $ !== 'undefined');
+
+                // Status Overview Chart (Donut)
+                const statusCtx = document.getElementById('statusChart').getContext('2d');
+                const statusChart = new Chart(statusCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Pending Review', 'Staff Officer', 'Director', 'To Movement', 'Approved',
+                            'Rejected'
+                        ],
+                        datasets: [{
+                            data: [
+                                {{ $chartData['statusOverview']['pending_subject_clerk'] }},
+                                {{ $chartData['statusOverview']['pending_staff_officer_branch'] }},
+                                {{ $chartData['statusOverview']['pending_director_branch'] }},
+                                {{ $chartData['statusOverview']['forwarded_to_movement'] }},
+                                {{ $chartData['statusOverview']['approved_for_integration'] }},
+                                {{ $chartData['statusOverview']['rejected'] }}
+                            ],
+                            backgroundColor: [
+                                '#ffc107',
+                                '#17a2b8',
+                                '#007bff',
+                                '#6c757d',
+                                '#28a745',
+                                '#dc3545'
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 15
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Monthly Trends Chart (Line)
+                const trendsCtx = document.getElementById('trendsChart').getContext('2d');
+                const trendsChart = new Chart(trendsCtx, {
+                    type: 'line',
+                    data: {
+                        labels: {!! json_encode($chartData['monthlyTrends']['months']) !!},
+                        datasets: [{
+                            label: 'Created',
+                            data: {!! json_encode($chartData['monthlyTrends']['created']) !!},
+                            borderColor: '#007bff',
+                            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }, {
+                            label: 'Approved',
+                            data: {!! json_encode($chartData['monthlyTrends']['approved']) !!},
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Processing Time Chart (Bar)
+                const processingCtx = document.getElementById('processingChart').getContext('2d');
+                const processingChart = new Chart(processingCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: {!! json_encode(array_keys($chartData['processingTime'])) !!},
+                        datasets: [{
+                            label: 'Applications',
+                            data: {!! json_encode(array_values($chartData['processingTime'])) !!},
+                            backgroundColor: [
+                                '#28a745',
+                                '#ffc107',
+                                '#fd7e14',
+                                '#dc3545'
+                            ],
+                            borderColor: [
+                                '#28a745',
+                                '#ffc107',
+                                '#fd7e14',
+                                '#dc3545'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Pass Types Chart (Horizontal Bar)
+                const passTypesCtx = document.getElementById('passTypesChart').getContext('2d');
+                const passTypesData = @json($chartData['passTypes']);
+                const passTypeLabels = Object.keys(passTypesData).map(key => {
+                    const labels = {
+                        'daily_travel': 'Daily Travel',
+                        'weekend_monthly_travel': 'Weekend/Monthly',
+                        'living_in_only': 'Living In Only',
+                        'weekend_only': 'Weekend Only',
+                        'unmarried_daily_travel': 'Unmarried Daily'
+                    };
+                    return labels[key] || key;
+                });
+
+                const passTypesChart = new Chart(passTypesCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: passTypeLabels,
+                        datasets: [{
+                            label: 'Applications',
+                            data: Object.values(passTypesData),
+                            backgroundColor: '#17a2b8',
+                            borderColor: '#17a2b8',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Weekly Activity Chart (Area)
+                const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+                const weeklyChart = new Chart(weeklyCtx, {
+                    type: 'line',
+                    data: {
+                        labels: {!! json_encode($chartData['weeklyActivity']['days']) !!},
+                        datasets: [{
+                            label: 'Created',
+                            data: {!! json_encode($chartData['weeklyActivity']['created']) !!},
+                            borderColor: '#007bff',
+                            backgroundColor: 'rgba(0, 123, 255, 0.3)',
+                            fill: true,
+                            tension: 0.4
+                        }, {
+                            label: 'Forwarded',
+                            data: {!! json_encode($chartData['weeklyActivity']['forwarded']) !!},
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.3)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
+    @endif
 @stop
 
 @section('content')
@@ -690,613 +1310,4 @@
             max-height: 250px !important;
         }
     </style>
-@stop
-
-@section('js')
-    @if (auth()->user()->hasRole('Bus Pass Subject Clerk (Branch)') && isset($chartData))
-        <script>
-            $(document).ready(function() {
-                // Status Overview Chart (Donut)
-                const statusCtx = document.getElementById('statusChart').getContext('2d');
-                const statusChart = new Chart(statusCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Pending Review', 'Staff Officer', 'Director', 'To Movement', 'Approved',
-                            'Rejected'
-                        ],
-                        datasets: [{
-                            data: [
-                                {{ $chartData['statusOverview']['pending_subject_clerk'] }},
-                                {{ $chartData['statusOverview']['pending_staff_officer_branch'] }},
-                                {{ $chartData['statusOverview']['pending_director_branch'] }},
-                                {{ $chartData['statusOverview']['forwarded_to_movement'] }},
-                                {{ $chartData['statusOverview']['approved_for_integration'] }},
-                                {{ $chartData['statusOverview']['rejected'] }}
-                            ],
-                            backgroundColor: [
-                                '#ffc107',
-                                '#17a2b8',
-                                '#007bff',
-                                '#6c757d',
-                                '#28a745',
-                                '#dc3545'
-                            ],
-                            borderWidth: 2,
-                            borderColor: '#fff'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: {
-                                    usePointStyle: true,
-                                    padding: 15
-                                }
-                            }
-                        }
-                    }
-                });
-
-                // Monthly Trends Chart (Line)
-                const trendsCtx = document.getElementById('trendsChart').getContext('2d');
-                const trendsChart = new Chart(trendsCtx, {
-                    type: 'line',
-                    data: {
-                        labels: {!! json_encode($chartData['monthlyTrends']['months']) !!},
-                        datasets: [{
-                            label: 'Created',
-                            data: {!! json_encode($chartData['monthlyTrends']['created']) !!},
-                            borderColor: '#007bff',
-                            backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                            tension: 0.4,
-                            fill: true
-                        }, {
-                            label: 'Approved',
-                            data: {!! json_encode($chartData['monthlyTrends']['approved']) !!},
-                            borderColor: '#28a745',
-                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                            tension: 0.4,
-                            fill: true
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'top'
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-
-                // Processing Time Chart (Bar)
-                const processingCtx = document.getElementById('processingChart').getContext('2d');
-                const processingChart = new Chart(processingCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: {!! json_encode(array_keys($chartData['processingTime'])) !!},
-                        datasets: [{
-                            label: 'Applications',
-                            data: {!! json_encode(array_values($chartData['processingTime'])) !!},
-                            backgroundColor: [
-                                '#28a745',
-                                '#ffc107',
-                                '#fd7e14',
-                                '#dc3545'
-                            ],
-                            borderColor: [
-                                '#28a745',
-                                '#ffc107',
-                                '#fd7e14',
-                                '#dc3545'
-                            ],
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-
-                // Pass Types Chart (Horizontal Bar)
-                const passTypesCtx = document.getElementById('passTypesChart').getContext('2d');
-                const passTypesData = @json($chartData['passTypes']);
-                const passTypeLabels = Object.keys(passTypesData).map(key => {
-                    const labels = {
-                        'daily_travel': 'Daily Travel',
-                        'weekend_monthly_travel': 'Weekend/Monthly',
-                        'living_in_only': 'Living In Only',
-                        'weekend_only': 'Weekend Only',
-                        'unmarried_daily_travel': 'Unmarried Daily'
-                    };
-                    return labels[key] || key;
-                });
-
-                const passTypesChart = new Chart(passTypesCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: passTypeLabels,
-                        datasets: [{
-                            label: 'Applications',
-                            data: Object.values(passTypesData),
-                            backgroundColor: '#17a2b8',
-                            borderColor: '#17a2b8',
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        indexAxis: 'y',
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            x: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-
-                // Weekly Activity Chart (Area)
-                const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
-                const weeklyChart = new Chart(weeklyCtx, {
-                    type: 'line',
-                    data: {
-                        labels: {!! json_encode($chartData['weeklyActivity']['days']) !!},
-                        datasets: [{
-                            label: 'Created',
-                            data: {!! json_encode($chartData['weeklyActivity']['created']) !!},
-                            borderColor: '#007bff',
-                            backgroundColor: 'rgba(0, 123, 255, 0.3)',
-                            fill: true,
-                            tension: 0.4
-                        }, {
-                            label: 'Forwarded',
-                            data: {!! json_encode($chartData['weeklyActivity']['forwarded']) !!},
-                            borderColor: '#28a745',
-                            backgroundColor: 'rgba(40, 167, 69, 0.3)',
-                            fill: true,
-                            tension: 0.4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'top'
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-            });
-        </script>
-    @elseif(auth()->user()->hasRole('Staff Officer (Branch)') && !empty($chartData))
-        <script>
-            $(document).ready(function() {
-                // Approval Overview Chart (Doughnut)
-                const approvalCtx = document.getElementById('approvalChart').getContext('2d');
-                const approvalData = @json($chartData['approvalOverview']);
-                const approvalChart = new Chart(approvalCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Pending Review', 'Recommended', 'Not Recommended', 'Pending Director',
-                            'Approved'
-                        ],
-                        datasets: [{
-                            data: [
-                                approvalData.pending_review,
-                                approvalData.recommended,
-                                approvalData.not_recommended,
-                                approvalData.pending_director,
-                                approvalData.approved
-                            ],
-                            backgroundColor: [
-                                '#ffc107',
-                                '#28a745',
-                                '#dc3545',
-                                '#17a2b8',
-                                '#007bff'
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom'
-                            }
-                        }
-                    }
-                });
-
-                // Monthly Approvals Chart (Line)
-                const monthlyApprovalsCtx = document.getElementById('monthlyApprovalsChart').getContext('2d');
-                const monthlyData = @json($chartData['monthlyApprovals']);
-
-                const monthlyApprovalsChart = new Chart(monthlyApprovalsCtx, {
-                    type: 'line',
-                    data: {
-                        labels: monthlyData.labels,
-                        datasets: [{
-                                label: 'Received',
-                                data: monthlyData.received,
-                                borderColor: '#007bff',
-                                backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                                fill: true,
-                                tension: 0.4
-                            },
-                            {
-                                label: 'Recommended',
-                                data: monthlyData.recommended,
-                                borderColor: '#28a745',
-                                backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                                fill: true,
-                                tension: 0.4
-                            },
-                            {
-                                label: 'Not Recommended',
-                                data: monthlyData.not_recommended,
-                                borderColor: '#dc3545',
-                                backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                                fill: true,
-                                tension: 0.4
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'top'
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-
-                // Approval Time Chart (Bar)
-                const approvalTimeCtx = document.getElementById('approvalTimeChart').getContext('2d');
-                const approvalTimeData = @json($chartData['approvalTime']);
-
-                const approvalTimeChart = new Chart(approvalTimeCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Same Day', '1-2 Days', '3-5 Days', '5+ Days'],
-                        datasets: [{
-                            label: 'Applications',
-                            data: [
-                                approvalTimeData.same_day,
-                                approvalTimeData.one_to_two,
-                                approvalTimeData.three_to_five,
-                                approvalTimeData.over_five
-                            ],
-                            backgroundColor: [
-                                '#28a745',
-                                '#ffc107',
-                                '#fd7e14',
-                                '#dc3545'
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-
-                // Recommendation Status Chart (Doughnut)
-                const recommendationCtx = document.getElementById('recommendationChart').getContext('2d');
-                const recommendationData = @json($chartData['recommendationStatus']);
-
-                const recommendationChart = new Chart(recommendationCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Pending Director', 'Approved by Director', 'Rejected by Director'],
-                        datasets: [{
-                            data: [
-                                recommendationData.pending_director,
-                                recommendationData.approved_by_director,
-                                recommendationData.rejected_by_director
-                            ],
-                            backgroundColor: [
-                                '#ffc107',
-                                '#28a745',
-                                '#dc3545'
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom'
-                            }
-                        }
-                    }
-                });
-
-                // Weekly Recommendations Chart (Area)
-                const weeklyRecommendationsCtx = document.getElementById('weeklyRecommendationsChart').getContext('2d');
-                const weeklyData = @json($chartData['weeklyRecommendations']);
-
-                const weeklyRecommendationsChart = new Chart(weeklyRecommendationsCtx, {
-                    type: 'line',
-                    data: {
-                        labels: weeklyData.labels,
-                        datasets: [{
-                            label: 'Recommendations',
-                            data: weeklyData.data,
-                            borderColor: '#007bff',
-                            backgroundColor: 'rgba(0, 123, 255, 0.3)',
-                            fill: true,
-                            tension: 0.4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'top'
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-            });
-        </script>
-    @elseif(auth()->user()->hasRole('Director (Branch)') && !empty($chartData))
-        <script>
-            $(document).ready(function() {
-                // Director Approval Overview Chart (Doughnut)
-                const directorApprovalCtx = document.getElementById('directorApprovalChart').getContext('2d');
-                const directorApprovalData = @json($chartData['approvalOverview']);
-
-                const directorApprovalChart = new Chart(directorApprovalCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Pending Review', 'Approved', 'Rejected', 'Forwarded to Movement',
-                            'Total Processed'
-                        ],
-                        datasets: [{
-                            data: [
-                                directorApprovalData.pending_review,
-                                directorApprovalData.approved,
-                                directorApprovalData.rejected,
-                                directorApprovalData.forwarded_to_movement,
-                                directorApprovalData.total_processed
-                            ],
-                            backgroundColor: [
-                                '#ffc107',
-                                '#28a745',
-                                '#dc3545',
-                                '#17a2b8',
-                                '#6c757d'
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom'
-                            }
-                        }
-                    }
-                });
-
-                // Director Monthly Approvals Chart (Line)
-                const directorMonthlyCtx = document.getElementById('directorMonthlyChart').getContext('2d');
-                const directorMonthlyData = @json($chartData['monthlyApprovals']);
-
-                const directorMonthlyChart = new Chart(directorMonthlyCtx, {
-                    type: 'line',
-                    data: {
-                        labels: directorMonthlyData.labels,
-                        datasets: [{
-                                label: 'Received',
-                                data: directorMonthlyData.received,
-                                borderColor: '#007bff',
-                                backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                                fill: true,
-                                tension: 0.4
-                            },
-                            {
-                                label: 'Approved',
-                                data: directorMonthlyData.approved,
-                                borderColor: '#28a745',
-                                backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                                fill: true,
-                                tension: 0.4
-                            },
-                            {
-                                label: 'Rejected',
-                                data: directorMonthlyData.rejected,
-                                borderColor: '#dc3545',
-                                backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                                fill: true,
-                                tension: 0.4
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'top'
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-
-                // Director Approval Time Chart (Bar)
-                const directorTimeCtx = document.getElementById('directorTimeChart').getContext('2d');
-                const directorTimeData = @json($chartData['approvalTime']);
-
-                const directorTimeChart = new Chart(directorTimeCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Same Day', '1-2 Days', '3-5 Days', '5+ Days'],
-                        datasets: [{
-                            label: 'Applications',
-                            data: [
-                                directorTimeData.same_day,
-                                directorTimeData.one_to_two,
-                                directorTimeData.three_to_five,
-                                directorTimeData.over_five
-                            ],
-                            backgroundColor: [
-                                '#28a745',
-                                '#ffc107',
-                                '#fd7e14',
-                                '#dc3545'
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-
-                // Director Pass Type Distribution Chart (Horizontal Bar)
-                const directorPassTypeCtx = document.getElementById('directorPassTypeChart').getContext('2d');
-                const directorPassTypeData = @json($chartData['passTypeDistribution']);
-
-                const directorPassTypeChart = new Chart(directorPassTypeCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Daily Travel', 'Weekend/Monthly'],
-                        datasets: [{
-                            label: 'Applications',
-                            data: [
-                                directorPassTypeData.daily_travel,
-                                directorPassTypeData.weekend_monthly_travel
-                            ],
-                            backgroundColor: [
-                                '#007bff',
-                                '#28a745'
-                            ]
-                        }]
-                    },
-                    options: {
-                        indexAxis: 'y',
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            x: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-
-                // Director Weekly Approvals Chart (Area)
-                const directorWeeklyCtx = document.getElementById('directorWeeklyChart').getContext('2d');
-                const directorWeeklyData = @json($chartData['weeklyApprovals']);
-
-                const directorWeeklyChart = new Chart(directorWeeklyCtx, {
-                    type: 'line',
-                    data: {
-                        labels: directorWeeklyData.labels,
-                        datasets: [{
-                            label: 'Approvals',
-                            data: directorWeeklyData.data,
-                            borderColor: '#28a745',
-                            backgroundColor: 'rgba(40, 167, 69, 0.3)',
-                            fill: true,
-                            tension: 0.4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'top'
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-            });
-        </script>
-    @endif
 @stop
