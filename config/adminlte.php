@@ -393,7 +393,7 @@ return [
                 //         'bus-pass-statuses*',
                 //     ],
                 // ],
-                
+
                 [
                     'text' => 'Destination Locations',
                     'url' => 'destination-locations',
@@ -430,7 +430,7 @@ return [
                     ],
                 ],
 
-                 [
+                [
                     'text' => 'Police Station',
                     'url' => 'police-station',
                     'icon' => 'fas fa-shield-alt',
@@ -506,6 +506,7 @@ return [
             'active' => [
                 'bus-pass-approvals*',
             ],
+            'classes' => 'bus-pass-approvals-menu',
         ],
 
         // System Administration (System Administrator only)
@@ -697,6 +698,16 @@ return [
                     'type' => 'js',
                     'asset' => false,
                     'location' => '//cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js',
+                ],
+            ],
+        ],
+        'PendingApprovalsBadge' => [
+            'active' => true,
+            'files' => [
+                [
+                    'type' => 'js',
+                    'asset' => true,
+                    'location' => 'js/pending-approvals-badge.js',
                 ],
             ],
         ],

@@ -10,9 +10,11 @@
                 @endif
                 <div class="card mt-3">
                     <div class="card card-teal">
-                        <div class="card-header"><i class="nav-icon fas fa-id-card nav-icon"></i> {{ __('Bus Pass Applications') }}
-                            @if(auth()->user()->hasRole('Bus Pass Subject Clerk (Branch)'))
-                                <a href="{{ route('bus-pass-applications.create') }}" class="btn btn-sm btn-primary float-right">Add New
+                        <div class="card-header"><i class="nav-icon fas fa-id-card nav-icon"></i>
+                            {{ __('Bus Pass Applications') }}
+                            @if (auth()->user()->hasRole('Bus Pass Subject Clerk (Branch)'))
+                                <a href="{{ route('bus-pass-applications.create') }}"
+                                    class="btn btn-sm btn-primary float-right">Add New
                                     Application</a>
                             @endif
                         </div>
@@ -39,3 +41,7 @@
     <script src="{{ asset('vendor/datatables-plugins/buttons/js/buttons.colVis.min.js') }}"></script>
     {{ $dataTable->scripts() }}
 @endpush
+
+@section('adminlte_js')
+    @include('partials.pending-approvals-script')
+@endsection

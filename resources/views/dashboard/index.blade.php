@@ -30,6 +30,8 @@
 @section('adminlte_js')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    @include('partials.pending-approvals-script')
+
     @if (Auth::user() && Auth::user()->hasRole('Subject Clerk (DMOV)') && !empty($chartData))
         <script>
             $(document).ready(function() {
