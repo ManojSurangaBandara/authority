@@ -70,10 +70,14 @@ class BusPassApprovalController extends Controller
             if ($user->hasRole('Subject Clerk (DMOV)')) {
                 // SLTB Season update
                 if ($request->has('obtain_sltb_season')) {
-                    $oldValue = $application->obtain_sltb_season == 'yes' ? 'Available' : 'Not Available';
-                    $newValue = $request->obtain_sltb_season == 'yes' ? 'Available' : 'Not Available';
+                    $oldValue = $application->obtain_sltb_season;
+                    $newValue = $request->obtain_sltb_season;
+
+                    $oldLabel = $oldValue == 'yes' ? 'Available' : ($oldValue == 'no' ? 'Not Available' : 'Not Set');
+                    $newLabel = $newValue == 'yes' ? 'Available' : 'Not Available';
+
                     if ($oldValue !== $newValue) {
-                        $updateNotes[] = "SLTB Season updated from '{$oldValue}' to '{$newValue}'.";
+                        $updateNotes[] = "SLTB Season updated from '{$oldLabel}' to '{$newLabel}'";
                     }
                 }
 
@@ -86,14 +90,21 @@ class BusPassApprovalController extends Controller
                     $newLabel = $newValue == 'has_branch_card' ? 'Has Branch Card (Integration)' : 'No Branch Card (Temporary)';
 
                     if ($oldValue !== $newValue) {
-                        $updateNotes[] = "Branch Card Availability set to '{$newLabel}'.";
+                        $updateNotes[] = "Branch Card Availability updated from '{$oldLabel}' to '{$newLabel}'";
                     }
                 }
 
-                // Combine update notes with remarks
+                // Combine update notes with remarks (separate lines with clear formatting)
                 if (!empty($updateNotes)) {
                     $updateText = implode("\n", $updateNotes);
-                    $remarks = $remarks ? $remarks . "\n\n" . $updateText : $updateText;
+
+                    if ($remarks) {
+                        // Manual remarks first, then system-generated updates on separate lines
+                        $remarks = $remarks . "\n\n--- System Updates ---\n" . $updateText;
+                    } else {
+                        // Only system-generated updates
+                        $remarks = "--- System Updates ---\n" . $updateText;
+                    }
                 }
             }
 

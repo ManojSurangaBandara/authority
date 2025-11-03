@@ -309,8 +309,9 @@
                                                 <td>
                                                     @if ($history->remarks)
                                                         <small
-                                                            class="{{ $history->action === 'not_recommended' ? 'text-warning' : '' }}">
-                                                            "{{ $history->remarks }}"
+                                                            class="{{ $history->action === 'not_recommended' ? 'text-warning' : '' }}"
+                                                            style="white-space: pre-line;">
+                                                            {{ $history->remarks }}
                                                         </small>
                                                     @else
                                                         <small class="text-muted">No remarks</small>
