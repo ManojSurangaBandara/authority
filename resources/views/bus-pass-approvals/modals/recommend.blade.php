@@ -20,6 +20,22 @@
                         <br><strong>{{ $application->person->name }}</strong> ({{ $application->person->regiment_no }})
                     </div>
 
+                    @if ($application->obtain_sltb_season == 'yes')
+                        <div class="alert alert-warning">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox"
+                                    id="sltb_season_awareness{{ $application->id }}" name="sltb_season_awareness"
+                                    required>
+                                <label class="form-check-label" for="sltb_season_awareness{{ $application->id }}">
+                                    <i class="fas fa-bus text-warning"></i>
+                                    <strong>SLTB Season Awareness:</strong>
+                                    This person has obtained SLTB Bus Season. Please confirm your approval.
+                                </label>
+                            </div>
+
+                        </div>
+                    @endif
+
                     <div class="form-group">
                         <label for="recommend_remarks{{ $application->id }}">
                             <i class="fas fa-comment"></i> Recommendation Remarks (Optional)
@@ -40,7 +56,8 @@
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">
                         <i class="fas fa-times"></i> Cancel
                     </button>
-                    <button type="submit" class="btn btn-success">
+                    <button type="submit" class="btn btn-success" id="recommendBtn{{ $application->id }}"
+                        @if ($application->obtain_sltb_season == 'yes') disabled @endif>
                         <i class="fas fa-thumbs-up"></i> Confirm Recommendation
                     </button>
                 </div>
@@ -48,3 +65,24 @@
         </div>
     </div>
 </div>
+
+@if ($application->obtain_sltb_season == 'yes')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkbox = document.getElementById('sltb_season_awareness{{ $application->id }}');
+            const recommendBtn = document.getElementById('recommendBtn{{ $application->id }}');
+
+            if (checkbox && recommendBtn) {
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        recommendBtn.disabled = false;
+                        recommendBtn.classList.remove('disabled');
+                    } else {
+                        recommendBtn.disabled = true;
+                        recommendBtn.classList.add('disabled');
+                    }
+                });
+            }
+        });
+    </script>
+@endif

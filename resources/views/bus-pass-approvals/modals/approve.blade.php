@@ -35,6 +35,30 @@
                         <br><strong>{{ $application->person->name }}</strong> ({{ $application->person->regiment_no }})
                     </div>
 
+                    {{-- SLTB Season Confirmation for higher level approvers --}}
+                    @if (
+                        !auth()->user()->hasRole(['Bus Pass Subject Clerk (Branch)', 'Subject Clerk (DMOV)']) &&
+                            $application->obtain_sltb_season == 'yes')
+                        <div class="alert sltb-confirmation-alert">
+                            <div class="form-check">
+                                <input class="form-check-input @error('sltb_season_confirmation') is-invalid @enderror"
+                                    type="checkbox" id="sltb_season_confirmation{{ $application->id }}"
+                                    name="sltb_season_confirmation" required>
+                                <label class="form-check-label" for="sltb_season_confirmation{{ $application->id }}">
+                                    <i class="fas fa-bus text-warning"></i>
+                                    <strong>SLTB Season Available Confirmation:</strong>
+                                    This person has obtained SLTB Bus Season. Please confirm your approval.
+                                </label>
+                                @error('sltb_season_confirmation')
+                                    <div class="invalid-feedback d-block">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+
+                        </div>
+                    @endif
+
                     @if (auth()->user()->hasRole('Subject Clerk (DMOV)'))
                         <div class="form-group">
                             <label for="obtain_sltb_season{{ $application->id }}">
@@ -46,7 +70,8 @@
                                 <option value="yes"
                                     {{ $application->obtain_sltb_season == 'yes' ? 'selected' : '' }}>Yes - Season
                                     Available</option>
-                                <option value="no" {{ $application->obtain_sltb_season == 'no' ? 'selected' : '' }}>
+                                <option value="no"
+                                    {{ $application->obtain_sltb_season == 'no' ? 'selected' : '' }}>
                                     No - Season Not Available</option>
                             </select>
                             <small class="form-text text-muted">
@@ -120,7 +145,10 @@
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">
                         <i class="fas fa-times"></i> Cancel
                     </button>
-                    <button type="submit" class="btn btn-success">
+                    <button type="submit" class="btn btn-success" id="approveBtn{{ $application->id }}"
+                        @if (
+                            !auth()->user()->hasRole(['Bus Pass Subject Clerk (Branch)', 'Subject Clerk (DMOV)']) &&
+                                $application->obtain_sltb_season == 'yes') disabled @endif>
                         @if (auth()->user()->hasRole(['Bus Pass Subject Clerk (Branch)', 'Subject Clerk (DMOV)']))
                             <i class="fas fa-arrow-right"></i> Confirm Forward
                         @else
@@ -132,3 +160,26 @@
         </div>
     </div>
 </div>
+
+@if (
+    !auth()->user()->hasRole(['Bus Pass Subject Clerk (Branch)', 'Subject Clerk (DMOV)']) &&
+        $application->obtain_sltb_season == 'yes')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkbox = document.getElementById('sltb_season_confirmation{{ $application->id }}');
+            const approveBtn = document.getElementById('approveBtn{{ $application->id }}');
+
+            if (checkbox && approveBtn) {
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        approveBtn.disabled = false;
+                        approveBtn.classList.remove('disabled');
+                    } else {
+                        approveBtn.disabled = true;
+                        approveBtn.classList.add('disabled');
+                    }
+                });
+            }
+        });
+    </script>
+@endif

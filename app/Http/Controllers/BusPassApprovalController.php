@@ -37,7 +37,17 @@ class BusPassApprovalController extends Controller
             $validationRules['branch_card_availability'] = 'required|in:has_branch_card,no_branch_card';
         }
 
-        $request->validate($validationRules);
+        // Add SLTB season confirmation validation for higher level approvers when SLTB season is available
+        if (!Auth::user()->hasRole(['Bus Pass Subject Clerk (Branch)', 'Subject Clerk (DMOV)']) && $application->obtain_sltb_season == 'yes') {
+            $validationRules['sltb_season_confirmation'] = 'required|accepted';
+        }
+
+        $customMessages = [
+            'sltb_season_confirmation.required' => 'You must confirm awareness of SLTB season availability before approving.',
+            'sltb_season_confirmation.accepted' => 'You must check the SLTB season confirmation checkbox to proceed.'
+        ];
+
+        $request->validate($validationRules, $customMessages);
 
         $user = Auth::user();
 
@@ -155,9 +165,21 @@ class BusPassApprovalController extends Controller
      */
     public function recommend(Request $request, BusPassApplication $application)
     {
-        $request->validate([
+        $validationRules = [
             'remarks' => 'nullable|string|max:500'
-        ]);
+        ];
+
+        // Add SLTB season awareness validation if SLTB season is available
+        if ($application->obtain_sltb_season == 'yes') {
+            $validationRules['sltb_season_awareness'] = 'required|accepted';
+        }
+
+        $customMessages = [
+            'sltb_season_awareness.required' => 'You must acknowledge awareness of SLTB season availability before recommending.',
+            'sltb_season_awareness.accepted' => 'You must check the SLTB season awareness checkbox to proceed.'
+        ];
+
+        $request->validate($validationRules, $customMessages);
 
         $user = Auth::user();
 

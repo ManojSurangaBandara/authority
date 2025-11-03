@@ -66,6 +66,11 @@
                                                     class="badge badge-{{ $application->bus_pass_type === 'daily_travel' ? 'primary' : 'secondary' }}">
                                                     {{ $application->type_label }}
                                                 </span>
+                                                @if ($application->obtain_sltb_season == 'yes')
+                                                    <br><span class="badge badge-warning mt-1">
+                                                        <i class="fas fa-bus"></i> SLTB Season Available
+                                                    </span>
+                                                @endif
                                             </td>
                                             <td>
                                                 @if ($application->establishment)
@@ -179,6 +184,31 @@
 
         .table-warning {
             background-color: rgba(255, 193, 7, 0.1) !important;
+        }
+
+        .sltb-confirmation-alert {
+            border-left: 4px solid #ffc107;
+            background-color: #fff3cd;
+        }
+
+        .sltb-confirmation-alert .form-check-label {
+            font-weight: 500;
+            color: #856404;
+        }
+
+        .btn-success:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .sltb-confirmation-alert .form-check-input {
+            transform: scale(1.2);
+            margin-right: 8px;
+        }
+
+        .sltb-confirmation-alert .form-check-input:checked {
+            background-color: #28a745;
+            border-color: #28a745;
         }
     </style>
 @stop
