@@ -80,20 +80,27 @@
                                     </span>
                                 </td>
                             </tr>
-                            @if (auth()->user()->getHierarchyLevel() >= 4)
+                            @if ($application->branch_card_availability)
                                 <tr>
                                     <td><strong>Branch Card Availability:</strong></td>
                                     <td>
-                                        @if ($application->branch_card_availability)
-                                            <span
-                                                class="badge badge-{{ $application->branch_card_availability === 'has_branch_card' ? 'success' : 'warning' }}">
-                                                {{ $application->branch_card_availability === 'has_branch_card' ? 'Has Branch Card (Integration)' : 'No Branch Card (Temporary)' }}
-                                            </span>
-                                        @else
-                                            <span class="badge badge-secondary">Not Set</span>
-                                        @endif
+                                        <span
+                                            class="badge badge-{{ $application->branch_card_availability === 'has_branch_card' ? 'success' : 'warning' }}">
+                                            {{ $application->branch_card_availability === 'has_branch_card' ? 'Has Branch Card (Integration)' : 'No Branch Card (Temporary)' }}
+                                        </span>
                                     </td>
                                 </tr>
+                                @if ($application->branch_card_id)
+                                    <tr>
+                                        <td><strong>Branch Card ID:</strong></td>
+                                        <td>
+                                            <span class="badge badge-info">{{ $application->branch_card_id }}</span>
+                                            <br><small class="text-muted">
+                                                <i class="fas fa-check-circle text-success"></i> Verified via API
+                                            </small>
+                                        </td>
+                                    </tr>
+                                @endif
                             @endif
                             <tr>
                                 <td><strong>Arrival at AHQ:</strong></td>

@@ -135,19 +135,24 @@
                             </div>
                         </div>
 
-                        @if (auth()->user()->getHierarchyLevel() >= 4)
+                        @if ($bus_pass_application->branch_card_availability)
                             <div class="row mt-3">
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <strong>Branch Card Availability:</strong><br>
-                                    @if ($bus_pass_application->branch_card_availability)
-                                        <span
-                                            class="badge badge-{{ $bus_pass_application->branch_card_availability === 'has_branch_card' ? 'success' : 'warning' }}">
-                                            {{ $bus_pass_application->branch_card_availability === 'has_branch_card' ? 'Has Branch Card (Integration)' : 'No Branch Card (Temporary)' }}
-                                        </span>
-                                    @else
-                                        <span class="badge badge-secondary">Not Set</span>
-                                    @endif
+                                    <span
+                                        class="badge badge-{{ $bus_pass_application->branch_card_availability === 'has_branch_card' ? 'success' : 'warning' }}">
+                                        {{ $bus_pass_application->branch_card_availability === 'has_branch_card' ? 'Has Branch Card (Integration)' : 'No Branch Card (Temporary)' }}
+                                    </span>
                                 </div>
+                                @if ($bus_pass_application->branch_card_id)
+                                    <div class="col-md-6">
+                                        <strong>Branch Card ID:</strong><br>
+                                        <span class="badge badge-info">{{ $bus_pass_application->branch_card_id }}</span>
+                                        <br><small class="text-muted">
+                                            <i class="fas fa-check-circle text-success"></i> Verified via API
+                                        </small>
+                                    </div>
+                                @endif
                             </div>
                         @endif
 

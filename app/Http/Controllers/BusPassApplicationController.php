@@ -65,6 +65,8 @@ class BusPassApplicationController extends Controller
             'marital_status' => 'required|in:single,married',
             'approval_living_out' => 'required|in:yes,no',
             'obtain_sltb_season' => 'required|in:yes,no',
+            'branch_card_availability' => 'required|in:has_branch_card,no_branch_card',
+            'branch_card_id' => $request->branch_card_availability === 'has_branch_card' ? 'required|string|max:50' : 'nullable|string|max:50',
             'date_arrival_ahq' => 'required|date',
             'grama_niladari_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
             'person_image' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
@@ -242,6 +244,8 @@ class BusPassApplicationController extends Controller
         $data['marital_status'] = $request->marital_status;
         $data['approval_living_out'] = $request->approval_living_out;
         $data['obtain_sltb_season'] = $request->obtain_sltb_season;
+        $data['branch_card_availability'] = $request->branch_card_availability;
+        $data['branch_card_id'] = $request->branch_card_id;
         $data['date_arrival_ahq'] = $request->date_arrival_ahq;
         $data['bus_pass_type'] = $request->bus_pass_type;
         $data['declaration_1'] = $request->declaration_1;
@@ -335,6 +339,8 @@ class BusPassApplicationController extends Controller
             'marital_status' => 'required|in:single,married',
             'approval_living_out' => 'required|in:yes,no',
             'obtain_sltb_season' => 'required|in:yes,no',
+            'branch_card_availability' => 'required|in:has_branch_card,no_branch_card',
+            'branch_card_id' => $request->branch_card_availability === 'has_branch_card' ? 'required|string|max:50' : 'nullable|string|max:50',
             'date_arrival_ahq' => 'required|date',
             'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only,unmarried_daily_travel',
             'rent_allowance_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only' && $request->bus_pass_type !== 'unmarried_daily_travel' && !$bus_pass_application->rent_allowance_order) ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
@@ -544,6 +550,8 @@ class BusPassApplicationController extends Controller
         $data['marital_status'] = $request->marital_status;
         $data['approval_living_out'] = $request->approval_living_out;
         $data['obtain_sltb_season'] = $request->obtain_sltb_season;
+        $data['branch_card_availability'] = $request->branch_card_availability;
+        $data['branch_card_id'] = $request->branch_card_id;
         $data['date_arrival_ahq'] = $request->date_arrival_ahq;
         $data['bus_pass_type'] = $request->bus_pass_type;
         $data['declaration_1'] = $request->declaration_1;

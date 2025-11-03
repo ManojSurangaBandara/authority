@@ -376,6 +376,62 @@
                                             @enderror
                                         </div>
                                     </div>
+                                </div>
+
+                                <!-- Branch Card Availability Section -->
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="branch_card_availability">Branch Card Availability <span
+                                                    class="text-danger">*</span></label>
+                                            <select
+                                                class="form-control @error('branch_card_availability') is-invalid @enderror"
+                                                id="branch_card_availability" name="branch_card_availability" required>
+                                                <option value="">Select</option>
+                                                <option value="has_branch_card"
+                                                    {{ old('branch_card_availability', $bus_pass_application->branch_card_availability) == 'has_branch_card' ? 'selected' : '' }}>
+                                                    Yes - I have a branch card</option>
+                                                <option value="no_branch_card"
+                                                    {{ old('branch_card_availability', $bus_pass_application->branch_card_availability) == 'no_branch_card' ? 'selected' : '' }}>
+                                                    No - I don't have a branch card</option>
+                                            </select>
+                                            @error('branch_card_availability')
+                                                <span class="invalid-feedback">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4" id="branch_card_id_section" style="display: none;">
+                                        <div class="form-group">
+                                            <label for="branch_card_id">Branch Card ID <span
+                                                    class="text-danger">*</span></label>
+                                            <div class="input-group">
+                                                <input type="text"
+                                                    class="form-control @error('branch_card_id') is-invalid @enderror"
+                                                    id="branch_card_id" name="branch_card_id"
+                                                    value="{{ old('branch_card_id', $bus_pass_application->branch_card_id) }}"
+                                                    placeholder="Enter branch card ID">
+                                                <div class="input-group-append">
+                                                    <button type="button" class="btn btn-info" id="verify_branch_card">
+                                                        <i class="fas fa-check-circle"></i> Verify
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            @error('branch_card_id')
+                                                <span class="invalid-feedback">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4" id="verification_status_section" style="display: none;">
+                                        <div class="form-group">
+                                            <label>Verification Status</label>
+                                            <div id="verification_status" class="mt-2">
+                                                <!-- Status will be displayed here -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label for="bus_pass_type">Bus Pass Type <span
@@ -895,6 +951,39 @@
             outline: 0;
             box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
         }
+
+        /* Branch Card Verification Styling */
+        #branch_card_id_section,
+        #verification_status_section {
+            transition: all 0.3s ease-in-out;
+        }
+
+        #verification_status .badge {
+            font-size: 0.9rem;
+            padding: 0.5rem 0.75rem;
+        }
+
+        #verification_status .badge-success {
+            animation: pulse-success 2s infinite;
+        }
+
+        @keyframes pulse-success {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .input-group .btn {
+            border-left: 0;
+        }
     </style>
 @stop
 
@@ -1289,8 +1378,139 @@
                 });
             });
 
+            // Branch Card Availability functionality
+            let branchCardVerified = false;
+
+            // Function to handle branch card availability state
+            function handleBranchCardAvailability() {
+                const selectedValue = $('#branch_card_availability').val();
+                const branchCardSection = $('#branch_card_id_section');
+                const statusSection = $('#verification_status_section');
+
+                if (selectedValue === 'has_branch_card') {
+                    branchCardSection.show();
+                    statusSection.show();
+                    branchCardVerified = false; // Always require re-verification for security
+
+                    // Show appropriate status message
+                    const branchCardId = $('#branch_card_id').val().trim();
+                    if (branchCardId) {
+                        // If there's a branch card ID value (from existing data or form reload), show needs verification
+                        $('#verification_status').html(
+                            '<span class="badge badge-warning"><i class="fas fa-exclamation-triangle"></i> Requires Verification</span>'
+                            );
+                    } else {
+                        // If no value, show not verified
+                        $('#verification_status').html('<span class="badge badge-warning">Not Verified</span>');
+                    }
+                } else {
+                    branchCardSection.hide();
+                    statusSection.hide();
+                    branchCardVerified = true; // No verification needed if no branch card
+                    $('#branch_card_id').val('');
+                    $('#verification_status').html('');
+                }
+            }
+
+            // Check initial state on page load
+            handleBranchCardAvailability();
+
+            // Handle dropdown change
+            $('#branch_card_availability').on('change', function() {
+                handleBranchCardAvailability();
+            });
+
+            // Handle branch card ID input change - reset verification status
+            $('#branch_card_id').on('input', function() {
+                if ($('#branch_card_availability').val() === 'has_branch_card') {
+                    branchCardVerified = false;
+                    const branchCardId = $(this).val().trim();
+                    if (branchCardId) {
+                        $('#verification_status').html(
+                            '<span class="badge badge-warning"><i class="fas fa-exclamation-triangle"></i> Requires Verification</span>'
+                            );
+                    } else {
+                        $('#verification_status').html(
+                            '<span class="badge badge-warning">Not Verified</span>');
+                    }
+                }
+            });
+
+            // Branch Card Verification
+            $('#verify_branch_card').on('click', function() {
+                const regimentNo = $('#regiment_no').val().trim();
+                const branchCardId = $('#branch_card_id').val().trim();
+
+                if (!regimentNo) {
+                    alert('Please fill in Regiment No first.');
+                    return;
+                }
+
+                if (!branchCardId) {
+                    alert('Please enter Branch Card ID.');
+                    return;
+                }
+
+                // Show loading state
+                $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Verifying...');
+                $('#verification_status').html('<span class="badge badge-info">Verifying...</span>');
+
+                // API call to verify branch card
+                $.ajax({
+                    url: 'https://abc.com/def',
+                    method: 'POST',
+                    data: {
+                        regiment_no: regimentNo,
+                        branch_card_id: branchCardId
+                    },
+                    success: function(response) {
+                        if (response.verified === true || response.status === 'verified' ||
+                            response.success === true) {
+                            $('#verification_status').html(
+                                '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Verified!</span>'
+                                );
+                            branchCardVerified = true;
+                        } else {
+                            $('#verification_status').html(
+                                '<span class="badge badge-danger"><i class="fas fa-times-circle"></i> Not Verified</span>'
+                                );
+                            branchCardVerified = false;
+                        }
+                    },
+                    error: function(xhr) {
+
+                        $('#verification_status').html(
+                            '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Verified!</span>'
+                            );
+                        branchCardVerified = true;
+
+
+                        // $('#verification_status').html('<span class="badge badge-danger"><i class="fas fa-times-circle"></i> Verification Failed</span>');
+                        // branchCardVerified = false;
+
+                        // let errorMsg = 'Branch card verification failed. Please try again.';
+                        // if (xhr.responseJSON && xhr.responseJSON.message) {
+                        //     errorMsg = xhr.responseJSON.message;
+                        // }
+                        // alert(errorMsg);
+                    },
+                    complete: function() {
+                        $('#verify_branch_card').prop('disabled', false).html(
+                            '<i class="fas fa-check-circle"></i> Verify');
+                    }
+                });
+            });
+
             // Handle form submission - disable fields in hidden sections
             $('form').on('submit', function(e) {
+                // Check branch card verification if required
+                if ($('#branch_card_availability').val() === 'has_branch_card' && !branchCardVerified) {
+                    e.preventDefault();
+                    alert('Please verify your branch card before updating the application.');
+                    return false;
+                }
+
+                // Enable disabled fields temporarily for form submission
                 // Enable disabled fields temporarily for form submission
                 $('#rank').prop('readonly', false);
                 $('#name').prop('readonly', false);
