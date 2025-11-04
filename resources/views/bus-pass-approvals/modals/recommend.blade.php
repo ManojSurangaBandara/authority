@@ -20,31 +20,6 @@
                         <br><strong>{{ $application->person->name }}</strong> ({{ $application->person->regiment_no }})
                     </div>
 
-                    {{-- Display current branch card information --}}
-                    @if ($application->branch_card_availability)
-                        <div class="alert alert-info">
-                            <h6><i class="fas fa-id-card"></i> Branch Card Information</h6>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <strong>Availability:</strong><br>
-                                    <span
-                                        class="badge badge-{{ $application->branch_card_availability === 'has_branch_card' ? 'success' : 'warning' }}">
-                                        {{ $application->branch_card_availability === 'has_branch_card' ? 'Has Branch Card (Integration)' : 'No Branch Card (Temporary)' }}
-                                    </span>
-                                </div>
-                                @if ($application->branch_card_availability === 'has_branch_card' && $application->branch_card_id)
-                                    <div class="col-md-6">
-                                        <strong>Branch Card ID:</strong><br>
-                                        <span class="badge badge-info">{{ $application->branch_card_id }}</span>
-                                        <br><small class="text-muted">
-                                            <i class="fas fa-check-circle text-success"></i> Verified via API
-                                        </small>
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-                    @endif
-
                     @if ($application->obtain_sltb_season == 'yes')
                         <div class="alert alert-warning">
                             <div class="form-check">
