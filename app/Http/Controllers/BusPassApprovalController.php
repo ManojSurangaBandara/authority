@@ -31,10 +31,9 @@ class BusPassApprovalController extends Controller
             'remarks' => 'nullable|string|max:500'
         ];
 
-        // Add SLTB season and branch card availability validation for Subject Clerk (DMOV)
+        // Add SLTB season validation for Subject Clerk (DMOV)
         if (Auth::user()->hasRole('Subject Clerk (DMOV)')) {
             $validationRules['obtain_sltb_season'] = 'required|in:yes,no';
-            $validationRules['branch_card_availability'] = 'required|in:has_branch_card,no_branch_card';
         }
 
         // Add SLTB season confirmation validation for higher level approvers when SLTB season is available
@@ -81,18 +80,7 @@ class BusPassApprovalController extends Controller
                     }
                 }
 
-                // Branch Card Availability update
-                if ($request->has('branch_card_availability')) {
-                    $oldValue = $application->branch_card_availability;
-                    $newValue = $request->branch_card_availability;
 
-                    $oldLabel = $oldValue == 'has_branch_card' ? 'Has Branch Card (Integration)' : ($oldValue == 'no_branch_card' ? 'No Branch Card (Temporary)' : 'Not Set');
-                    $newLabel = $newValue == 'has_branch_card' ? 'Has Branch Card (Integration)' : 'No Branch Card (Temporary)';
-
-                    if ($oldValue !== $newValue) {
-                        $updateNotes[] = "Branch Card Availability updated from '{$oldLabel}' to '{$newLabel}'";
-                    }
-                }
 
                 // Combine update notes with remarks (separate lines with clear formatting)
                 if (!empty($updateNotes)) {
@@ -120,13 +108,10 @@ class BusPassApprovalController extends Controller
                 'remarks' => $request->remarks
             ];
 
-            // Update SLTB season and branch card availability if provided by Subject Clerk (DMOV)
+            // Update SLTB season if provided by Subject Clerk (DMOV)
             if ($user->hasRole('Subject Clerk (DMOV)')) {
                 if ($request->has('obtain_sltb_season')) {
                     $updateData['obtain_sltb_season'] = $request->obtain_sltb_season;
-                }
-                if ($request->has('branch_card_availability')) {
-                    $updateData['branch_card_availability'] = $request->branch_card_availability;
                 }
             }
 
