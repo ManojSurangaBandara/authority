@@ -31,14 +31,13 @@ class LivingInBusController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|max:50',
+            'name' => 'required|max:50|unique:living_in_buses,name',
         ]);
 
         LivingInBuses::create($request->all());
 
         return redirect()->route('living-in-buses.index')
             ->with('success', 'Entry created successfully.');
-
     }
 
     /**
@@ -67,7 +66,7 @@ class LivingInBusController extends Controller
         $livingInBus = LivingInBuses::findOrFail($id);
 
         $rules = [
-            'name' => 'required|max:50',
+            'name' => 'required|max:50|unique:living_in_buses,name,' . $id,
         ];
 
         $request->validate($rules);
@@ -76,7 +75,6 @@ class LivingInBusController extends Controller
 
         return redirect()->route('living-in-buses.index')
             ->with('success', 'Entry updates successfully.');
-
     }
 
     /**
@@ -90,14 +88,4 @@ class LivingInBusController extends Controller
         return redirect()->route('living-in-buses.index')
             ->with('success', 'Entry deleted successfully.');
     }
-
 }
-
-
-
-        
-     
-     
-
-
-   

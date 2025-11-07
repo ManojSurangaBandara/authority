@@ -31,7 +31,7 @@ class DestinationLocationController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'destination_location' => 'required|max:50',
+            'destination_location' => 'required|max:50|unique:destination_locations,destination_location',
         ]);
 
         DestinationLocation::create($request->all());
@@ -64,7 +64,7 @@ class DestinationLocationController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'destination_location' => 'required|max:50',
+            'destination_location' => 'required|max:50|unique:destination_locations,destination_location,' . $id,
         ]);
 
         $destinationLocation = DestinationLocation::findOrFail($id);
