@@ -20,12 +20,8 @@ class BusFillingStationAssignmentController extends Controller
         // Get all buses with their assigned filling stations
         $buses = Bus::with(['type', 'fillingStationAssignment.fillingStation'])->get();
 
-        // Get available filling stations (not currently assigned to active buses)
-        $assignedFillingStationIds = BusFillingStationAssignment::where('status', 'active')
-            ->whereNotNull('filling_station_id')
-            ->pluck('filling_station_id')
-            ->toArray();
-        $availableFillingStations = FillingStation::whereNotIn('id', $assignedFillingStationIds)->orderBy('name')->get();
+        // Get all filling stations (they can be assigned to multiple buses)
+        $availableFillingStations = FillingStation::orderBy('name')->get();
 
         // Get buses without active filling station assignments
         $unassignedBuses = Bus::with('type')
@@ -160,19 +156,7 @@ class BusFillingStationAssignmentController extends Controller
         $fillingStation = FillingStation::findOrFail($request->filling_station_id);
         $bus = Bus::findOrFail($request->bus_id);
 
-        // Check if filling station is already assigned to an active bus
-        $existingFillingStationAssignment = BusFillingStationAssignment::where('filling_station_id', $request->filling_station_id)
-            ->where('status', 'active')
-            ->first();
-        if ($existingFillingStationAssignment) {
-            $existingBus = Bus::find($existingFillingStationAssignment->bus_id);
-            $existingBusName = $existingBus ? ($existingBus->name ?? 'Unknown') : 'Unknown';
-            $existingBusNo = $existingBus ? ($existingBus->no ?? 'N/A') : 'N/A';
-            return response()->json([
-                'success' => false,
-                'message' => "Filling station {$fillingStation->name} is already assigned to bus {$existingBusName} ({$existingBusNo})."
-            ]);
-        }
+        // Filling stations can be assigned to multiple buses, so no need to check for existing assignments to other buses
 
         // Check if bus already has an active filling station
         $existingBusAssignment = BusFillingStationAssignment::where('bus_id', $request->bus_id)
@@ -254,9 +238,7 @@ class BusFillingStationAssignmentController extends Controller
     public function getAssignmentData()
     {
         $buses = Bus::with(['type', 'fillingStationAssignment.fillingStation'])->get();
-        $availableFillingStations = FillingStation::whereDoesntHave('fillingStationAssignments', function ($query) {
-            $query->where('status', 'active')->whereNotNull('filling_station_id');
-        })->orderBy('name')->get();
+        $availableFillingStations = FillingStation::orderBy('name')->get();
 
         return response()->json([
             'buses' => $buses,
