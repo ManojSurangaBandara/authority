@@ -29,7 +29,7 @@
             </div>
         </div>
         <div class="card-body">
-            @if($users->count() > 0)
+            @if ($users->count() > 0)
                 <div class="table-responsive">
                     <table class="table table-striped table-hover" id="usersTable">
                         <thead>
@@ -47,12 +47,12 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($users as $user)
+                            @foreach ($users as $user)
                                 <tr>
                                     <td>{{ $user->id }}</td>
                                     <td>
                                         <strong>{{ $user->name }}</strong>
-                                        @if($user->id === auth()->user()->id)
+                                        @if ($user->id === auth()->user()->id)
                                             <span class="badge badge-info badge-sm ml-1">You</span>
                                         @endif
                                     </td>
@@ -60,9 +60,9 @@
                                     <td>{{ $user->regiment_no ?? '-' }}</td>
                                     <td>{{ $user->rank ?? '-' }}</td>
                                     <td>
-                                        @if($user->establishment)
+                                        @if ($user->establishment)
                                             <span class="badge badge-info">{{ $user->establishment->name }}</span>
-                                            @if($user->establishment->location)
+                                            @if ($user->establishment->location)
                                                 <br><small class="text-muted">{{ $user->establishment->location }}</small>
                                             @endif
                                         @else
@@ -70,8 +70,8 @@
                                         @endif
                                     </td>
                                     <td>
-                                        @if($user->roles->count() > 0)
-                                            @foreach($user->roles as $role)
+                                        @if ($user->roles->count() > 0)
+                                            @foreach ($user->roles as $role)
                                                 <span class="badge badge-primary badge-sm mb-1">{{ $role->name }}</span>
                                             @endforeach
                                         @else
@@ -79,14 +79,14 @@
                                         @endif
                                     </td>
                                     <td>
-                                        @if($user->is_active)
+                                        @if ($user->is_active)
                                             <span class="badge badge-success">Active</span>
                                         @else
                                             <span class="badge badge-danger">Inactive</span>
                                         @endif
                                     </td>
                                     <td>
-                                        @if($user->last_login_at)
+                                        @if ($user->last_login_at)
                                             {{ $user->last_login_at->format('M d, Y H:i') }}
                                         @else
                                             <span class="text-muted">Never</span>
@@ -94,28 +94,26 @@
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
-                                            <a href="{{ route('users.show', $user->id) }}"
-                                               class="btn btn-info btn-sm" title="View">
+                                            <a href="{{ route('users.show', $user->id) }}" class="btn btn-info btn-sm"
+                                                title="View">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                             @can('manage_user_accounts')
-                                                <a href="{{ route('users.edit', $user->id) }}"
-                                                   class="btn btn-warning btn-sm" title="Edit">
+                                                <a href="{{ route('users.edit', $user->id) }}" class="btn btn-warning btn-sm"
+                                                    title="Edit">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
 
-                                                @if($user->id !== auth()->user()->id)
+                                                @if ($user->id !== auth()->user()->id)
                                                     <button type="button"
-                                                            class="btn btn-{{ $user->is_active ? 'secondary' : 'success' }} btn-sm"
-                                                            onclick="toggleUserStatus({{ $user->id }})"
-                                                            title="{{ $user->is_active ? 'Deactivate' : 'Activate' }}">
+                                                        class="btn btn-{{ $user->is_active ? 'secondary' : 'success' }} btn-sm"
+                                                        onclick="toggleUserStatus({{ $user->id }})"
+                                                        title="{{ $user->is_active ? 'Deactivate' : 'Activate' }}">
                                                         <i class="fas fa-{{ $user->is_active ? 'ban' : 'check' }}"></i>
                                                     </button>
 
-                                                    <button type="button"
-                                                            class="btn btn-danger btn-sm"
-                                                            onclick="deleteUser({{ $user->id }})"
-                                                            title="Delete">
+                                                    <button type="button" class="btn btn-danger btn-sm"
+                                                        onclick="deleteUser({{ $user->id }})" title="Delete">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 @endif
@@ -126,10 +124,6 @@
                             @endforeach
                         </tbody>
                     </table>
-                </div>
-
-                <div class="d-flex justify-content-center">
-                    {{ $users->links() }}
                 </div>
             @else
                 <div class="text-center py-4">
@@ -188,10 +182,13 @@
             $('#usersTable').DataTable({
                 "responsive": true,
                 "autoWidth": false,
-                "order": [[ 0, "desc" ]],
-                "columnDefs": [
-                    { "orderable": false, "targets": [8] }
-                ]
+                "order": [
+                    [0, "desc"]
+                ],
+                "columnDefs": [{
+                    "orderable": false,
+                    "targets": [8]
+                }]
             });
         });
 

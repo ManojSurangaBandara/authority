@@ -22,7 +22,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::with(['roles', 'establishment'])->paginate(15);
+        $users = User::with(['roles', 'establishment'])->get();
         return view('users.index', compact('users'));
     }
 
