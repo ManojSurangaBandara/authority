@@ -502,7 +502,7 @@ return [
             'text' => 'Bus Pass Approvals',
             'url' => 'bus-pass-approvals',
             'icon' => 'fas fa-fw fa-check-circle',
-            'can' => 'operational_user_access',
+            'can' => 'access_bus_pass_approvals',
             'active' => [
                 'bus-pass-approvals*',
             ],

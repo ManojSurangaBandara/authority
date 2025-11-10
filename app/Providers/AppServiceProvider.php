@@ -43,6 +43,17 @@ class AppServiceProvider extends ServiceProvider
             ]);
         });
 
+        // Gate for Bus Pass Approvals menu - excludes Staff Officer 1 (DMOV)
+        Gate::define('access_bus_pass_approvals', function ($user) {
+            return $user->hasAnyRole([
+                'Bus Pass Subject Clerk (Branch)',
+                'Staff Officer (Branch)',
+                'Subject Clerk (DMOV)',
+                'Staff Officer 2 (DMOV)',
+                'Col Mov (DMOV)'
+            ]) && !$user->hasRole('Staff Officer 1 (DMOV)');
+        });
+
         // Individual role gates for more granular control if needed
         Gate::define('bus_pass_subject_clerk_branch', function ($user) {
             return $user->hasRole('Bus Pass Subject Clerk (Branch)');
