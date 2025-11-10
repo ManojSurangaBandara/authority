@@ -68,17 +68,14 @@ class PendingBusPassApplicationDataTable extends DataTable
         $query = $model->newQuery()->with(['person', 'establishment'])->whereIn('status', [
             'pending_subject_clerk',
             'pending_staff_officer_branch',
-            'pending_director_branch',
             'pending_staff_officer_2_mov',
-            'pending_staff_officer_1_mov',
             'pending_col_mov',
-            'pending_director_mov',
             'pending',
         ]);
 
         // Filter by establishment for branch users
         $user = Auth::user();
-        $branchRoles = ['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)'];
+        $branchRoles = ['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)'];
         if ($user && $user->hasAnyRole($branchRoles) && $user->establishment_id) {
             $query->where('establishment_id', $user->establishment_id);
         }

@@ -201,7 +201,7 @@ class BusPassApprovalController extends Controller
             ]);
         });
 
-        return redirect()->back()->with('success', 'Application recommended successfully and forwarded to Director (Branch).');
+        return redirect()->back()->with('success', 'Application recommended successfully and forwarded to Movement.');
     }
 
     /**
@@ -276,10 +276,6 @@ class BusPassApprovalController extends Controller
             return 'pending_staff_officer_branch';
         }
 
-        if ($user->hasRole('Director (Branch)')) {
-            return 'pending_director_branch';
-        }
-
         if ($user->hasRole('Subject Clerk (DMOV)')) {
             return 'forwarded_to_movement';
         }
@@ -288,16 +284,8 @@ class BusPassApprovalController extends Controller
             return 'pending_staff_officer_2_mov';
         }
 
-        if ($user->hasRole('Staff Officer 1 (DMOV)')) {
-            return 'pending_staff_officer_1_mov';
-        }
-
         if ($user->hasRole('Col Mov (DMOV)')) {
             return 'pending_col_mov';
-        }
-
-        if ($user->hasRole('Director (DMOV)')) {
-            return 'pending_director_mov';
         }
 
         return null;
@@ -344,10 +332,6 @@ class BusPassApprovalController extends Controller
         }
 
         if ($currentStatus === 'pending_staff_officer_branch') {
-            return 'pending_director_branch';
-        }
-
-        if ($currentStatus === 'pending_director_branch') {
             return 'forwarded_to_movement';
         }
 
@@ -357,18 +341,10 @@ class BusPassApprovalController extends Controller
         }
 
         if ($currentStatus === 'pending_staff_officer_2_mov') {
-            return 'pending_staff_officer_1_mov';
-        }
-
-        if ($currentStatus === 'pending_staff_officer_1_mov') {
             return 'pending_col_mov';
         }
 
         if ($currentStatus === 'pending_col_mov') {
-            return 'pending_director_mov';
-        }
-
-        if ($currentStatus === 'pending_director_mov') {
             return 'approved_for_integration';
         }
 

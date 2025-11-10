@@ -45,10 +45,6 @@ class DashboardController extends Controller
             elseif (Auth::user() && Auth::user()->hasRole('Col Mov (DMOV)')) {
                 $chartData = $this->getColMovChartData();
             }
-            // Get chart data for Director (DMOV)
-            elseif (Auth::user() && Auth::user()->hasRole('Director (DMOV)')) {
-                $chartData = $this->getDmovDirectorChartData();
-            }
         } catch (\Exception $e) {
             // Log error and continue with empty chart data
             Log::error('Dashboard chart data error: ' . $e->getMessage());
@@ -1134,7 +1130,7 @@ class DashboardController extends Controller
                 ->where('user_id', Auth::id())
                 ->where('action', 'not_recommended')
                 ->count(),
-            'pending_director' => BusPassApplication::where('status', 'pending_director_mov')->count(),
+            'approved_total' => BusPassApplication::where('status', 'approved_for_integration')->count(),
             'approved_for_integration' => BusPassApplication::where('status', 'approved_for_integration')->count(),
         ];
     }
@@ -1252,7 +1248,7 @@ class DashboardController extends Controller
             ->toArray();
 
         return [
-            'pending_director' => $recommended['pending_director_mov'] ?? 0,
+            'completed_approvals' => $recommended['approved_for_integration'] ?? 0,
             'approved_for_integration' => $recommended['approved_for_integration'] ?? 0,
             'rejected' => $recommended['rejected'] ?? 0
         ];
@@ -1273,7 +1269,7 @@ class DashboardController extends Controller
     private function getDmovDirectorApprovalOverview()
     {
         return [
-            'pending_review' => BusPassApplication::where('status', 'pending_director_mov')->count(),
+            'pending_review' => 0, // Director (DMOV) role removed
             'approved' => DB::table('bus_pass_approval_histories')
                 ->where('user_id', Auth::id())
                 ->where('action', 'approved')
@@ -1304,9 +1300,7 @@ class DashboardController extends Controller
 
             $months[] = $date->format('M Y');
 
-            $receivedCount = BusPassApplication::where('status', 'pending_director_mov')
-                ->whereBetween('updated_at', [$monthStart . ' 00:00:00', $monthEnd . ' 23:59:59'])
-                ->count();
+            $receivedCount = 0; // Director (DMOV) role removed
 
             $approvedCount = DB::table('bus_pass_approval_histories')
                 ->where('user_id', Auth::id())
@@ -1372,7 +1366,7 @@ class DashboardController extends Controller
     {
         $branchData = DB::table('bus_pass_applications')
             ->join('establishments', 'bus_pass_applications.establishment_id', '=', 'establishments.id')
-            ->where('bus_pass_applications.status', 'pending_director_mov')
+            ->where('bus_pass_applications.status', 'approved_for_integration') // Director (DMOV) role removed, showing completed approvals
             ->select('establishments.name as branch_name', DB::raw('count(*) as total'))
             ->groupBy('establishments.id', 'establishments.name')
             ->get();

@@ -2271,7 +2271,7 @@
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-danger">
                     <div class="inner">
-                        <h3>{{ \App\Models\BusPassApplication::whereIn('status', ['pending_subject_clerk_mov', 'pending_staff_officer_2_mov', 'pending_staff_officer_1_mov', 'pending_col_mov', 'pending_director_mov'])->count() }}
+                        <h3>{{ \App\Models\BusPassApplication::whereIn('status', ['pending_subject_clerk_mov', 'pending_staff_officer_2_mov', 'pending_col_mov'])->count() }}
                         </h3>
                         <p>Pending Approvals</p>
                     </div>

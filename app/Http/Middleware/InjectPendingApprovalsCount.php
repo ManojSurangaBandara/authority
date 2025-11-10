@@ -33,20 +33,12 @@ class InjectPendingApprovalsCount
                 $pendingCount = BusPassApplication::where('status', 'pending_staff_officer_branch')
                     ->where('establishment_id', $user->establishment_id)
                     ->count();
-            } elseif ($user->hasRole('Director (Branch)')) {
-                $pendingCount = BusPassApplication::where('status', 'pending_director_branch')
-                    ->where('establishment_id', $user->establishment_id)
-                    ->count();
             } elseif ($user->hasRole('Subject Clerk (DMOV)')) {
                 $pendingCount = BusPassApplication::where('status', 'forwarded_to_movement')->count();
             } elseif ($user->hasRole('Staff Officer 2 (DMOV)')) {
                 $pendingCount = BusPassApplication::where('status', 'pending_staff_officer_2_mov')->count();
-            } elseif ($user->hasRole('Staff Officer 1 (DMOV)')) {
-                $pendingCount = BusPassApplication::where('status', 'pending_staff_officer_1_mov')->count();
             } elseif ($user->hasRole('Col Mov (DMOV)')) {
                 $pendingCount = BusPassApplication::where('status', 'pending_col_mov')->count();
-            } elseif ($user->hasRole('Director (DMOV)')) {
-                $pendingCount = BusPassApplication::where('status', 'pending_director_mov')->count();
             }
 
             // Share the count with all views
