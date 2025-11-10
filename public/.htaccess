@@ -5,6 +5,24 @@
 
     RewriteEngine On
 
+    # CORS Headers for Font Files
+    <IfModule mod_headers.c>
+        <FilesMatch "\.(ttf|ttc|otf|eot|woff|woff2|font.css)$">
+            Header set Access-Control-Allow-Origin "*"
+            Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+            Header set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control"
+        </FilesMatch>
+    </IfModule>
+
+    # Font MIME Types
+    <IfModule mod_mime.c>
+        AddType font/woff .woff
+        AddType font/woff2 .woff2
+        AddType application/vnd.ms-fontobject .eot
+        AddType font/ttf .ttf
+        AddType font/otf .otf
+    </IfModule>
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
