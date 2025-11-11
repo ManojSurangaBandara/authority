@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         // For MySQL, we need to modify the enum column to include new values
-        DB::statement("ALTER TABLE bus_pass_applications MODIFY COLUMN bus_pass_type ENUM('daily_travel', 'weekend_monthly_travel', 'living_in_only', 'weekend_only') NOT NULL");
+        DB::statement("ALTER TABLE bus_pass_applications MODIFY COLUMN bus_pass_type ENUM('daily_travel', 'weekend_monthly_travel', 'living_in_only', 'weekend_only', 'unmarried_daily_travel') NOT NULL");
     }
 
     /**

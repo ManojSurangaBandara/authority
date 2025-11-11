@@ -36,6 +36,13 @@ class BusPassApprovalController extends Controller
             $validationRules['obtain_sltb_season'] = 'required|in:yes,no';
         }
 
+        // Add bus name modification validation for SO2 DMOV
+        if (Auth::user()->hasRole('Staff Officer 2 (DMOV)')) {
+            $validationRules['requested_bus_name'] = 'nullable|string|max:255';
+            $validationRules['living_in_bus'] = 'nullable|string|max:255';
+            $validationRules['weekend_bus_name'] = 'nullable|string|max:255';
+        }
+
         // Add SLTB season confirmation validation for higher level approvers when SLTB season is available
         if (!Auth::user()->hasRole(['Bus Pass Subject Clerk (Branch)', 'Subject Clerk (DMOV)']) && $application->obtain_sltb_season == 'yes') {
             $validationRules['sltb_season_confirmation'] = 'required|accepted';
@@ -62,7 +69,7 @@ class BusPassApprovalController extends Controller
                 $action = 'forwarded';
             }
 
-            // Prepare remarks with SLTB season and branch card availability update info if applicable
+            // Prepare remarks with SLTB season and route update info if applicable
             $remarks = $request->remarks;
             $updateNotes = [];
 
@@ -79,20 +86,38 @@ class BusPassApprovalController extends Controller
                         $updateNotes[] = "SLTB Season updated from '{$oldLabel}' to '{$newLabel}'";
                     }
                 }
+            }
 
+            // Bus name modification updates for SO2 DMOV
+            if ($user->hasRole('Staff Officer 2 (DMOV)')) {
+                $busFields = [
+                    'requested_bus_name' => 'Requested Bus Name',
+                    'living_in_bus' => 'Living In Bus',
+                    'weekend_bus_name' => 'Weekend Bus Name'
+                ];
 
+                foreach ($busFields as $field => $label) {
+                    if ($request->has($field) && $request->filled($field)) {
+                        $oldValue = $application->$field ?: 'Not Set';
+                        $newValue = $request->$field;
 
-                // Combine update notes with remarks (separate lines with clear formatting)
-                if (!empty($updateNotes)) {
-                    $updateText = implode("\n", $updateNotes);
-
-                    if ($remarks) {
-                        // Manual remarks first, then system-generated updates on separate lines
-                        $remarks = $remarks . "\n\n--- System Updates ---\n" . $updateText;
-                    } else {
-                        // Only system-generated updates
-                        $remarks = "--- System Updates ---\n" . $updateText;
+                        if ($oldValue !== $newValue) {
+                            $updateNotes[] = "{$label} updated from '{$oldValue}' to '{$newValue}'";
+                        }
                     }
+                }
+            }
+
+            // Combine update notes with remarks (separate lines with clear formatting)
+            if (!empty($updateNotes)) {
+                $updateText = implode("\n", $updateNotes);
+
+                if ($remarks) {
+                    // Manual remarks first, then system-generated updates on separate lines
+                    $remarks = $remarks . "\n\n--- System Updates ---\n" . $updateText;
+                } else {
+                    // Only system-generated updates
+                    $remarks = "--- System Updates ---\n" . $updateText;
                 }
             }
 
@@ -115,6 +140,17 @@ class BusPassApprovalController extends Controller
                 }
             }
 
+            // Update bus names if provided by SO2 DMOV
+            if ($user->hasRole('Staff Officer 2 (DMOV)')) {
+                $busFields = ['requested_bus_name', 'living_in_bus', 'weekend_bus_name'];
+
+                foreach ($busFields as $field) {
+                    if ($request->has($field) && $request->filled($field)) {
+                        $updateData[$field] = $request->$field;
+                    }
+                }
+            }
+
             $application->update($updateData);
         });
 
@@ -122,6 +158,23 @@ class BusPassApprovalController extends Controller
         $message = $user->hasRole(['Bus Pass Subject Clerk (Branch)', 'Subject Clerk (DMOV)'])
             ? 'Application forwarded successfully.'
             : 'Application approved successfully.';
+
+        // Add bus name modification info to success message for SO2 DMOV
+        if ($user->hasRole('Staff Officer 2 (DMOV)')) {
+            $busUpdated = false;
+            $busFields = ['requested_bus_name', 'living_in_bus', 'weekend_bus_name'];
+
+            foreach ($busFields as $field) {
+                if ($request->has($field) && $request->filled($field)) {
+                    $busUpdated = true;
+                    break;
+                }
+            }
+
+            if ($busUpdated) {
+                $message .= ' Bus information has been updated as requested.';
+            }
+        }
 
         return redirect()->back()->with('success', $message);
     }

@@ -87,4 +87,26 @@ class BusRouteController extends Controller
         return redirect()->route('bus-routes.index')
             ->with('success', 'Bus route deleted successfully.');
     }
+
+    /**
+     * Get all bus routes for API
+     */
+    public function api()
+    {
+        try {
+            $routes = BusRoute::select('id', 'name')
+                ->orderBy('name')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $routes
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch bus routes'
+            ], 500);
+        }
+    }
 }

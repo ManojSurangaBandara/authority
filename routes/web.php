@@ -45,6 +45,8 @@ Route::middleware('auth')->group(function () {
 
     // API routes for dropdowns (accessible by all authenticated users)
     Route::get('destination-locations-api/all', [App\Http\Controllers\DestinationLocationController::class, 'api'])->name('destination-locations.api');
+    Route::get('bus-routes-api/all', [App\Http\Controllers\BusRouteController::class, 'api'])->name('bus-routes.api');
+    Route::get('living-in-buses-api/all', [App\Http\Controllers\LivingInBusController::class, 'api'])->name('living-in-buses.api');
 
     // Add other protected routes here
     Route::resource('buses', BusController::class);

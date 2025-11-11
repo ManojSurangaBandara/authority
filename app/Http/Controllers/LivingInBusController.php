@@ -88,4 +88,26 @@ class LivingInBusController extends Controller
         return redirect()->route('living-in-buses.index')
             ->with('success', 'Entry deleted successfully.');
     }
+
+    /**
+     * Get all living in buses for API
+     */
+    public function api()
+    {
+        try {
+            $livingInBuses = LivingInBuses::select('id', 'name')
+                ->orderBy('name')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $livingInBuses
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch living in buses'
+            ], 500);
+        }
+    }
 }
