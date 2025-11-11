@@ -156,6 +156,73 @@
                     </div>
                 @endif
 
+                @if ($application->bus_pass_type === 'unmarried_daily_travel')
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h5><i class="fas fa-route"></i> Unmarried Daily Travel Details</h5>
+                            <table class="table table-sm">
+                                @if ($application->requested_bus_name)
+                                    <tr>
+                                        <td><strong>Requested Bus:</strong></td>
+                                        <td>{{ $application->requested_bus_name }}</td>
+                                    </tr>
+                                @endif
+                                @if ($application->destination_from_ahq)
+                                    <tr>
+                                        <td><strong>Destination from AHQ:</strong></td>
+                                        <td>{{ $application->destination_from_ahq }}</td>
+                                    </tr>
+                                @endif
+
+                            </table>
+                        </div>
+                    </div>
+                @endif
+
+                @if ($application->bus_pass_type === 'living_in_only')
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h5><i class="fas fa-home"></i> Living In Bus Details</h5>
+                            <table class="table table-sm">
+                                @if ($application->living_in_bus)
+                                    <tr>
+                                        <td><strong>Living In Bus:</strong></td>
+                                        <td>{{ $application->living_in_bus }}</td>
+                                    </tr>
+                                @endif
+                                @if ($application->destination_location_ahq)
+                                    <tr>
+                                        <td><strong>Destination Location from AHQ:</strong></td>
+                                        <td>{{ $application->destination_location_ahq }}</td>
+                                    </tr>
+                                @endif
+                            </table>
+                        </div>
+                    </div>
+                @endif
+
+                @if ($application->bus_pass_type === 'weekend_only')
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h5><i class="fas fa-calendar-weekend"></i> Weekend Only Details</h5>
+                            <table class="table table-sm">
+                                @if ($application->weekend_bus_name)
+                                    <tr>
+                                        <td><strong>Weekend Bus:</strong></td>
+                                        <td>{{ $application->weekend_bus_name }}</td>
+                                    </tr>
+                                @endif
+                                @if ($application->weekend_destination)
+                                    <tr>
+                                        <td><strong>Weekend Destination:</strong></td>
+                                        <td>{{ $application->weekend_destination }}</td>
+                                    </tr>
+                                @endif
+                            </table>
+                        </div>
+                    </div>
+                @endif
+
                 @if ($application->bus_pass_type === 'weekend_monthly_travel')
                     <div class="row mt-3">
                         <div class="col-12">
