@@ -24,6 +24,12 @@ class PendingBusPassApplicationDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addIndexColumn()
+            ->addColumn('regiment_no_display', function ($row) {
+                if (is_null($row->person->regiment_no)) {
+                    return '<span class="badge badge-success">Civil</span>';
+                }
+                return $row->person->regiment_no;
+            })
             ->addColumn('type_label', function ($row) {
                 return $row->type_label;
             })
@@ -34,7 +40,10 @@ class PendingBusPassApplicationDataTable extends DataTable
                 return $row->created_at ? $row->created_at->format('d M Y') : '';
             })
             ->addColumn('person_rank', function ($row) {
-                return $row->person ? $row->person->rank : '';
+                if (is_null($row->person->regiment_no)) {
+                    return '<span class="badge badge-success">Civil</span>';
+                }
+                return $row->person && $row->person->rank ? $row->person->rank : 'Not specified';
             })
             // ->addColumn('action', function ($row) {
             //     $viewBtn = '<a href="' . route('bus-pass-applications.show', $row->id) . '" class="btn btn-xs btn-info" title="View"><i class="fas fa-eye"></i></a>';
@@ -54,7 +63,7 @@ class PendingBusPassApplicationDataTable extends DataTable
                     $query->where('establishment_id', $estId);
                 }
             })
-            ->rawColumns(['action', 'status_badge', 'type_label', 'applied_date', 'person_rank'])
+            ->rawColumns(['action', 'status_badge', 'type_label', 'applied_date', 'person_rank', 'regiment_no_display'])
             ->setRowId('id');
     }
 
@@ -115,9 +124,9 @@ class PendingBusPassApplicationDataTable extends DataTable
     {
         return [
             Column::make('DT_RowIndex')->title('#')->searchable(false)->orderable(false),
-            Column::make('person.regiment_no')->title('Regiment No')->name('person.regiment_no'),
+            Column::make('regiment_no_display')->title('Regiment No')->name('person.regiment_no')->searchable(false)->orderable(false),
             Column::make('person.name')->title('Name')->name('person.name'),
-            Column::make('person_rank')->title('Rank')->searchable(false),
+            Column::make('person_rank')->title('Rank')->searchable(false)->orderable(false),
             Column::make('establishment.name')->title('Establishment')->name('establishment.name'),
             Column::make('type_label')->title('Pass Type')->searchable(false),
             Column::make('status_badge')->title('Status')->searchable(false)->orderable(false),

@@ -75,6 +75,7 @@ Route::middleware('auth')->group(function () {
     Route::get('persons-api/get-details', [PersonController::class, 'getPersonDetails'])->name('persons.get-details');
 
     // Bus Pass Application routes
+    Route::get('bus-pass-applications/create-civil', [BusPassApplicationController::class, 'createCivil'])->name('bus-pass-applications.create-civil');
     Route::resource('bus-pass-applications', BusPassApplicationController::class);
     Route::get('bus-pass-applications-api/get-details', [BusPassApplicationController::class, 'getPersonDetails'])->name('bus-pass-applications.get-details');
 

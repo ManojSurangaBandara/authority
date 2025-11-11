@@ -13,9 +13,16 @@
                         <div class="card-header"><i class="nav-icon fas fa-id-card nav-icon"></i>
                             {{ __('Bus Pass Applications') }}
                             @if (auth()->user()->hasRole('Bus Pass Subject Clerk (Branch)'))
-                                <a href="{{ route('bus-pass-applications.create') }}"
-                                    class="btn btn-sm btn-primary float-right">Add New
-                                    Application</a>
+                                <div class="float-right">
+                                    <a href="{{ route('bus-pass-applications.create') }}"
+                                        class="btn btn-sm btn-primary mr-2">
+                                        <i class="fas fa-plus"></i> Create Army Application
+                                    </a>
+                                    <a href="{{ route('bus-pass-applications.create-civil') }}"
+                                        class="btn btn-sm btn-success">
+                                        <i class="fas fa-user-plus"></i> Create Civil Application
+                                    </a>
+                                </div>
                             @endif
                         </div>
 
@@ -41,4 +48,3 @@
     <script src="{{ asset('vendor/datatables-plugins/buttons/js/buttons.colVis.min.js') }}"></script>
     {{ $dataTable->scripts() }}
 @endpush
-

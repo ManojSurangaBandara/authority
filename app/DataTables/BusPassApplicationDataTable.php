@@ -26,7 +26,16 @@ class BusPassApplicationDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addIndexColumn()
+            ->addColumn('regiment_no_display', function ($row) {
+                if (is_null($row->person->regiment_no)) {
+                    return '<span class="badge badge-success">Civil</span>';
+                }
+                return $row->person->regiment_no;
+            })
             ->addColumn('person_rank', function ($row) {
+                if (is_null($row->person->regiment_no)) {
+                    return '<span class="badge badge-success">Civil</span>';
+                }
                 return $row->person->rank ?: 'Not specified';
             })
             ->addColumn('type_label', function ($row) {
@@ -81,7 +90,7 @@ class BusPassApplicationDataTable extends DataTable
 
                 return $viewBtn . $editBtn . $deleteBtn;
             })
-            ->rawColumns(['action', 'status_badge', 'type_label', 'applied_date', 'establishment_name', 'person_rank'])
+            ->rawColumns(['action', 'status_badge', 'type_label', 'applied_date', 'establishment_name', 'person_rank', 'regiment_no_display'])
             ->setRowId('id');
     }
 
@@ -143,7 +152,7 @@ class BusPassApplicationDataTable extends DataTable
     {
         return [
             Column::make('DT_RowIndex')->title('#')->searchable(false)->orderable(false),
-            Column::make('person.regiment_no')->title('Regiment No')->name('person.regiment_no'),
+            Column::make('regiment_no_display')->title('Regiment No')->name('person.regiment_no')->searchable(false)->orderable(false),
             Column::make('person.name')->title('Name')->name('person.name'),
             Column::make('person_rank')->title('Rank')->searchable(false)->orderable(false),
             Column::make('establishment_name')->title('Branch/Directorate')->searchable(false)->orderable(false),

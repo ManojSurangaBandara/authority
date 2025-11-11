@@ -56,10 +56,16 @@
                                                 <small class="text-muted">{{ $application->person->telephone_no }}</small>
                                             </td>
                                             <td>
-                                                <strong>{{ $application->person->rank ?: 'Not specified' }}</strong><br>
-                                                <small
-                                                    class="text-muted">{{ $application->person->regiment_no }}</small><br>
-                                                <small class="text-muted">{{ $application->person->unit }}</small>
+                                                @if (is_null($application->person->regiment_no))
+                                                    <span class="badge badge-success">Civil</span><br>
+                                                    <small class="text-muted">Civil Application</small><br>
+                                                    <small class="text-muted">{{ $application->person->civil_id }}</small>
+                                                @else
+                                                    <strong>{{ $application->person->rank ?: 'Not specified' }}</strong><br>
+                                                    <small
+                                                        class="text-muted">{{ $application->person->regiment_no }}</small><br>
+                                                    <small class="text-muted">{{ $application->person->unit }}</small>
+                                                @endif
                                             </td>
                                             <td>
                                                 <span
@@ -92,10 +98,19 @@
                                             </td>
                                             <td>
                                                 <div class="btn-group" role="group">
-                                                    <button type="button" class="btn btn-sm btn-info" data-toggle="modal"
-                                                        data-target="#viewModal{{ $application->id }}">
-                                                        <i class="fas fa-eye"></i> View
-                                                    </button>
+                                                    @if (is_null($application->person->regiment_no))
+                                                        <button type="button" class="btn btn-sm btn-info"
+                                                            data-toggle="modal"
+                                                            data-target="#viewCivilModal{{ $application->id }}">
+                                                            <i class="fas fa-eye"></i> View
+                                                        </button>
+                                                    @else
+                                                        <button type="button" class="btn btn-sm btn-info"
+                                                            data-toggle="modal"
+                                                            data-target="#viewModal{{ $application->id }}">
+                                                            <i class="fas fa-eye"></i> View
+                                                        </button>
+                                                    @endif
 
                                                     @if (auth()->user()->hasRole('Bus Pass Subject Clerk (Branch)'))
                                                         <a href="{{ route('bus-pass-applications.edit', $application->id) }}"
@@ -159,7 +174,11 @@
 
     <!-- Modals for each application -->
     @foreach ($pendingApplications as $application)
-        @include('bus-pass-approvals.modals.view', ['application' => $application])
+        @if (is_null($application->person->regiment_no))
+            @include('bus-pass-approvals.modals.view-civil', ['application' => $application])
+        @else
+            @include('bus-pass-approvals.modals.view', ['application' => $application])
+        @endif
         @include('bus-pass-approvals.modals.approve', ['application' => $application])
         @include('bus-pass-approvals.modals.reject', ['application' => $application])
         @include('bus-pass-approvals.modals.recommend', ['application' => $application])

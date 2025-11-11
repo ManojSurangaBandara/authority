@@ -45,37 +45,78 @@ class BusPassApplicationController extends Controller
     }
 
     /**
+     * Show the form for creating a new civil application.
+     */
+    public function createCivil()
+    {
+        $busRoutes = BusRoute::all();
+        $establishment = Establishment::orderBy('name')->get();
+        $provinces = Province::orderBy('name')->get();
+        $districts = District::orderBy('name')->get();
+        $gsDivisions = GsDivision::orderBy('name')->get();
+        $policeStations = PoliceStation::orderBy('name')->get();
+
+        return view('bus-pass-applications.create-civil', compact('busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations'));
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        $validationRules = [
-            'regiment_no' => 'required|string|max:20',
-            'rank' => 'required|string|max:50',
-            'name' => 'required|string|max:100',
-            'unit' => 'required|string|max:100',
-            'nic' => 'required|string|max:15',
-            'army_id' => 'required|string|max:50',
-            'permanent_address' => 'required|string',
-            'telephone_no' => 'required|string|max:20',
-            'province_id' => 'required|exists:provinces,id',
-            'district_id' => 'required|exists:districts,id',
-            'gs_division_id' => 'required|exists:gs_divisions,id',
-            'police_station_id' => 'required|exists:police_stations,id',
-            'marital_status' => 'required|in:single,married',
-            'approval_living_out' => 'required|in:yes,no',
-            'obtain_sltb_season' => 'required|in:yes,no',
-            'branch_card_availability' => 'required|in:has_branch_card,no_branch_card',
-            'branch_card_id' => $request->branch_card_availability === 'has_branch_card' ? 'required|string|max:50' : 'nullable|string|max:50',
-            'date_arrival_ahq' => 'required|date',
-            'grama_niladari_certificate' => ($request->bus_pass_type !== 'living_in_only') ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'person_image' => 'required|file|mimes:jpg,jpeg,png|max:2048',
-            'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only,unmarried_daily_travel',
-            'rent_allowance_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only' && $request->bus_pass_type !== 'unmarried_daily_travel') ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'permission_letter' => ($request->bus_pass_type === 'unmarried_daily_travel') ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'declaration_1' => 'required|in:yes',
-            'declaration_2' => 'required|in:yes',
-        ];
+        // Check if this is a civil application
+        $isCivil = $request->input('application_type') === 'civil';
+
+        if ($isCivil) {
+            $validationRules = [
+                'name' => 'required|string|max:100',
+                'nic' => 'required|string|max:15',
+                'civil_id' => 'required|string|max:50',
+                'permanent_address' => 'required|string',
+                'telephone_no' => 'required|string|max:20',
+                'province_id' => 'required|exists:provinces,id',
+                'district_id' => 'required|exists:districts,id',
+                'gs_division_id' => 'required|exists:gs_divisions,id',
+                'police_station_id' => 'required|exists:police_stations,id',
+                'obtain_sltb_season' => 'required|in:yes,no',
+                'branch_card_availability' => 'required|in:has_branch_card,no_branch_card',
+                'branch_card_id' => $request->branch_card_availability === 'has_branch_card' ? 'required|string|max:50' : 'nullable|string|max:50',
+                'date_arrival_ahq' => 'required|date',
+                'grama_niladari_certificate' => ($request->bus_pass_type !== 'living_in_only') ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+                'person_image' => 'required|file|mimes:jpg,jpeg,png|max:2048',
+                'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only',
+                'declaration_1' => 'required|in:yes',
+                'declaration_2' => 'required|in:yes',
+            ];
+        } else {
+            $validationRules = [
+                'regiment_no' => 'required|string|max:20',
+                'rank' => 'required|string|max:50',
+                'name' => 'required|string|max:100',
+                'unit' => 'required|string|max:100',
+                'nic' => 'required|string|max:15',
+                'army_id' => 'required|string|max:50',
+                'permanent_address' => 'required|string',
+                'telephone_no' => 'required|string|max:20',
+                'province_id' => 'required|exists:provinces,id',
+                'district_id' => 'required|exists:districts,id',
+                'gs_division_id' => 'required|exists:gs_divisions,id',
+                'police_station_id' => 'required|exists:police_stations,id',
+                'marital_status' => 'required|in:single,married',
+                'approval_living_out' => 'required|in:yes,no',
+                'obtain_sltb_season' => 'required|in:yes,no',
+                'branch_card_availability' => 'required|in:has_branch_card,no_branch_card',
+                'branch_card_id' => $request->branch_card_availability === 'has_branch_card' ? 'required|string|max:50' : 'nullable|string|max:50',
+                'date_arrival_ahq' => 'required|date',
+                'grama_niladari_certificate' => ($request->bus_pass_type !== 'living_in_only') ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+                'person_image' => 'required|file|mimes:jpg,jpeg,png|max:2048',
+                'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only,unmarried_daily_travel',
+                'rent_allowance_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only' && $request->bus_pass_type !== 'unmarried_daily_travel') ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+                'permission_letter' => ($request->bus_pass_type === 'unmarried_daily_travel') ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+                'declaration_1' => 'required|in:yes',
+                'declaration_2' => 'required|in:yes',
+            ];
+        }
 
         // Only require establishment_id for non-branch users
         $user = Auth::user();
@@ -128,40 +169,78 @@ class BusPassApplicationController extends Controller
             'establishment_id' => $request->establishment_id
         ]);
 
-        // Check if person exists by regiment number
-        $person = Person::where('regiment_no', $request->regiment_no)->first();
+        if ($isCivil) {
+            // For civil applications, check by NIC since there's no regiment number
+            $person = Person::where('nic', $request->nic)->first();
 
-        if (!$person) {
-            // Create new person if doesn't exist
-            $person = Person::create([
-                'regiment_no' => $request->regiment_no,
-                'rank' => $request->rank,
-                'name' => $request->name,
-                'unit' => $request->unit,
-                'nic' => $request->nic,
-                'army_id' => $request->army_id,
-                'permanent_address' => $request->permanent_address,
-                'telephone_no' => $request->telephone_no,
-                'province_id' => $request->province_id,
-                'district_id' => $request->district_id,
-                'gs_division_id' => $request->gs_division_id,
-                'police_station_id' => $request->police_station_id,
-            ]);
+            if (!$person) {
+                // Create new civil person
+                $person = Person::create([
+                    'regiment_no' => null, // Civil persons don't have regiment numbers
+                    'rank' => null,
+                    'name' => $request->name,
+                    'unit' => null,
+                    'nic' => $request->nic,
+                    'army_id' => null, // Civil persons don't have army_id
+                    'civil_id' => $request->civil_id, // Store civil_id in separate field
+                    'permanent_address' => $request->permanent_address,
+                    'telephone_no' => $request->telephone_no,
+                    'province_id' => $request->province_id,
+                    'district_id' => $request->district_id,
+                    'gs_division_id' => $request->gs_division_id,
+                    'police_station_id' => $request->police_station_id,
+                ]);
+            } else {
+                // Update existing civil person data
+                $person->update([
+                    'name' => $request->name,
+                    'nic' => $request->nic,
+                    'army_id' => null, // Civil persons don't have army_id
+                    'civil_id' => $request->civil_id, // Store civil_id in separate field
+                    'permanent_address' => $request->permanent_address,
+                    'telephone_no' => $request->telephone_no,
+                    'province_id' => $request->province_id,
+                    'district_id' => $request->district_id,
+                    'gs_division_id' => $request->gs_division_id,
+                    'police_station_id' => $request->police_station_id,
+                ]);
+            }
         } else {
-            // Update existing person data
-            $person->update([
-                'rank' => $request->rank,
-                'name' => $request->name,
-                'unit' => $request->unit,
-                'nic' => $request->nic,
-                'army_id' => $request->army_id,
-                'permanent_address' => $request->permanent_address,
-                'telephone_no' => $request->telephone_no,
-                'province_id' => $request->province_id,
-                'district_id' => $request->district_id,
-                'gs_division_id' => $request->gs_division_id,
-                'police_station_id' => $request->police_station_id,
-            ]);
+            // Check if person exists by regiment number (military personnel)
+            $person = Person::where('regiment_no', $request->regiment_no)->first();
+
+            if (!$person) {
+                // Create new person if doesn't exist
+                $person = Person::create([
+                    'regiment_no' => $request->regiment_no,
+                    'rank' => $request->rank,
+                    'name' => $request->name,
+                    'unit' => $request->unit,
+                    'nic' => $request->nic,
+                    'army_id' => $request->army_id,
+                    'permanent_address' => $request->permanent_address,
+                    'telephone_no' => $request->telephone_no,
+                    'province_id' => $request->province_id,
+                    'district_id' => $request->district_id,
+                    'gs_division_id' => $request->gs_division_id,
+                    'police_station_id' => $request->police_station_id,
+                ]);
+            } else {
+                // Update existing person data
+                $person->update([
+                    'rank' => $request->rank,
+                    'name' => $request->name,
+                    'unit' => $request->unit,
+                    'nic' => $request->nic,
+                    'army_id' => $request->army_id,
+                    'permanent_address' => $request->permanent_address,
+                    'telephone_no' => $request->telephone_no,
+                    'province_id' => $request->province_id,
+                    'district_id' => $request->district_id,
+                    'gs_division_id' => $request->gs_division_id,
+                    'police_station_id' => $request->police_station_id,
+                ]);
+            }
         }
 
         // Check for existing bus pass applications for this person
@@ -241,8 +320,17 @@ class BusPassApplicationController extends Controller
         // Set branch_directorate to establishment name for now (since form doesn't have this field)
         $establishment = Establishment::find($data['establishment_id']);
         $data['branch_directorate'] = $establishment ? $establishment->name : 'Unknown';
-        $data['marital_status'] = $request->marital_status;
-        $data['approval_living_out'] = $request->approval_living_out;
+
+        if ($isCivil) {
+            // Set default values for civil applications
+            $data['marital_status'] = 'single'; // Default for civil persons
+            $data['approval_living_out'] = 'no'; // Not applicable for civil persons
+        } else {
+            // Use provided values for military personnel
+            $data['marital_status'] = $request->marital_status;
+            $data['approval_living_out'] = $request->approval_living_out;
+        }
+
         $data['obtain_sltb_season'] = $request->obtain_sltb_season;
         $data['branch_card_availability'] = $request->branch_card_availability;
         $data['branch_card_id'] = $request->branch_card_id;
@@ -294,7 +382,14 @@ class BusPassApplicationController extends Controller
     public function show(BusPassApplication $bus_pass_application)
     {
         // Load all person relationships including police station
-        $bus_pass_application->load('destinationLocation', 'person.province', 'person.district', 'person.policeStation');
+        $bus_pass_application->load('destinationLocation', 'person.province', 'person.district', 'person.policeStation', 'person.gsDivision', 'establishment');
+
+        // Check if this is a civil application
+        $isCivil = is_null($bus_pass_application->person->regiment_no);
+
+        if ($isCivil) {
+            return view('bus-pass-applications.show-civil', compact('bus_pass_application'));
+        }
 
         return view('bus-pass-applications.show', compact('bus_pass_application'));
     }
@@ -314,6 +409,13 @@ class BusPassApplicationController extends Controller
         // Load the destination location relationship if needed
         $bus_pass_application->load('destinationLocation');
 
+        // Check if this is a civil application
+        $isCivil = is_null($bus_pass_application->person->regiment_no);
+
+        if ($isCivil) {
+            return view('bus-pass-applications.edit-civil', compact('bus_pass_application', 'busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations'));
+        }
+
         return view('bus-pass-applications.edit', compact('bus_pass_application', 'busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations'));
     }
 
@@ -322,34 +424,59 @@ class BusPassApplicationController extends Controller
      */
     public function update(Request $request, BusPassApplication $bus_pass_application)
     {
+        // Check if this is a civil application
+        $isCivil = $request->input('application_type') === 'civil';
 
-        $validationRules = [
-            'regiment_no' => 'required|string|max:20',
-            'rank' => 'required|string|max:50',
-            'name' => 'required|string|max:100',
-            'unit' => 'required|string|max:100',
-            'nic' => 'required|string|max:15',
-            'army_id' => 'required|string|max:50',
-            'permanent_address' => 'required|string',
-            'telephone_no' => 'required|string|max:20',
-            'province_id' => 'required|exists:provinces,id',
-            'district_id' => 'required|exists:districts,id',
-            'gs_division_id' => 'required|exists:gs_divisions,id',
-            'police_station_id' => 'required|exists:police_stations,id',
-            'marital_status' => 'required|in:single,married',
-            'approval_living_out' => 'required|in:yes,no',
-            'obtain_sltb_season' => 'required|in:yes,no',
-            'branch_card_availability' => 'required|in:has_branch_card,no_branch_card',
-            'branch_card_id' => $request->branch_card_availability === 'has_branch_card' ? 'required|string|max:50' : 'nullable|string|max:50',
-            'date_arrival_ahq' => 'required|date',
-            'grama_niladari_certificate' => ($request->bus_pass_type !== 'living_in_only' && !$bus_pass_application->grama_niladari_certificate) ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'person_image' => !$bus_pass_application->person_image ? 'required|file|mimes:jpg,jpeg,png|max:2048' : 'nullable|file|mimes:jpg,jpeg,png|max:2048',
-            'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only,unmarried_daily_travel',
-            'rent_allowance_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only' && $request->bus_pass_type !== 'unmarried_daily_travel' && !$bus_pass_application->rent_allowance_order) ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'permission_letter' => ($request->bus_pass_type === 'unmarried_daily_travel' && !$bus_pass_application->permission_letter) ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'declaration_1' => 'required|in:yes',
-            'declaration_2' => 'required|in:yes',
-        ];
+        if ($isCivil) {
+            $validationRules = [
+                'name' => 'required|string|max:100',
+                'nic' => 'required|string|max:15',
+                'civil_id' => 'required|string|max:50',
+                'permanent_address' => 'required|string',
+                'telephone_no' => 'required|string|max:20',
+                'province_id' => 'required|exists:provinces,id',
+                'district_id' => 'required|exists:districts,id',
+                'gs_division_id' => 'required|exists:gs_divisions,id',
+                'police_station_id' => 'required|exists:police_stations,id',
+                'obtain_sltb_season' => 'required|in:yes,no',
+                'branch_card_availability' => 'required|in:has_branch_card,no_branch_card',
+                'branch_card_id' => $request->branch_card_availability === 'has_branch_card' ? 'required|string|max:50' : 'nullable|string|max:50',
+                'date_arrival_ahq' => 'required|date',
+                'grama_niladari_certificate' => !$bus_pass_application->grama_niladari_certificate ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+                'person_image' => !$bus_pass_application->person_image ? 'required|file|mimes:jpg,jpeg,png|max:2048' : 'nullable|file|mimes:jpg,jpeg,png|max:2048',
+                'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel',
+                'declaration_1' => 'required|in:yes',
+                'declaration_2' => 'required|in:yes',
+            ];
+        } else {
+            $validationRules = [
+                'regiment_no' => 'required|string|max:20',
+                'rank' => 'required|string|max:50',
+                'name' => 'required|string|max:100',
+                'unit' => 'required|string|max:100',
+                'nic' => 'required|string|max:15',
+                'army_id' => 'required|string|max:50',
+                'permanent_address' => 'required|string',
+                'telephone_no' => 'required|string|max:20',
+                'province_id' => 'required|exists:provinces,id',
+                'district_id' => 'required|exists:districts,id',
+                'gs_division_id' => 'required|exists:gs_divisions,id',
+                'police_station_id' => 'required|exists:police_stations,id',
+                'marital_status' => 'required|in:single,married',
+                'approval_living_out' => 'required|in:yes,no',
+                'obtain_sltb_season' => 'required|in:yes,no',
+                'branch_card_availability' => 'required|in:has_branch_card,no_branch_card',
+                'branch_card_id' => $request->branch_card_availability === 'has_branch_card' ? 'required|string|max:50' : 'nullable|string|max:50',
+                'date_arrival_ahq' => 'required|date',
+                'grama_niladari_certificate' => ($request->bus_pass_type !== 'living_in_only' && !$bus_pass_application->grama_niladari_certificate) ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+                'person_image' => !$bus_pass_application->person_image ? 'required|file|mimes:jpg,jpeg,png|max:2048' : 'nullable|file|mimes:jpg,jpeg,png|max:2048',
+                'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only,unmarried_daily_travel',
+                'rent_allowance_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only' && $request->bus_pass_type !== 'unmarried_daily_travel' && !$bus_pass_application->rent_allowance_order) ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+                'permission_letter' => ($request->bus_pass_type === 'unmarried_daily_travel' && !$bus_pass_application->permission_letter) ? 'required|file|mimes:pdf,jpg,jpeg,png|max:2048' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+                'declaration_1' => 'required|in:yes',
+                'declaration_2' => 'required|in:yes',
+            ];
+        }
 
         // Only require establishment_id for non-branch users
         $user = Auth::user();
@@ -403,79 +530,110 @@ class BusPassApplicationController extends Controller
             'establishment_id' => $request->establishment_id
         ]);
 
-        // Check if regiment number is being changed and validate for duplicates BEFORE updating
-        $originalPersonId = $bus_pass_application->person_id;
-        $originalRegimentNo = $bus_pass_application->person->regiment_no;
+        // Handle person data update based on application type
+        if ($isCivil) {
+            // For civil applications, update person data directly
+            $bus_pass_application->person->update([
+                'name' => $request->name,
+                'nic' => $request->nic,
+                'civil_id' => $request->civil_id,
+                'permanent_address' => $request->permanent_address,
+                'telephone_no' => $request->telephone_no,
+                'province_id' => $request->province_id,
+                'district_id' => $request->district_id,
+                'gs_division_id' => $request->gs_division_id,
+                'police_station_id' => $request->police_station_id,
+            ]);
+        } else {
+            // Check if regiment number is being changed and validate for duplicates BEFORE updating
+            $originalPersonId = $bus_pass_application->person_id;
+            $originalRegimentNo = $bus_pass_application->person->regiment_no;
 
-        // If regiment number is changing, validate the new one
-        if ($request->regiment_no !== $originalRegimentNo) {
-            $existingPersonWithSameRegiment = Person::where('regiment_no', $request->regiment_no)
-                ->where('id', '!=', $originalPersonId)
-                ->first();
+            // If regiment number is changing, validate the new one
+            if ($request->regiment_no !== $originalRegimentNo) {
+                $existingPersonWithSameRegiment = Person::where('regiment_no', $request->regiment_no)
+                    ->where('id', '!=', $originalPersonId)
+                    ->first();
 
-            if ($existingPersonWithSameRegiment) {
-                // Check for existing bus pass applications for the person with this regiment number
-                $existingApplications = BusPassApplication::where('person_id', $existingPersonWithSameRegiment->id)
-                    ->where('id', '!=', $bus_pass_application->id) // Exclude current application
-                    ->get();
+                if ($existingPersonWithSameRegiment) {
+                    // Check for existing bus pass applications for the person with this regiment number
+                    $existingApplications = BusPassApplication::where('person_id', $existingPersonWithSameRegiment->id)
+                        ->where('id', '!=', $bus_pass_application->id) // Exclude current application
+                        ->get();
 
-                if ($existingApplications->isNotEmpty()) {
-                    // Check for active (approved) bus passes
-                    $activeBusPass = $existingApplications->whereIn('status', [
-                        'approved_for_integration',
-                        'approved_for_temp_card',
-                        'integrated_to_branch_card',
-                        'temp_card_printed',
-                        'temp_card_handed_over'
-                    ])->first();
+                    if ($existingApplications->isNotEmpty()) {
+                        // Check for active (approved) bus passes
+                        $activeBusPass = $existingApplications->whereIn('status', [
+                            'approved_for_integration',
+                            'approved_for_temp_card',
+                            'integrated_to_branch_card',
+                            'temp_card_printed',
+                            'temp_card_handed_over'
+                        ])->first();
 
-                    if ($activeBusPass) {
-                        return redirect()->back()
-                            ->withErrors(['regiment_no' => 'This person already has an active bus pass. Only one active bus pass is allowed per person.'])
-                            ->withInput();
+                        if ($activeBusPass) {
+                            return redirect()->back()
+                                ->withErrors(['regiment_no' => 'This person already has an active bus pass. Only one active bus pass is allowed per person.'])
+                                ->withInput();
+                        }
+
+                        // Check for pending applications
+                        $pendingApplication = $existingApplications->whereIn('status', [
+                            'pending_subject_clerk',
+                            'pending_staff_officer_branch',
+                            'pending_director_branch',
+                            'forwarded_to_movement',
+                            'pending_staff_officer_2_mov',
+                            'pending_staff_officer_1_mov',
+                            'pending_col_mov',
+                            'pending_director_mov'
+                        ])->first();
+
+                        if ($pendingApplication) {
+                            return redirect()->back()
+                                ->withErrors(['regiment_no' => 'This person already has a pending bus pass application. Cannot change to this regiment number.'])
+                                ->withInput();
+                        }
                     }
 
-                    // Check for pending applications
-                    $pendingApplication = $existingApplications->whereIn('status', [
-                        'pending_subject_clerk',
-                        'pending_staff_officer_branch',
-                        'pending_director_branch',
-                        'forwarded_to_movement',
-                        'pending_staff_officer_2_mov',
-                        'pending_staff_officer_1_mov',
-                        'pending_col_mov',
-                        'pending_director_mov'
-                    ])->first();
+                    // If we reach here, the existing person has no active/pending applications
+                    // So we should update the application to use the existing person instead of updating person data
+                    $bus_pass_application->person_id = $existingPersonWithSameRegiment->id;
 
-                    if ($pendingApplication) {
-                        return redirect()->back()
-                            ->withErrors(['regiment_no' => 'This person already has a pending bus pass application. Cannot change to this regiment number.'])
-                            ->withInput();
-                    }
+                    // Update the existing person's data with the new information
+                    $existingPersonWithSameRegiment->update([
+                        'rank' => $request->rank,
+                        'name' => $request->name,
+                        'unit' => $request->unit,
+                        'nic' => $request->nic,
+                        'army_id' => $request->army_id,
+                        'permanent_address' => $request->permanent_address,
+                        'telephone_no' => $request->telephone_no,
+                        'province_id' => $request->province_id,
+                        'district_id' => $request->district_id,
+                        'gs_division_id' => $request->gs_division_id,
+                        'police_station_id' => $request->police_station_id,
+                    ]);
+                } else {
+                    // Regiment number doesn't exist, safe to update current person
+                    $bus_pass_application->person->update([
+                        'regiment_no' => $request->regiment_no,
+                        'rank' => $request->rank,
+                        'name' => $request->name,
+                        'unit' => $request->unit,
+                        'nic' => $request->nic,
+                        'army_id' => $request->army_id,
+                        'permanent_address' => $request->permanent_address,
+                        'telephone_no' => $request->telephone_no,
+                        'province_id' => $request->province_id,
+                        'district_id' => $request->district_id,
+                        'gs_division_id' => $request->gs_division_id,
+                        'police_station_id' => $request->police_station_id,
+                    ]);
                 }
-
-                // If we reach here, the existing person has no active/pending applications
-                // So we should update the application to use the existing person instead of updating person data
-                $bus_pass_application->person_id = $existingPersonWithSameRegiment->id;
-
-                // Update the existing person's data with the new information
-                $existingPersonWithSameRegiment->update([
-                    'rank' => $request->rank,
-                    'name' => $request->name,
-                    'unit' => $request->unit,
-                    'nic' => $request->nic,
-                    'army_id' => $request->army_id,
-                    'permanent_address' => $request->permanent_address,
-                    'telephone_no' => $request->telephone_no,
-                    'province_id' => $request->province_id,
-                    'district_id' => $request->district_id,
-                    'gs_division_id' => $request->gs_division_id,
-                    'police_station_id' => $request->police_station_id,
-                ]);
             } else {
-                // Regiment number doesn't exist, safe to update current person
+                // Regiment number is not changing, safe to update other fields
                 $bus_pass_application->person->update([
-                    'regiment_no' => $request->regiment_no,
                     'rank' => $request->rank,
                     'name' => $request->name,
                     'unit' => $request->unit,
@@ -489,22 +647,7 @@ class BusPassApplicationController extends Controller
                     'police_station_id' => $request->police_station_id,
                 ]);
             }
-        } else {
-            // Regiment number is not changing, safe to update other fields
-            $bus_pass_application->person->update([
-                'rank' => $request->rank,
-                'name' => $request->name,
-                'unit' => $request->unit,
-                'nic' => $request->nic,
-                'army_id' => $request->army_id,
-                'permanent_address' => $request->permanent_address,
-                'telephone_no' => $request->telephone_no,
-                'province_id' => $request->province_id,
-                'district_id' => $request->district_id,
-                'gs_division_id' => $request->gs_division_id,
-                'police_station_id' => $request->police_station_id,
-            ]);
-        }
+        } // End of else for military applications
 
         // Prepare application data (excluding person fields)
         $data = [];
@@ -549,8 +692,17 @@ class BusPassApplicationController extends Controller
         // Set branch_directorate to establishment name for now (since form doesn't have this field)
         $establishment = Establishment::find($data['establishment_id']);
         $data['branch_directorate'] = $establishment ? $establishment->name : 'Unknown';
-        $data['marital_status'] = $request->marital_status;
-        $data['approval_living_out'] = $request->approval_living_out;
+
+        if ($isCivil) {
+            // Set default values for civil applications
+            $data['marital_status'] =  'single'; // Default for civil persons
+            $data['approval_living_out'] = 'no'; // Not applicable for civil persons
+        } else {
+            // Use provided values for military personnel
+            $data['marital_status'] = $request->marital_status;
+            $data['approval_living_out'] = $request->approval_living_out;
+        }
+
         $data['obtain_sltb_season'] = $request->obtain_sltb_season;
         $data['branch_card_availability'] = $request->branch_card_availability;
         $data['branch_card_id'] = $request->branch_card_id;

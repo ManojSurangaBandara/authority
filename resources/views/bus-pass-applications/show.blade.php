@@ -53,8 +53,13 @@
                                 {{ $bus_pass_application->person->nic }}
                             </div>
                             <div class="col-md-3">
-                                <strong>Army ID:</strong><br>
-                                {{ $bus_pass_application->person->army_id }}
+                                @if (is_null($bus_pass_application->person->regiment_no))
+                                    <strong>Civil ID:</strong><br>
+                                    {{ $bus_pass_application->person->civil_id }}
+                                @else
+                                    <strong>Army ID:</strong><br>
+                                    {{ $bus_pass_application->person->army_id }}
+                                @endif
                             </div>
                         </div>
 

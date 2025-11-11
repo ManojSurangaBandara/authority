@@ -15,6 +15,7 @@ class Person extends Model
         'unit',
         'nic',
         'army_id',
+        'civil_id',
         'permanent_address',
         'telephone_no',
         'province_id',
