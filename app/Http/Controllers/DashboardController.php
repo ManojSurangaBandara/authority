@@ -1417,8 +1417,8 @@ class DashboardController extends Controller
         // Define user level mapping based on status - only DMOV levels
         $userLevelMapping = [
             'forwarded_to_movement' => 'DMOV Subject Clerk',
-            'pending_dmov_subject_clerk' => 'DMOV Subject Clerk',
-            'pending_dmov_staff_officer_2' => 'DMOV Staff Officer 2',
+            'pending_subject_clerk_mov' => 'DMOV Subject Clerk',
+            'pending_staff_officer_2_mov' => 'DMOV Staff Officer 2',
             'pending_col_mov' => 'Col Mov (DMOV)'
         ];
 
@@ -1430,7 +1430,7 @@ class DashboardController extends Controller
         foreach ($userLevelMapping as $status => $userLevel) {
             $count = BusPassApplication::where('status', $status)->count();
             if ($count > 0) {
-                $pendingCounts[$userLevel] = $count;
+                $pendingCounts[$userLevel] = ($pendingCounts[$userLevel] ?? 0) + $count;
             }
         }
 
