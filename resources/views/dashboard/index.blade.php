@@ -279,6 +279,45 @@
                         }
                     }
                 });
+
+                // Pending Applications by User Level Chart (Vertical Bar)
+                const dmovPendingByUserLevelCtx = document.getElementById('dmovPendingByUserLevelChart').getContext(
+                    '2d');
+                const dmovPendingByUserLevelData = @json($chartData['pendingByUserLevel'] ?? null) || {
+                    'labels': [],
+                    'data': []
+                };
+
+                const dmovPendingByUserLevelChart = new Chart(dmovPendingByUserLevelCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: dmovPendingByUserLevelData.labels,
+                        datasets: [{
+                            label: 'Pending Applications',
+                            data: dmovPendingByUserLevelData.data,
+                            backgroundColor: ['#ffc107', '#fd7e14', '#dc3545'],
+                            borderColor: ['#ffc107', '#fd7e14', '#dc3545'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        }
+                    }
+                });
             });
         </script>
     @endif
@@ -1090,6 +1129,44 @@
                         }
                     }
                 });
+
+                // Pending Applications by User Level Chart (Vertical Bar)
+                const so2PendingByUserLevelCtx = document.getElementById('so2PendingByUserLevelChart').getContext('2d');
+                const so2PendingByUserLevelData = @json($chartData['pendingByUserLevel'] ?? null) || {
+                    'labels': [],
+                    'data': []
+                };
+
+                const so2PendingByUserLevelChart = new Chart(so2PendingByUserLevelCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: so2PendingByUserLevelData.labels,
+                        datasets: [{
+                            label: 'Pending Applications',
+                            data: so2PendingByUserLevelData.data,
+                            backgroundColor: ['#ffc107', '#fd7e14', '#dc3545'],
+                            borderColor: ['#ffc107', '#fd7e14', '#dc3545'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        }
+                    }
+                });
             });
         </script>
     @endif
@@ -1265,6 +1342,44 @@
                         plugins: {
                             legend: {
                                 position: 'bottom'
+                            }
+                        }
+                    }
+                });
+
+                // Pending Applications by User Level Chart (Vertical Bar)
+                const so1PendingByUserLevelCtx = document.getElementById('so1PendingByUserLevelChart').getContext('2d');
+                const so1PendingByUserLevelData = @json($chartData['pendingByUserLevel'] ?? null) || {
+                    'labels': [],
+                    'data': []
+                };
+
+                const so1PendingByUserLevelChart = new Chart(so1PendingByUserLevelCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: so1PendingByUserLevelData.labels,
+                        datasets: [{
+                            label: 'Pending Applications',
+                            data: so1PendingByUserLevelData.data,
+                            backgroundColor: ['#ffc107', '#fd7e14', '#dc3545'],
+                            borderColor: ['#ffc107', '#fd7e14', '#dc3545'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
                             }
                         }
                     }
@@ -1448,6 +1563,44 @@
                         }
                     }
                 });
+
+                // Pending Applications by User Level Chart (Vertical Bar)
+                const colPendingByUserLevelCtx = document.getElementById('colPendingByUserLevelChart').getContext('2d');
+                const colPendingByUserLevelData = @json($chartData['pendingByUserLevel'] ?? null) || {
+                    'labels': [],
+                    'data': []
+                };
+
+                const colPendingByUserLevelChart = new Chart(colPendingByUserLevelCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: colPendingByUserLevelData.labels,
+                        datasets: [{
+                            label: 'Pending Applications',
+                            data: colPendingByUserLevelData.data,
+                            backgroundColor: ['#ffc107', '#fd7e14', '#dc3545'],
+                            borderColor: ['#ffc107', '#fd7e14', '#dc3545'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        }
+                    }
+                });
             });
         </script>
     @endif
@@ -1623,6 +1776,44 @@
                         plugins: {
                             legend: {
                                 position: 'bottom'
+                            }
+                        }
+                    }
+                });
+
+                // Pending Applications by User Level Chart (Vertical Bar)
+                const dirPendingByUserLevelCtx = document.getElementById('dirPendingByUserLevelChart').getContext('2d');
+                const dirPendingByUserLevelData = @json($chartData['pendingByUserLevel'] ?? null) || {
+                    'labels': [],
+                    'data': []
+                };
+
+                const dirPendingByUserLevelChart = new Chart(dirPendingByUserLevelCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: dirPendingByUserLevelData.labels,
+                        datasets: [{
+                            label: 'Pending Applications',
+                            data: dirPendingByUserLevelData.data,
+                            backgroundColor: ['#ffc107', '#fd7e14', '#dc3545'],
+                            borderColor: ['#ffc107', '#fd7e14', '#dc3545'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
                             }
                         }
                     }
@@ -1880,6 +2071,20 @@
     @elseif(Auth::user() && Auth::user()->hasRole('Subject Clerk (DMOV)'))
         {{-- DMOV Subject Clerk Dashboard --}}
         <div class="row">
+            <!-- Pending Applications by User Level -->
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-hourglass-half"></i> Pending Approvals</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="dmovPendingByUserLevelChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
             <!-- Branch-wise Applications -->
             <div class="col-md-6">
                 <div class="card">
@@ -1961,6 +2166,20 @@
     @elseif(Auth::user() && Auth::user()->hasRole('Staff Officer 2 (DMOV)') && !empty($chartData))
         {{-- DMOV Staff Officer 2 Dashboard --}}
         <div class="row">
+            <!-- Pending Applications by User Level -->
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-hourglass-half"></i> Pending Approvals</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="so2PendingByUserLevelChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
             <!-- Approval Overview -->
             <div class="col-md-6">
                 <div class="card">
@@ -2027,6 +2246,20 @@
         </div>
     @elseif(Auth::user() && Auth::user()->hasRole('Staff Officer 1 (DMOV)') && !empty($chartData))
         {{-- DMOV Staff Officer 1 Dashboard --}}
+        <div class="row">
+            <!-- Pending Applications by User Level -->
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-hourglass-half"></i> Pending Approvals</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="so1PendingByUserLevelChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row">
             <!-- Approval Overview -->
             <div class="col-md-6">
@@ -2095,6 +2328,20 @@
     @elseif(Auth::user() && Auth::user()->hasRole('Col Mov (DMOV)') && !empty($chartData))
         {{-- Col Mov Dashboard --}}
         <div class="row">
+            <!-- Pending Applications by User Level -->
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-hourglass-half"></i> Pending Approvals</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="colPendingByUserLevelChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
             <!-- Approval Overview -->
             <div class="col-md-6">
                 <div class="card">
@@ -2162,6 +2409,20 @@
     @elseif(Auth::user() && Auth::user()->hasRole('Director (DMOV)') && !empty($chartData))
         {{-- DMOV Director Dashboard --}}
         <div class="row">
+            <!-- Pending Applications by User Level -->
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-hourglass-half"></i> Pending Approvals</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="dirPendingByUserLevelChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
             <!-- Approval Overview -->
             <div class="col-md-6">
                 <div class="card">
@@ -2222,6 +2483,20 @@
                     </div>
                     <div class="card-body">
                         <canvas id="dirDecisionChart" style="height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Pending Applications by User Level -->
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Pending Approvals</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="dirPendingByUserLevelChart" style="height: 300px;"></canvas>
                     </div>
                 </div>
             </div>

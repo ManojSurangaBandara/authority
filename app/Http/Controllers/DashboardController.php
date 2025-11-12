@@ -45,6 +45,10 @@ class DashboardController extends Controller
             elseif (Auth::user() && Auth::user()->hasRole('Col Mov (DMOV)')) {
                 $chartData = $this->getColMovChartData();
             }
+            // Get chart data for Director (DMOV)
+            elseif (Auth::user() && Auth::user()->hasRole('Director (DMOV)')) {
+                $chartData = $this->getDmovDirectorChartData();
+            }
         } catch (\Exception $e) {
             // Log error and continue with empty chart data
             Log::error('Dashboard chart data error: ' . $e->getMessage());
@@ -652,7 +656,8 @@ class DashboardController extends Controller
             'monthlyTrends' => $this->getDmovMonthlyTrends(),
             'processingTime' => $this->getDmovProcessingTime(),
             'passTypeDistribution' => $this->getDmovPassTypeDistribution(),
-            'establishmentPerformance' => $this->getEstablishmentPerformance()
+            'establishmentPerformance' => $this->getEstablishmentPerformance(),
+            'pendingByUserLevel' => $this->getPendingApplicationsByUserLevel()
         ];
     }
 
@@ -819,6 +824,7 @@ class DashboardController extends Controller
             'approvalTime' => $this->getDmovStaffOfficer2ApprovalTime(),
             'branchWiseApplications' => $this->getDmovStaffOfficer2BranchWise(),
             'recommendationStatus' => $this->getDmovStaffOfficer2RecommendationStatus(),
+            'pendingByUserLevel' => $this->getPendingApplicationsByUserLevel()
         ];
     }
 
@@ -967,6 +973,7 @@ class DashboardController extends Controller
             'approvalTime' => $this->getDmovStaffOfficer1ApprovalTime(),
             'branchWiseApplications' => $this->getDmovStaffOfficer1BranchWise(),
             'recommendationStatus' => $this->getDmovStaffOfficer1RecommendationStatus(),
+            'pendingByUserLevel' => $this->getPendingApplicationsByUserLevel()
         ];
     }
 
@@ -1115,6 +1122,7 @@ class DashboardController extends Controller
             'approvalTime' => $this->getColMovApprovalTime(),
             'branchWiseApplications' => $this->getColMovBranchWise(),
             'recommendationStatus' => $this->getColMovRecommendationStatus(),
+            'pendingByUserLevel' => $this->getPendingApplicationsByUserLevel()
         ];
     }
 
@@ -1263,6 +1271,7 @@ class DashboardController extends Controller
             'approvalTime' => $this->getDmovDirectorApprovalTime(),
             'branchWiseApplications' => $this->getDmovDirectorBranchWise(),
             'finalDecisionStatus' => $this->getDmovDirectorFinalDecisionStatus(),
+            'pendingByUserLevel' => $this->getPendingApplicationsByUserLevel()
         ];
     }
 
@@ -1400,6 +1409,46 @@ class DashboardController extends Controller
             'approved_for_integration' => $decisions['approved_for_integration'] ?? 0,
             'integrated_to_branch_card' => $decisions['integrated_to_branch_card'] ?? 0,
             'temp_card_printed' => $decisions['temp_card_printed'] ?? 0
+        ];
+    }
+
+    private function getPendingApplicationsByUserLevel()
+    {
+        // Define user level mapping based on status - only DMOV levels
+        $userLevelMapping = [
+            'forwarded_to_movement' => 'DMOV Subject Clerk',
+            'pending_dmov_subject_clerk' => 'DMOV Subject Clerk',
+            'pending_dmov_staff_officer_2' => 'DMOV Staff Officer 2',
+            'pending_col_mov' => 'Col Mov (DMOV)'
+        ];
+
+        $pendingCounts = [];
+        $labels = [];
+        $data = [];
+
+        // Get counts for each status
+        foreach ($userLevelMapping as $status => $userLevel) {
+            $count = BusPassApplication::where('status', $status)->count();
+            if ($count > 0) {
+                $pendingCounts[$userLevel] = $count;
+            }
+        }
+
+        // Prepare chart data - ensure we always have the three required levels
+        $requiredLevels = [
+            'DMOV Subject Clerk',
+            'DMOV Staff Officer 2',
+            'Col Mov (DMOV)'
+        ];
+
+        foreach ($requiredLevels as $level) {
+            $labels[] = $level;
+            $data[] = $pendingCounts[$level] ?? 0;
+        }
+
+        return [
+            'labels' => $labels,
+            'data' => $data
         ];
     }
 }
