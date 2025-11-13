@@ -898,6 +898,21 @@
             box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
         }
 
+        /* Center align text vertically in Select2 dropdowns */
+        .select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow {
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
         /* Branch Card Verification Styling */
         #branch_card_id_section,
         #verification_status_section {
