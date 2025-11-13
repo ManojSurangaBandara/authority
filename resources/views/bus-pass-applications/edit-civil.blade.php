@@ -542,7 +542,7 @@
                                             <label for="grama_niladari_certificate">Grama Niladari Certificate</label>
                                             @if ($bus_pass_application->grama_niladari_certificate)
                                                 <div class="mb-2">
-                                                    <a href="{{ Storage::url($bus_pass_application->grama_niladari_certificate) }}"
+                                                    <a href="{{ asset('storage/' . $bus_pass_application->grama_niladari_certificate) }}"
                                                         target="_blank" class="btn btn-sm btn-outline-success">
                                                         <i class="fas fa-file-pdf"></i> View Current Document
                                                     </a>
@@ -564,7 +564,7 @@
                                             <label for="person_image">Person Image</label>
                                             @if ($bus_pass_application->person_image)
                                                 <div class="mb-2">
-                                                    <a href="{{ Storage::url($bus_pass_application->person_image) }}"
+                                                    <a href="{{ asset('storage/' . $bus_pass_application->person_image) }}"
                                                         target="_blank" class="btn btn-sm btn-outline-success">
                                                         <i class="fas fa-image"></i> View Current Image
                                                     </a>
