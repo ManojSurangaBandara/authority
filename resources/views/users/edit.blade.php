@@ -42,12 +42,15 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="email">Email Address <span class="text-danger">*</span></label>
-                                    <input type="email" class="form-control @error('email') is-invalid @enderror"
-                                        id="email" name="email" value="{{ old('email', $user->email) }}" required>
-                                    @error('email')
+                                    <label for="e_no">E No <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control @error('e_no') is-invalid @enderror"
+                                        id="e_no" name="e_no" value="{{ old('e_no', $user->e_no) }}" required>
+                                    @error('e_no')
                                         <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror
+                                    <small class="form-text text-muted">
+                                        E No is used for login authentication
+                                    </small>
                                 </div>
                             </div>
                         </div>

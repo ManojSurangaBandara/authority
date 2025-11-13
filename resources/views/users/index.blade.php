@@ -36,7 +36,7 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Name</th>
-                                <th>Email</th>
+                                <th>E No</th>
                                 <th>Regiment No</th>
                                 <th>Rank</th>
                                 <th>Branch/Directorate</th>
@@ -56,7 +56,7 @@
                                             <span class="badge badge-info badge-sm ml-1">You</span>
                                         @endif
                                     </td>
-                                    <td>{{ $user->email }}</td>
+                                    <td>{{ $user->e_no }}</td>
                                     <td>{{ $user->regiment_no ?? '-' }}</td>
                                     <td>{{ $user->rank ?? '-' }}</td>
                                     <td>
