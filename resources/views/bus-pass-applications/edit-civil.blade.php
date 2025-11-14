@@ -553,7 +553,7 @@
                                                 id="grama_niladari_certificate" name="grama_niladari_certificate"
                                                 accept=".pdf,.jpg,.jpeg,.png">
                                             <small class="form-text text-muted">Accepted formats: PDF, JPG, PNG (Max:
-                                                2MB). Leave empty to keep current document.</small>
+                                                10MB). Leave empty to keep current document.</small>
                                             @error('grama_niladari_certificate')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
@@ -574,7 +574,7 @@
                                                 class="form-control-file @error('person_image') is-invalid @enderror"
                                                 id="person_image" name="person_image" accept=".jpg,.jpeg,.png">
                                             <small class="form-text text-muted">Accepted formats: JPG, PNG (Max:
-                                                2MB). Leave empty to keep current image.</small>
+                                                5MB). Leave empty to keep current image.</small>
                                             @error('person_image')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror

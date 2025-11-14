@@ -670,7 +670,7 @@
                                                 id="rent_allowance_order_daily" name="rent_allowance_order"
                                                 accept=".pdf,.jpg,.jpeg,.png">
                                             <small class="form-text text-muted">Accepted formats: PDF, JPG, PNG (Max:
-                                                2MB)</small>
+                                                10MB)</small>
                                             @error('rent_allowance_order')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
@@ -691,7 +691,7 @@
                                                 id="permission_letter" name="permission_letter"
                                                 accept=".pdf,.jpg,.jpeg,.png">
                                             <small class="form-text text-muted">Accepted formats: PDF, JPG, PNG (Max:
-                                                2MB)</small>
+                                                10MB)</small>
                                             @error('permission_letter')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
@@ -708,7 +708,7 @@
                                                 id="grama_niladari_certificate" name="grama_niladari_certificate"
                                                 accept=".pdf,.jpg,.jpeg,.png">
                                             <small class="form-text text-muted">Accepted formats: PDF, JPG, PNG (Max:
-                                                2MB)</small>
+                                                10MB)</small>
                                             @error('grama_niladari_certificate')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
@@ -721,7 +721,7 @@
                                                 class="form-control-file @error('person_image') is-invalid @enderror"
                                                 id="person_image" name="person_image" accept=".jpg,.jpeg,.png">
                                             <small class="form-text text-muted">Accepted formats: JPG, PNG (Max:
-                                                2MB)</small>
+                                                5MB)</small>
                                             @error('person_image')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
