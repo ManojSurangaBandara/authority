@@ -14,6 +14,7 @@ use App\Models\District;
 use App\Models\GsDivision;
 use App\Models\PoliceStation;
 use App\Models\Rank;
+use App\Models\PersonType;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -175,7 +176,9 @@ class BusPassApplicationController extends Controller
 
             if (!$person) {
                 // Create new civil person
+                $civilPersonType = PersonType::where('name', 'Civil')->first();
                 $person = Person::create([
+                    'person_type_id' => $civilPersonType ? $civilPersonType->id : null,
                     'regiment_no' => null, // Civil persons don't have regiment numbers
                     'rank' => null,
                     'name' => $request->name,
@@ -211,7 +214,9 @@ class BusPassApplicationController extends Controller
 
             if (!$person) {
                 // Create new person if doesn't exist
+                $armyPersonType = PersonType::where('name', 'Army')->first();
                 $person = Person::create([
+                    'person_type_id' => $armyPersonType ? $armyPersonType->id : null,
                     'regiment_no' => $request->regiment_no,
                     'rank' => $request->rank,
                     'name' => $request->name,

@@ -9,6 +9,7 @@ class Person extends Model
     protected $table = 'persons';
 
     protected $fillable = [
+        'person_type_id',
         'regiment_no',
         'rank',
         'name',
@@ -23,6 +24,12 @@ class Person extends Model
         'gs_division_id',
         'police_station_id',
     ];
+
+    // Relationship with PersonType
+    public function personType()
+    {
+        return $this->belongsTo(PersonType::class);
+    }
 
     // Relationship with Province
     public function province()
