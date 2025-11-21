@@ -586,6 +586,16 @@ return [
                         'not-yet-handed-over-applications*',
                     ],
                 ],
+                
+                [
+                    'text' => 'Passenger Counts',
+                    'url' => 'passenger-counts',
+                    'icon' => 'fas fa-fw fa-chart-bar',
+                    // 'can' => 'manage_user_accounts',
+                    'active' => [
+                        'passenger-counts*',
+                    ],
+                ],
 
             ],
 

@@ -186,6 +186,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('integrated-to-build-card', [ReportController::class, 'build'])->name('integrated-to-build-card.index');
 
+    Route::get('passenger-counts', [ReportController::class, 'passengerCounts'])->name('passenger-counts.index');
+
     // Profile routes (All authenticated users)
     Route::get('profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::get('profile/change-password', [ProfileController::class, 'editPassword'])->name('profile.change-password');
