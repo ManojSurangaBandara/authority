@@ -188,6 +188,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('passenger-counts', [ReportController::class, 'passengerCounts'])->name('passenger-counts.index');
 
+    Route::get('establishment-wise-applications', [ReportController::class, 'establishmentWiseApplications'])->name('establishment-wise-applications.index');
+
     // Profile routes (All authenticated users)
     Route::get('profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::get('profile/change-password', [ProfileController::class, 'editPassword'])->name('profile.change-password');

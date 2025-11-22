@@ -226,6 +226,52 @@ class ReportController extends Controller
     }
 
     /**
+     * Display establishment wise applications report
+     */
+    public function establishmentWiseApplications(Request $request)
+    {
+        // Get all establishments for dropdown
+        $establishments = Establishment::orderBy('name')->get();
+
+        // Filter by establishment if selected
+        $selectedEstablishment = $request->get('establishment_id');
+
+        // Base query for applications with required status
+        $applicationsQuery = BusPassApplication::with([
+            'person.personType',
+            'establishment'
+        ])
+            ->whereIn('status', ['integrated_to_branch_card', 'temp_card_handed_over']);
+
+        // Apply establishment filter if selected
+        if ($selectedEstablishment) {
+            $applicationsQuery->where('establishment_id', $selectedEstablishment);
+        }
+
+        $applications = $applicationsQuery->get();
+
+        // Get person types for totals calculation
+        $personTypes = PersonType::where('is_active', true)->get();
+
+        // Calculate totals by person type
+        $totals = [];
+        foreach ($personTypes as $personType) {
+            $totals[strtolower($personType->name)] = $applications->filter(function ($app) use ($personType) {
+                return $app->person && $app->person->personType &&
+                    $app->person->personType->id === $personType->id;
+            })->count();
+        }
+
+        return view('reports.establishment-wise-applications', compact(
+            'applications',
+            'establishments',
+            'selectedEstablishment',
+            'personTypes',
+            'totals'
+        ));
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()

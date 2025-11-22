@@ -586,7 +586,7 @@ return [
                         'not-yet-handed-over-applications*',
                     ],
                 ],
-                
+
                 [
                     'text' => 'Passenger Counts',
                     'url' => 'passenger-counts',
@@ -594,6 +594,15 @@ return [
                     // 'can' => 'manage_user_accounts',
                     'active' => [
                         'passenger-counts*',
+                    ],
+                ],
+                [
+                    'text' => 'Establishment wise Applications',
+                    'url' => 'establishment-wise-applications',
+                    'icon' => 'fas fa-fw fa-building',
+                    // 'can' => 'manage_user_accounts',
+                    'active' => [
+                        'establishment-wise-applications*',
                     ],
                 ],
 
