@@ -66,24 +66,22 @@
                                                 @endif
                                             </td>
                                             <td class="text-center">
-                                                <span class="badge badge-success">{{ $route['army'] ?? 0 }}</span>
+                                                {{ $route['army'] ?? 0 }}
                                             </td>
                                             <td class="text-center">
-                                                <span class="badge badge-info">{{ $route['civil'] ?? 0 }}</span>
+                                                {{ $route['civil'] ?? 0 }}
                                             </td>
                                             <td class="text-center">
-                                                <span class="badge badge-primary">{{ $route['air force'] ?? 0 }}</span>
+                                                {{ $route['air force'] ?? 0 }}
                                             </td>
                                             <td class="text-center">
-                                                <span class="badge badge-secondary">{{ $route['navy'] ?? 0 }}</span>
+                                                {{ $route['navy'] ?? 0 }}
                                             </td>
                                             <td class="text-center">
-                                                <span class="badge badge-warning">{{ $route['other'] ?? 0 }}</span>
+                                                {{ $route['other'] ?? 0 }}
                                             </td>
                                             <td class="text-center">
-                                                <strong>
-                                                    <span class="badge badge-dark">{{ $route['total'] }}</span>
-                                                </strong>
+                                                <strong>{{ $route['total'] }}</strong>
                                             </td>
                                         </tr>
                                     @empty
@@ -102,36 +100,22 @@
                                         <tr class="bg-light">
                                             <th colspan="2">Total Passengers</th>
                                             <th class="text-center">
-                                                <span class="badge badge-success">
-                                                    {{ $routeData->sum('army') }}
-                                                </span>
+                                                <strong>{{ $routeData->sum('army') }}</strong>
                                             </th>
                                             <th class="text-center">
-                                                <span class="badge badge-info">
-                                                    {{ $routeData->sum('civil') }}
-                                                </span>
+                                                <strong>{{ $routeData->sum('civil') }}</strong>
                                             </th>
                                             <th class="text-center">
-                                                <span class="badge badge-primary">
-                                                    {{ $routeData->sum('air force') }}
-                                                </span>
+                                                <strong>{{ $routeData->sum('air force') }}</strong>
                                             </th>
                                             <th class="text-center">
-                                                <span class="badge badge-secondary">
-                                                    {{ $routeData->sum('navy') }}
-                                                </span>
+                                                <strong>{{ $routeData->sum('navy') }}</strong>
                                             </th>
                                             <th class="text-center">
-                                                <span class="badge badge-warning">
-                                                    {{ $routeData->sum('other') }}
-                                                </span>
+                                                <strong>{{ $routeData->sum('other') }}</strong>
                                             </th>
                                             <th class="text-center">
-                                                <strong>
-                                                    <span class="badge badge-dark">
-                                                        {{ $routeData->sum('total') }}
-                                                    </span>
-                                                </strong>
+                                                <strong>{{ $routeData->sum('total') }}</strong>
                                             </th>
                                         </tr>
                                     </tfoot>
@@ -239,6 +223,8 @@
             border-top: none;
             font-weight: bold;
             text-align: center;
+            background-color: #17a2b8 !important;
+            color: white !important;
         }
 
         .badge {

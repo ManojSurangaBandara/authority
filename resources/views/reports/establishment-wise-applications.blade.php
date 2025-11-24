@@ -113,7 +113,8 @@
                                                         <br>
                                                     @endif
                                                     <span class="badge badge-info mt-1">{{ $application->living_in_bus }}
-                                                        (Living In)</span>
+                                                        (Living In)
+                                                    </span>
                                                 @endif
                                             </td>
                                             <td>
@@ -298,6 +299,8 @@
             border-top: none;
             font-weight: bold;
             text-align: center;
+            background-color: #17a2b8 !important;
+            color: white !important;
         }
 
         .badge {
