@@ -139,10 +139,10 @@
                                     </tr>
                                 @endif
                                 <tr>
-                                    <td><strong>Rent Allowance Part II Order:</strong></td>
+                                    <td><strong>Marriage Part II Order:</strong></td>
                                     <td>
-                                        @if ($application->rent_allowance_order)
-                                            <a href="{{ asset('storage/' . $application->rent_allowance_order) }}"
+                                        @if ($application->marriage_part_ii_order)
+                                            <a href="{{ asset('storage/' . $application->marriage_part_ii_order) }}"
                                                 target="_blank" class="btn btn-xs btn-outline-primary">
                                                 <i class="fas fa-file-pdf"></i> View Document
                                             </a>

@@ -760,24 +760,24 @@
                                 <div class="row" id="rent_allowance_section_edit" style="display: none;">
                                     <div class="col-md-12">
                                         <div class="form-group">
-                                            <label for="rent_allowance_order_daily">Rent Allowance Part II Order
+                                            <label for="marriage_part_ii_order_daily">Marriage Part II Order
                                                 <span class="text-info">(For Married Personnel - Not applicable for Living
                                                     in Bus only)</span></label>
-                                            @if ($bus_pass_application->rent_allowance_order)
+                                            @if ($bus_pass_application->marriage_part_ii_order)
                                                 <div class="mb-2">
-                                                    <a href="{{ asset('storage/' . $bus_pass_application->rent_allowance_order) }}"
+                                                    <a href="{{ asset('storage/' . $bus_pass_application->marriage_part_ii_order) }}"
                                                         target="_blank" class="btn btn-sm btn-outline-primary">
                                                         <i class="fas fa-file-pdf"></i> View Current
                                                     </a>
                                                 </div>
                                             @endif
                                             <input type="file"
-                                                class="form-control-file @error('rent_allowance_order') is-invalid @enderror"
-                                                id="rent_allowance_order_daily" name="rent_allowance_order"
+                                                class="form-control-file @error('marriage_part_ii_order') is-invalid @enderror"
+                                                id="marriage_part_ii_order_daily" name="marriage_part_ii_order"
                                                 accept=".pdf,.jpg,.jpeg,.png">
                                             <small class="form-text text-muted">Accepted formats: PDF, JPG, PNG (Max:
                                                 10MB)</small>
-                                            @error('rent_allowance_order')
+                                            @error('marriage_part_ii_order')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
                                         </div>
@@ -1166,7 +1166,7 @@
                 } else {
                     $('#rent_allowance_section_edit').hide();
                     // Clear the file input when hidden
-                    $('#rent_allowance_order_daily').val('');
+                    $('#marriage_part_ii_order_daily').val('');
                 }
             }
 

@@ -223,10 +223,10 @@
                                 </div>
                             @endif
 
-                            @if ($bus_pass_application->rent_allowance_order)
+                            @if ($bus_pass_application->marriage_part_ii_order)
                                 <div class="col-md-4">
-                                    <strong>Rent Allowance Order:</strong><br>
-                                    <a href="{{ asset('storage/' . $bus_pass_application->rent_allowance_order) }}"
+                                    <strong>Marriage Part II Order:</strong><br>
+                                    <a href="{{ asset('storage/' . $bus_pass_application->marriage_part_ii_order) }}"
                                         target="_blank" class="btn btn-sm btn-outline-primary">
                                         <i class="fas fa-file-pdf"></i> View Document
                                     </a>
