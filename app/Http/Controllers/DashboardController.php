@@ -100,12 +100,14 @@ class DashboardController extends Controller
         $establishmentId = Auth::user()->establishment_id;
 
         return [
+            'approvalOverview' => $this->getBranchClerkApprovalOverview($establishmentId),
             'statusOverview' => $this->getStatusOverviewData($establishmentId),
             'monthlyTrends' => $this->getMonthlyTrendsData($establishmentId),
             'processingTime' => $this->getProcessingTimeData($establishmentId),
             'passTypes' => $this->getPassTypesData($establishmentId),
             'weeklyActivity' => $this->getWeeklyActivityData($establishmentId),
-            'rejectionReasons' => $this->getRejectionReasonsData($establishmentId)
+            'rejectionReasons' => $this->getRejectionReasonsData($establishmentId),
+            'pendingByUserLevel' => $this->getBranchPendingApplicationsByUserLevel($establishmentId)
         ];
     }
 
@@ -118,7 +120,8 @@ class DashboardController extends Controller
             'monthlyApprovals' => $this->getStaffOfficerMonthlyApprovals($establishmentId),
             'approvalTime' => $this->getStaffOfficerApprovalTime($establishmentId),
             'recommendationStatus' => $this->getRecommendationStatusData($establishmentId),
-            'weeklyRecommendations' => $this->getWeeklyRecommendationsData($establishmentId)
+            'weeklyRecommendations' => $this->getWeeklyRecommendationsData($establishmentId),
+            'pendingByUserLevel' => $this->getBranchPendingApplicationsByUserLevel($establishmentId)
         ];
     }
 
@@ -279,22 +282,12 @@ class DashboardController extends Controller
     // Staff Officer specific chart data methods
     private function getStaffOfficerApprovalOverview($establishmentId)
     {
-        $query = BusPassApplication::where('establishment_id', $establishmentId);
-
         return [
-            'pending_review' => $query->clone()->where('status', 'pending_staff_officer_branch')->count(),
-            'recommended' => $query->clone()
-                ->whereHas('approvalHistory', function ($q) {
-                    $q->where('action', 'recommended')
-                        ->where('user_id', Auth::id());
-                })->count(),
-            'not_recommended' => $query->clone()
-                ->whereHas('approvalHistory', function ($q) {
-                    $q->where('action', 'not_recommended')
-                        ->where('user_id', Auth::id());
-                })->count(),
-            'pending_director' => $query->clone()->where('status', 'pending_director_branch')->count(),
-            'approved' => $query->clone()->whereIn('status', ['forwarded_to_movement', 'approved_for_integration', 'approved_for_temp_card'])->count(),
+            'pending_branch_clerk' => BusPassApplication::where('status', 'pending_subject_clerk')->where('establishment_id', $establishmentId)->count(),
+            'pending_branch_staff_officer' => BusPassApplication::where('status', 'pending_staff_officer_branch')->where('establishment_id', $establishmentId)->count(),
+            'pending_dmov_clerk' => BusPassApplication::where('status', 'forwarded_to_movement')->where('establishment_id', $establishmentId)->count(),
+            'pending_dmov_staff_officer_2' => BusPassApplication::where('status', 'pending_staff_officer_2_mov')->where('establishment_id', $establishmentId)->count(),
+            'pending_dmov_col' => BusPassApplication::where('status', 'pending_col_mov')->where('establishment_id', $establishmentId)->count(),
         ];
     }
 
@@ -464,7 +457,8 @@ class DashboardController extends Controller
                 'monthlyApprovals' => $monthlyApprovals,
                 'approvalTime' => $approvalTime,
                 'passTypeDistribution' => $passTypeDistribution,
-                'weeklyApprovals' => $weeklyApprovals
+                'weeklyApprovals' => $weeklyApprovals,
+                'pendingByUserLevel' => $this->getBranchPendingApplicationsByUserLevel(Auth::user()->establishment_id)
             ];
         } catch (\Exception $e) {
             Log::error('Error in getBranchDirectorChartData: ' . $e->getMessage());
@@ -475,24 +469,13 @@ class DashboardController extends Controller
 
     private function getDirectorApprovalOverview($establishmentId)
     {
-        // Get applications approved/rejected by this director
-        $pendingReview = BusPassApplication::where('establishment_id', $establishmentId)
-            ->where('status', 'pending_director_branch')
-            ->count();
-
-        $approved = DB::table('bus_pass_approval_histories')
-            ->join('bus_pass_applications', 'bus_pass_approval_histories.bus_pass_application_id', '=', 'bus_pass_applications.id')
-            ->where('bus_pass_applications.establishment_id', $establishmentId)
-            ->where('bus_pass_approval_histories.user_id', Auth::id())
-            ->where('bus_pass_approval_histories.action', 'approved')
-            ->count();
-
-        $rejected = DB::table('bus_pass_approval_histories')
-            ->join('bus_pass_applications', 'bus_pass_approval_histories.bus_pass_application_id', '=', 'bus_pass_applications.id')
-            ->where('bus_pass_applications.establishment_id', $establishmentId)
-            ->where('bus_pass_approval_histories.user_id', Auth::id())
-            ->where('bus_pass_approval_histories.action', 'rejected')
-            ->count();
+        return [
+            'pending_branch_clerk' => BusPassApplication::where('status', 'pending_subject_clerk')->where('establishment_id', $establishmentId)->count(),
+            'pending_branch_staff_officer' => BusPassApplication::where('status', 'pending_staff_officer_branch')->where('establishment_id', $establishmentId)->count(),
+            'pending_dmov_clerk' => BusPassApplication::where('status', 'forwarded_to_movement')->where('establishment_id', $establishmentId)->count(),
+            'pending_dmov_staff_officer_2' => BusPassApplication::where('status', 'pending_staff_officer_2_mov')->where('establishment_id', $establishmentId)->count(),
+            'pending_dmov_col' => BusPassApplication::where('status', 'pending_col_mov')->where('establishment_id', $establishmentId)->count(),
+        ];
 
         $forwardedToMovement = BusPassApplication::where('establishment_id', $establishmentId)
             ->where('status', 'forwarded_to_movement')
@@ -506,6 +489,17 @@ class DashboardController extends Controller
             'rejected' => $rejected,
             'forwarded_to_movement' => $forwardedToMovement,
             'total_processed' => $totalProcessed
+        ];
+    }
+
+    private function getBranchClerkApprovalOverview($establishmentId)
+    {
+        return [
+            'pending_branch_clerk' => BusPassApplication::where('status', 'pending_subject_clerk')->where('establishment_id', $establishmentId)->count(),
+            'pending_branch_staff_officer' => BusPassApplication::where('status', 'pending_staff_officer_branch')->where('establishment_id', $establishmentId)->count(),
+            'pending_dmov_clerk' => BusPassApplication::where('status', 'forwarded_to_movement')->where('establishment_id', $establishmentId)->count(),
+            'pending_dmov_staff_officer_2' => BusPassApplication::where('status', 'pending_staff_officer_2_mov')->where('establishment_id', $establishmentId)->count(),
+            'pending_dmov_col' => BusPassApplication::where('status', 'pending_col_mov')->where('establishment_id', $establishmentId)->count(),
         ];
     }
 
@@ -651,6 +645,7 @@ class DashboardController extends Controller
     private function getDmovSubjectClerkChartData()
     {
         return [
+            'approvalOverview' => $this->getDmovSubjectClerkApprovalOverview(),
             'overallStatus' => $this->getDmovOverallStatus(),
             'branchWiseApplications' => $this->getBranchWiseApplications(),
             'monthlyTrends' => $this->getDmovMonthlyTrends(),
@@ -658,6 +653,17 @@ class DashboardController extends Controller
             'passTypeDistribution' => $this->getDmovPassTypeDistribution(),
             'establishmentPerformance' => $this->getEstablishmentPerformance(),
             'pendingByUserLevel' => $this->getPendingApplicationsByUserLevel()
+        ];
+    }
+
+    private function getDmovSubjectClerkApprovalOverview()
+    {
+        return [
+            'pending_branch_clerk' => BusPassApplication::where('status', 'pending_subject_clerk')->count(),
+            'pending_branch_staff_officer' => BusPassApplication::where('status', 'pending_staff_officer_branch')->count(),
+            'pending_dmov_clerk' => BusPassApplication::where('status', 'forwarded_to_movement')->count(),
+            'pending_dmov_staff_officer_2' => BusPassApplication::where('status', 'pending_staff_officer_2_mov')->count(),
+            'pending_dmov_col' => BusPassApplication::where('status', 'pending_col_mov')->count(),
         ];
     }
 
@@ -831,17 +837,11 @@ class DashboardController extends Controller
     private function getDmovStaffOfficer2ApprovalOverview()
     {
         return [
-            'pending_review' => BusPassApplication::where('status', 'pending_dmov_staff_officer_2')->count(),
-            'recommended' => DB::table('bus_pass_approval_histories')
-                ->where('user_id', Auth::id())
-                ->where('action', 'recommended')
-                ->count(),
-            'not_recommended' => DB::table('bus_pass_approval_histories')
-                ->where('user_id', Auth::id())
-                ->where('action', 'not_recommended')
-                ->count(),
-            'pending_next_level' => BusPassApplication::where('status', 'pending_dmov_staff_officer_1')->count(),
-            'approved_for_integration' => BusPassApplication::where('status', 'approved_for_integration')->count(),
+            'pending_branch_clerk' => BusPassApplication::where('status', 'pending_subject_clerk')->count(),
+            'pending_branch_staff_officer' => BusPassApplication::where('status', 'pending_staff_officer_branch')->count(),
+            'pending_dmov_clerk' => BusPassApplication::where('status', 'forwarded_to_movement')->count(),
+            'pending_dmov_staff_officer_2' => BusPassApplication::where('status', 'pending_staff_officer_2_mov')->count(),
+            'pending_dmov_col' => BusPassApplication::where('status', 'pending_col_mov')->count(),
         ];
     }
 
@@ -980,17 +980,11 @@ class DashboardController extends Controller
     private function getDmovStaffOfficer1ApprovalOverview()
     {
         return [
-            'pending_review' => BusPassApplication::where('status', 'pending_dmov_staff_officer_1')->count(),
-            'recommended' => DB::table('bus_pass_approval_histories')
-                ->where('user_id', Auth::id())
-                ->where('action', 'recommended')
-                ->count(),
-            'not_recommended' => DB::table('bus_pass_approval_histories')
-                ->where('user_id', Auth::id())
-                ->where('action', 'not_recommended')
-                ->count(),
-            'pending_col_mov' => BusPassApplication::where('status', 'pending_col_mov')->count(),
-            'approved_for_integration' => BusPassApplication::where('status', 'approved_for_integration')->count(),
+            'pending_branch_clerk' => BusPassApplication::where('status', 'pending_subject_clerk')->count(),
+            'pending_branch_staff_officer' => BusPassApplication::where('status', 'pending_staff_officer_branch')->count(),
+            'pending_dmov_clerk' => BusPassApplication::where('status', 'forwarded_to_movement')->count(),
+            'pending_dmov_staff_officer_2' => BusPassApplication::where('status', 'pending_staff_officer_2_mov')->count(),
+            'pending_dmov_col' => BusPassApplication::where('status', 'pending_col_mov')->count(),
         ];
     }
 
@@ -1129,17 +1123,11 @@ class DashboardController extends Controller
     private function getColMovApprovalOverview()
     {
         return [
-            'pending_review' => BusPassApplication::where('status', 'pending_col_mov')->count(),
-            'recommended' => DB::table('bus_pass_approval_histories')
-                ->where('user_id', Auth::id())
-                ->where('action', 'recommended')
-                ->count(),
-            'not_recommended' => DB::table('bus_pass_approval_histories')
-                ->where('user_id', Auth::id())
-                ->where('action', 'not_recommended')
-                ->count(),
-            'approved_total' => BusPassApplication::where('status', 'approved_for_integration')->count(),
-            'approved_for_integration' => BusPassApplication::where('status', 'approved_for_integration')->count(),
+            'pending_branch_clerk' => BusPassApplication::where('status', 'pending_subject_clerk')->count(),
+            'pending_branch_staff_officer' => BusPassApplication::where('status', 'pending_staff_officer_branch')->count(),
+            'pending_dmov_clerk' => BusPassApplication::where('status', 'forwarded_to_movement')->count(),
+            'pending_dmov_staff_officer_2' => BusPassApplication::where('status', 'pending_staff_officer_2_mov')->count(),
+            'pending_dmov_col' => BusPassApplication::where('status', 'pending_col_mov')->count(),
         ];
     }
 
@@ -1278,20 +1266,11 @@ class DashboardController extends Controller
     private function getDmovDirectorApprovalOverview()
     {
         return [
-            'pending_review' => 0, // Director (DMOV) role removed
-            'approved' => DB::table('bus_pass_approval_histories')
-                ->where('user_id', Auth::id())
-                ->where('action', 'approved')
-                ->count(),
-            'rejected' => DB::table('bus_pass_approval_histories')
-                ->where('user_id', Auth::id())
-                ->where('action', 'rejected')
-                ->count(),
-            'approved_for_integration' => BusPassApplication::where('status', 'approved_for_integration')->count(),
-            'total_processed' => DB::table('bus_pass_approval_histories')
-                ->where('user_id', Auth::id())
-                ->whereIn('action', ['approved', 'rejected'])
-                ->count(),
+            'pending_branch_clerk' => BusPassApplication::where('status', 'pending_subject_clerk')->count(),
+            'pending_branch_staff_officer' => BusPassApplication::where('status', 'pending_staff_officer_branch')->count(),
+            'pending_dmov_clerk' => BusPassApplication::where('status', 'forwarded_to_movement')->count(),
+            'pending_dmov_staff_officer_2' => BusPassApplication::where('status', 'pending_staff_officer_2_mov')->count(),
+            'pending_dmov_col' => BusPassApplication::where('status', 'pending_col_mov')->count(),
         ];
     }
 
@@ -1444,6 +1423,55 @@ class DashboardController extends Controller
         foreach ($requiredLevels as $level) {
             $labels[] = $level;
             $data[] = $pendingCounts[$level] ?? 0;
+        }
+
+        return [
+            'labels' => $labels,
+            'data' => $data
+        ];
+    }
+
+    private function getBranchPendingApplicationsByUserLevel($establishmentId)
+    {
+        // Define user level mapping for branch roles - filtered by establishment
+        $userLevelMapping = [
+            'pending_subject_clerk' => 'Branch Clerk',
+            'pending_staff_officer_branch' => 'Branch Staff Officer',
+            'forwarded_to_movement' => 'DMOV Subject Clerk',
+            'pending_subject_clerk_mov' => 'DMOV Subject Clerk',
+            'pending_staff_officer_2_mov' => 'DMOV Staff Officer 2',
+            'pending_col_mov' => 'Col Mov (DMOV)'
+        ];
+
+        $pendingCounts = [];
+        $labels = [];
+        $data = [];
+
+        // Get counts for each status, filtered by establishment for branch statuses
+        foreach ($userLevelMapping as $status => $userLevel) {
+            if (in_array($status, ['pending_subject_clerk', 'pending_staff_officer_branch'])) {
+                // Branch specific statuses - filter by establishment
+                $count = BusPassApplication::where('status', $status)
+                    ->where('establishment_id', $establishmentId)
+                    ->count();
+            } else {
+                // DMOV statuses - show applications from this branch that reached DMOV
+                $count = BusPassApplication::where('status', $status)
+                    ->where('establishment_id', $establishmentId)
+                    ->count();
+            }
+
+            if ($count > 0) {
+                $pendingCounts[$userLevel] = ($pendingCounts[$userLevel] ?? 0) + $count;
+            }
+        }
+
+        // Prepare chart data - show all levels that have pending applications
+        foreach ($pendingCounts as $level => $count) {
+            if ($count > 0) {
+                $labels[] = $level;
+                $data[] = $count;
+            }
         }
 
         return [
