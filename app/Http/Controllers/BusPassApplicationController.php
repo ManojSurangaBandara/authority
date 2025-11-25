@@ -14,6 +14,7 @@ use App\Models\District;
 use App\Models\GsDivision;
 use App\Models\PoliceStation;
 use App\Models\Rank;
+use App\Models\PersonType;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -111,7 +112,7 @@ class BusPassApplicationController extends Controller
                 'grama_niladari_certificate' => ($request->bus_pass_type !== 'living_in_only') ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
                 'person_image' => 'required|file|mimes:jpg,jpeg,png|max:5120',
                 'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only,unmarried_daily_travel',
-                'rent_allowance_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only' && $request->bus_pass_type !== 'unmarried_daily_travel') ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'marriage_part_ii_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only' && $request->bus_pass_type !== 'unmarried_daily_travel') ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
                 'permission_letter' => ($request->bus_pass_type === 'unmarried_daily_travel') ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
                 'declaration_1' => 'required|in:yes',
                 'declaration_2' => 'required|in:yes',
@@ -175,7 +176,9 @@ class BusPassApplicationController extends Controller
 
             if (!$person) {
                 // Create new civil person
+                $civilPersonType = PersonType::where('name', 'Civil')->first();
                 $person = Person::create([
+                    'person_type_id' => $civilPersonType ? $civilPersonType->id : null,
                     'regiment_no' => null, // Civil persons don't have regiment numbers
                     'rank' => null,
                     'name' => $request->name,
@@ -211,7 +214,9 @@ class BusPassApplicationController extends Controller
 
             if (!$person) {
                 // Create new person if doesn't exist
+                $armyPersonType = PersonType::where('name', 'Army')->first();
                 $person = Person::create([
+                    'person_type_id' => $armyPersonType ? $armyPersonType->id : null,
                     'regiment_no' => $request->regiment_no,
                     'rank' => $request->rank,
                     'name' => $request->name,
@@ -297,8 +302,8 @@ class BusPassApplicationController extends Controller
             $data['person_image'] = $request->file('person_image')->store('person_images', 'public');
         }
 
-        if ($request->hasFile('rent_allowance_order')) {
-            $data['rent_allowance_order'] = $request->file('rent_allowance_order')->store('rent_allowances', 'public');
+        if ($request->hasFile('marriage_part_ii_order')) {
+            $data['marriage_part_ii_order'] = $request->file('marriage_part_ii_order')->store('marriage_part_ii_orders', 'public');
         }
 
         if ($request->hasFile('permission_letter')) {
@@ -471,7 +476,7 @@ class BusPassApplicationController extends Controller
                 'grama_niladari_certificate' => ($request->bus_pass_type !== 'living_in_only' && !$bus_pass_application->grama_niladari_certificate) ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
                 'person_image' => !$bus_pass_application->person_image ? 'required|file|mimes:jpg,jpeg,png|max:5120' : 'nullable|file|mimes:jpg,jpeg,png|max:5120',
                 'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only,unmarried_daily_travel',
-                'rent_allowance_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only' && $request->bus_pass_type !== 'unmarried_daily_travel' && !$bus_pass_application->rent_allowance_order) ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'marriage_part_ii_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only' && $request->bus_pass_type !== 'unmarried_daily_travel' && !$bus_pass_application->marriage_part_ii_order) ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
                 'permission_letter' => ($request->bus_pass_type === 'unmarried_daily_travel' && !$bus_pass_application->permission_letter) ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
                 'declaration_1' => 'required|in:yes',
                 'declaration_2' => 'required|in:yes',
@@ -667,11 +672,11 @@ class BusPassApplicationController extends Controller
             $data['person_image'] = $request->file('person_image')->store('person_images', 'public');
         }
 
-        if ($request->hasFile('rent_allowance_order')) {
-            if ($bus_pass_application->rent_allowance_order) {
-                Storage::disk('public')->delete($bus_pass_application->rent_allowance_order);
+        if ($request->hasFile('marriage_part_ii_order')) {
+            if ($bus_pass_application->marriage_part_ii_order) {
+                Storage::disk('public')->delete($bus_pass_application->marriage_part_ii_order);
             }
-            $data['rent_allowance_order'] = $request->file('rent_allowance_order')->store('rent_allowances', 'public');
+            $data['marriage_part_ii_order'] = $request->file('marriage_part_ii_order')->store('marriage_part_ii_orders', 'public');
         }
 
         if ($request->hasFile('permission_letter')) {
@@ -759,8 +764,8 @@ class BusPassApplicationController extends Controller
         if ($bus_pass_application->person_image) {
             Storage::disk('public')->delete($bus_pass_application->person_image);
         }
-        if ($bus_pass_application->rent_allowance_order) {
-            Storage::disk('public')->delete($bus_pass_application->rent_allowance_order);
+        if ($bus_pass_application->marriage_part_ii_order) {
+            Storage::disk('public')->delete($bus_pass_application->marriage_part_ii_order);
         }
 
         $bus_pass_application->delete();

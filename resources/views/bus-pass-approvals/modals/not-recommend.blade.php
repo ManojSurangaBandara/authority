@@ -39,7 +39,8 @@
                     <div class="alert alert-info">
                         <small>
                             <i class="fas fa-info-circle"></i>
-                            <strong>Note:</strong> This action will return the application to the Subject Clerk for
+                            <strong>Note:</strong> This action will return the application to the Bus Pass Subject Clerk
+                            (Branch) for
                             review.
                             The application is not rejected and can be resubmitted for your consideration after review.
                         </small>

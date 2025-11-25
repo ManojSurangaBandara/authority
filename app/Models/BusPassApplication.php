@@ -35,7 +35,7 @@ class BusPassApplication extends Model
         // Other fields
         'requested_bus_name',
         'destination_from_ahq',
-        'rent_allowance_order',
+        'marriage_part_ii_order',
         'permission_letter',
         'living_in_bus',
         'destination_location_ahq',

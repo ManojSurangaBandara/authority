@@ -186,9 +186,9 @@
 
                             <div class="row mt-3">
                                 <div class="col-md-6">
-                                    <strong>Rent Allowance Part II Order:</strong><br>
-                                    @if ($bus_pass_application->rent_allowance_order)
-                                        <a href="{{ asset('storage/' . $bus_pass_application->rent_allowance_order) }}"
+                                    <strong>Marriage Part II Order:</strong><br>
+                                    @if ($bus_pass_application->marriage_part_ii_order)
+                                        <a href="{{ asset('storage/' . $bus_pass_application->marriage_part_ii_order) }}"
                                             target="_blank" class="btn btn-sm btn-outline-primary">
                                             <i class="fas fa-file-pdf"></i> View Document
                                         </a>
@@ -344,11 +344,11 @@
                                 $bus_pass_application->bus_pass_type !== 'unmarried_daily_travel')
                             <div class="row mt-3">
                                 <div class="col-md-12">
-                                    <strong>Rent Allowance Part II Order:</strong>
+                                    <strong>Marriage Part II Order:</strong>
                                     <span class="text-info">(For Married Personnel - Not applicable for Living in Bus only
                                         and Unmarried Daily Travel)</span><br>
-                                    @if ($bus_pass_application->rent_allowance_order)
-                                        <a href="{{ asset('storage/' . $bus_pass_application->rent_allowance_order) }}"
+                                    @if ($bus_pass_application->marriage_part_ii_order)
+                                        <a href="{{ asset('storage/' . $bus_pass_application->marriage_part_ii_order) }}"
                                             target="_blank" class="btn btn-sm btn-outline-primary">
                                             <i class="fas fa-file-pdf"></i> View Document
                                         </a>

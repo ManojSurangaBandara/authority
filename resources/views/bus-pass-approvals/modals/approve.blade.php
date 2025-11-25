@@ -208,12 +208,17 @@
                         <small>
                             <i class="fas fa-info-circle"></i>
                             @if (auth()->user()->hasRole('Bus Pass Subject Clerk (Branch)'))
-                                This forward action will send the application to the next approval level (Staff
-                                Officer).
+                                This forward action will send the application to the Staff Officer (Branch) for
+                                recommendation.
                             @elseif(auth()->user()->hasRole('Subject Clerk (DMOV)'))
-                                This forward action will send the application to the next approval level (Staff Officer
-                                2 DMOV).
+                                This forward action will send the application to the Staff Officer 2 (DMOV) for final
+                                movement approval.
                                 <br><strong>Note:</strong> You must specify SLTB Season availability before forwarding.
+                            @elseif(auth()->user()->hasRole('Staff Officer 2 (DMOV)'))
+                                This approval will send the application to Col Mov (DMOV) for final authorization.
+                            @elseif(auth()->user()->hasRole('Col Mov (DMOV)'))
+                                This is the final approval. The application will be approved for integration into the
+                                system.
                             @else
                                 This approval will move the application to the next stage in the workflow.
                             @endif

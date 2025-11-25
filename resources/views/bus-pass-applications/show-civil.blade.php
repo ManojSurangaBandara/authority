@@ -206,7 +206,7 @@
                             @if ($bus_pass_application->grama_niladari_certificate)
                                 <div class="col-md-4">
                                     <strong>Grama Niladari Certificate:</strong><br>
-                                    <a href="{{ Storage::url($bus_pass_application->grama_niladari_certificate) }}"
+                                    <a href="{{ asset('storage/' . $bus_pass_application->grama_niladari_certificate) }}"
                                         target="_blank" class="btn btn-sm btn-outline-primary">
                                         <i class="fas fa-file-pdf"></i> View Document
                                     </a>
@@ -216,17 +216,17 @@
                             @if ($bus_pass_application->person_image)
                                 <div class="col-md-4">
                                     <strong>Person Image:</strong><br>
-                                    <a href="{{ Storage::url($bus_pass_application->person_image) }}" target="_blank"
+                                    <a href="{{ asset('storage/' . $bus_pass_application->person_image) }}" target="_blank"
                                         class="btn btn-sm btn-outline-primary">
                                         <i class="fas fa-image"></i> View Image
                                     </a>
                                 </div>
                             @endif
 
-                            @if ($bus_pass_application->rent_allowance_order)
+                            @if ($bus_pass_application->marriage_part_ii_order)
                                 <div class="col-md-4">
-                                    <strong>Rent Allowance Order:</strong><br>
-                                    <a href="{{ Storage::url($bus_pass_application->rent_allowance_order) }}"
+                                    <strong>Marriage Part II Order:</strong><br>
+                                    <a href="{{ asset('storage/' . $bus_pass_application->marriage_part_ii_order) }}"
                                         target="_blank" class="btn btn-sm btn-outline-primary">
                                         <i class="fas fa-file-pdf"></i> View Document
                                     </a>

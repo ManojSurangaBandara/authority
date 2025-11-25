@@ -661,17 +661,17 @@
                                 <div class="row" id="rent_allowance_section" style="display: none;">
                                     <div class="col-md-12">
                                         <div class="form-group">
-                                            <label for="rent_allowance_order_daily">Rent Allowance Part II Order
+                                            <label for="marriage_part_ii_order_daily">Marriage Part II Order
                                                 <span class="text-info">(For Married Personnel - Not applicable for
                                                     Living
                                                     in Bus only)</span></label>
                                             <input type="file"
-                                                class="form-control-file @error('rent_allowance_order') is-invalid @enderror"
-                                                id="rent_allowance_order_daily" name="rent_allowance_order"
+                                                class="form-control-file @error('marriage_part_ii_order') is-invalid @enderror"
+                                                id="marriage_part_ii_order_daily" name="marriage_part_ii_order"
                                                 accept=".pdf,.jpg,.jpeg,.png">
                                             <small class="form-text text-muted">Accepted formats: PDF, JPG, PNG (Max:
-                                                2MB)</small>
-                                            @error('rent_allowance_order')
+                                                10MB)</small>
+                                            @error('marriage_part_ii_order')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
                                         </div>
@@ -691,7 +691,7 @@
                                                 id="permission_letter" name="permission_letter"
                                                 accept=".pdf,.jpg,.jpeg,.png">
                                             <small class="form-text text-muted">Accepted formats: PDF, JPG, PNG (Max:
-                                                2MB)</small>
+                                                10MB)</small>
                                             @error('permission_letter')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
@@ -708,7 +708,7 @@
                                                 id="grama_niladari_certificate" name="grama_niladari_certificate"
                                                 accept=".pdf,.jpg,.jpeg,.png">
                                             <small class="form-text text-muted">Accepted formats: PDF, JPG, PNG (Max:
-                                                2MB)</small>
+                                                10MB)</small>
                                             @error('grama_niladari_certificate')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
@@ -721,7 +721,7 @@
                                                 class="form-control-file @error('person_image') is-invalid @enderror"
                                                 id="person_image" name="person_image" accept=".jpg,.jpeg,.png">
                                             <small class="form-text text-muted">Accepted formats: JPG, PNG (Max:
-                                                2MB)</small>
+                                                5MB)</small>
                                             @error('person_image')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
@@ -819,6 +819,21 @@
             border-color: #80bdff;
             outline: 0;
             box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        /* Center align text vertically in Select2 dropdowns */
+        .select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow {
+            height: 100%;
+            display: flex;
+            align-items: center;
         }
 
         /* Branch Card Verification Styling */
@@ -1006,7 +1021,7 @@
                 } else {
                     $('#rent_allowance_section').hide();
                     // Clear the file input when hidden
-                    $('#rent_allowance_order_daily').val('');
+                    $('#marriage_part_ii_order_daily').val('');
                 }
             }
 

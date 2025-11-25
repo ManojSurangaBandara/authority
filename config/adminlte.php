@@ -550,40 +550,59 @@ return [
             'icon' => 'fas fa-fw fa-cogs',
             'can' => 'operational_user_access',
             'submenu' => [
+                // [
+                //     'text' => 'Rejected Applications',
+                //     'url' => 'rejected-applications',
+                //     'icon' => 'fas fa-fw fa-users',
+                //     // 'can' => 'manage_user_accounts',
+                //     'active' => [
+                //         'rejected-applications*',
+                //     ],
+                // ],
+                // [
+                //     'text' => 'Temporary Card Printed',
+                //     'url' => 'temporary-card-printed',
+                //     'icon' => 'fas fa-fw fa-id-card',
+                //     // 'can' => 'manage_user_accounts',
+                //     'active' => [
+                //         'temporary-card-printed*',
+                //     ],
+                // ],
+                // [
+                //     'text' => 'Handed Over Applications',
+                //     'url' => 'handed-over-applications',
+                //     'icon' => 'fas fa-fw fa-check',
+                //     // 'can' => 'manage_user_accounts',
+                //     'active' => [
+                //         'handed-over-applications*',
+                //     ],
+                // ],
+                // [
+                //     'text' => 'Not Yet Handed Over Applications',
+                //     'url' => 'not-yet-handed-over-applications',
+                //     'icon' => 'fas fa-fw fa-times',
+                //     // 'can' => 'manage_user_accounts',
+                //     'active' => [
+                //         'not-yet-handed-over-applications*',
+                //     ],
+                // ],
+
                 [
-                    'text' => 'Rejected Applications',
-                    'url' => 'rejected-applications',
-                    'icon' => 'fas fa-fw fa-users',
+                    'text' => 'Passenger Counts',
+                    'url' => 'passenger-counts',
+                    'icon' => 'fas fa-fw fa-chart-bar',
                     // 'can' => 'manage_user_accounts',
                     'active' => [
-                        'rejected-applications*',
+                        'passenger-counts*',
                     ],
                 ],
                 [
-                    'text' => 'Temporary Card Printed',
-                    'url' => 'temporary-card-printed',
-                    'icon' => 'fas fa-fw fa-id-card',
+                    'text' => 'Establishment wise Applications',
+                    'url' => 'establishment-wise-applications',
+                    'icon' => 'fas fa-fw fa-building',
                     // 'can' => 'manage_user_accounts',
                     'active' => [
-                        'temporary-card-printed*',
-                    ],
-                ],
-                [
-                    'text' => 'Handed Over Applications',
-                    'url' => 'handed-over-applications',
-                    'icon' => 'fas fa-fw fa-check',
-                    // 'can' => 'manage_user_accounts',
-                    'active' => [
-                        'handed-over-applications*',
-                    ],
-                ],
-                [
-                    'text' => 'Not Yet Handed Over Applications',
-                    'url' => 'not-yet-handed-over-applications',
-                    'icon' => 'fas fa-fw fa-times',
-                    // 'can' => 'manage_user_accounts',
-                    'active' => [
-                        'not-yet-handed-over-applications*',
+                        'establishment-wise-applications*',
                     ],
                 ],
 

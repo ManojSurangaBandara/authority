@@ -542,7 +542,7 @@
                                             <label for="grama_niladari_certificate">Grama Niladari Certificate</label>
                                             @if ($bus_pass_application->grama_niladari_certificate)
                                                 <div class="mb-2">
-                                                    <a href="{{ Storage::url($bus_pass_application->grama_niladari_certificate) }}"
+                                                    <a href="{{ asset('storage/' . $bus_pass_application->grama_niladari_certificate) }}"
                                                         target="_blank" class="btn btn-sm btn-outline-success">
                                                         <i class="fas fa-file-pdf"></i> View Current Document
                                                     </a>
@@ -553,7 +553,7 @@
                                                 id="grama_niladari_certificate" name="grama_niladari_certificate"
                                                 accept=".pdf,.jpg,.jpeg,.png">
                                             <small class="form-text text-muted">Accepted formats: PDF, JPG, PNG (Max:
-                                                2MB). Leave empty to keep current document.</small>
+                                                10MB). Leave empty to keep current document.</small>
                                             @error('grama_niladari_certificate')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
@@ -564,7 +564,7 @@
                                             <label for="person_image">Person Image</label>
                                             @if ($bus_pass_application->person_image)
                                                 <div class="mb-2">
-                                                    <a href="{{ Storage::url($bus_pass_application->person_image) }}"
+                                                    <a href="{{ asset('storage/' . $bus_pass_application->person_image) }}"
                                                         target="_blank" class="btn btn-sm btn-outline-success">
                                                         <i class="fas fa-image"></i> View Current Image
                                                     </a>
@@ -574,7 +574,7 @@
                                                 class="form-control-file @error('person_image') is-invalid @enderror"
                                                 id="person_image" name="person_image" accept=".jpg,.jpeg,.png">
                                             <small class="form-text text-muted">Accepted formats: JPG, PNG (Max:
-                                                2MB). Leave empty to keep current image.</small>
+                                                5MB). Leave empty to keep current image.</small>
                                             @error('person_image')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
@@ -673,6 +673,21 @@
             border-color: #80bdff;
             outline: 0;
             box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        /* Center align text vertically in Select2 dropdowns */
+        .select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow {
+            height: 100%;
+            display: flex;
+            align-items: center;
         }
 
         /* Branch Card Verification Styling */

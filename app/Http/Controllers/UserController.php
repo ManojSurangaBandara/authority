@@ -43,8 +43,7 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
+            'e_no' => 'required|string|max:255|unique:users',
             'regiment_no' => 'nullable|string|max:20',
             'rank' => 'nullable|string|max:50',
             'contact_no' => 'nullable|string|max:20',
@@ -54,10 +53,17 @@ class UserController extends Controller
             'is_active' => 'required|boolean',
         ]);
 
+        // Check if System Administrator role is being assigned
+        $roles = Role::whereIn('id', $request->roles)->get();
+        $isSystemAdmin = $roles->contains(function ($role) {
+            return $role->name === 'System Administrator (DMOV)';
+        });
+
         $user = User::create([
             'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'e_no' => $request->e_no,
+            'email' => $isSystemAdmin ? $request->e_no : $request->e_no . '@authority.army.lk',
+            'password' => Hash::make($isSystemAdmin ? 'admin123' : 'temp_password_' . time()),
             'regiment_no' => $request->regiment_no,
             'rank' => $request->rank,
             'contact_no' => $request->contact_no,
@@ -67,11 +73,15 @@ class UserController extends Controller
         ]);
 
         // Assign roles to user
-        $roles = Role::whereIn('id', $request->roles)->get();
         $user->assignRole($roles);
 
+        $successMessage = 'User created successfully and assigned roles.';
+        if ($isSystemAdmin) {
+            $successMessage .= ' System Administrator login: Email = ' . $user->email . ' | Password = admin123';
+        }
+
         return redirect()->route('users.index')
-            ->with('success', 'User created successfully and assigned roles.');
+            ->with('success', $successMessage);
     }
 
     /**
@@ -114,10 +124,9 @@ class UserController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => [
+            'e_no' => [
                 'required',
                 'string',
-                'email',
                 'max:255',
                 Rule::unique('users')->ignore($user->id),
             ],
@@ -133,7 +142,8 @@ class UserController extends Controller
 
         $updateData = [
             'name' => $request->name,
-            'email' => $request->email,
+            'e_no' => $request->e_no,
+            'email' => $request->e_no . '@authority.army.lk', // Update email based on E No
             'regiment_no' => $request->regiment_no,
             'rank' => $request->rank,
             'contact_no' => $request->contact_no,

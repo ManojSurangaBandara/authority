@@ -47,8 +47,8 @@
                     <div class="alert alert-info">
                         <small>
                             <i class="fas fa-info-circle"></i>
-                            This recommendation will forward the application to the Director (Branch) for final
-                            decision.
+                            This recommendation will forward the application to the Subject Clerk (DMOV) for movement
+                            approval.
                         </small>
                     </div>
                 </div>
