@@ -830,4 +830,60 @@ class BusPassApplicationController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Verify branch card through external API
+     */
+    public function verifyBranchCard(Request $request)
+    {
+        $request->validate([
+            'service_no' => 'required|string',
+            'ser_no' => 'required|string'
+        ]);
+
+        try {
+            // Make API call to branch card verification service
+            $response = Http::withoutVerifying()
+                ->timeout(30)
+                ->get('https://branchcard.army.lk/bcims_api/person.php', [
+                    'service_no' => $request->service_no,
+                    'ser_no' => $request->ser_no
+                ]);
+
+            if ($response->successful()) {
+                $responseData = $response->json();
+
+                // Check if person data exists
+                if (isset($responseData['person']) && $responseData['person'] !== null && count($responseData['person']) > 0) {
+                    $personData = $responseData['person'][0];
+
+                    // Return the actual API response structure for frontend handling
+                    return response()->json([
+                        'success' => true,
+                        'person' => $responseData['person']
+                    ]);
+                } else {
+                    // No person data found - return structure that matches API
+                    return response()->json([
+                        'success' => true,
+                        'person' => null
+                    ]);
+                }
+            }
+
+            // HTTP error from API
+            return response()->json([
+                'success' => false,
+                'message' => 'Branch card verification service unavailable',
+                'status_code' => $response->status()
+            ], $response->status());
+        } catch (\Exception $e) {
+            Log::error('Branch card verification error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Branch card verification failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

@@ -80,6 +80,7 @@ Route::middleware('auth')->group(function () {
     Route::get('bus-pass-applications/create-civil', [BusPassApplicationController::class, 'createCivil'])->name('bus-pass-applications.create-civil');
     Route::resource('bus-pass-applications', BusPassApplicationController::class);
     Route::get('bus-pass-applications-api/get-details', [BusPassApplicationController::class, 'getPersonDetails'])->name('bus-pass-applications.get-details');
+    Route::post('bus-pass-applications-api/verify-branch-card', [BusPassApplicationController::class, 'verifyBranchCard'])->name('bus-pass-applications.verify-branch-card');
 
     // Bus Pass Status routes (Master Data)
     Route::resource('bus-pass-statuses', BusPassStatusController::class);
