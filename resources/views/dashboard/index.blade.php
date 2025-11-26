@@ -153,7 +153,7 @@
                     type: 'bar',
                     data: {
                         labels: ['Branch Clerk', 'Branch Staff Officer', 'DMOV Clerk', 'DMOV Staff Officer 2',
-                            'DMOV Colonel'
+                            'Col MOV'
                         ],
                         datasets: [{
                             label: 'Pending Applications (My Branch)',
@@ -206,13 +206,13 @@
 
                 // Pending Approvals Chart - All Levels (Vertical Bar)
                 const branchSubjectClerkPendingCtx = document.getElementById('branchClerkPendingChart').getContext(
-                '2d');
+                    '2d');
                 const branchApprovalData = @json($chartData['approvalOverview']);
                 const branchSubjectClerkPendingChart = new Chart(branchSubjectClerkPendingCtx, {
                     type: 'bar',
                     data: {
                         labels: ['Branch Clerk', 'Branch Staff Officer', 'DMOV Clerk', 'DMOV Staff Officer 2',
-                            'DMOV Colonel'
+                            'Col MOV'
                         ],
                         datasets: [{
                             label: 'Pending Applications (My Branch)',
@@ -458,7 +458,7 @@
                     type: 'bar',
                     data: {
                         labels: ['Branch Clerk', 'Branch Staff Officer', 'DMOV Clerk', 'DMOV Staff Officer 2',
-                            'DMOV Colonel'
+                            'Col MOV'
                         ],
                         datasets: [{
                             label: 'Pending Applications (My Branch)',
