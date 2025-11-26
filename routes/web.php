@@ -193,8 +193,12 @@ Route::middleware('auth')->group(function () {
 
     // Profile routes (All authenticated users)
     Route::get('profile', [ProfileController::class, 'show'])->name('profile.show');
-    Route::get('profile/change-password', [ProfileController::class, 'editPassword'])->name('profile.change-password');
-    Route::post('profile/update-password', [ProfileController::class, 'updatePassword'])->name('profile.update-password');
+
+    // Change Password routes (System Administrator only)
+    Route::middleware('role:System Administrator (DMOV)')->group(function () {
+        Route::get('profile/change-password', [ProfileController::class, 'editPassword'])->name('profile.change-password');
+        Route::post('profile/update-password', [ProfileController::class, 'updatePassword'])->name('profile.update-password');
+    });
 });
 
 Route::get('/logout', function () {

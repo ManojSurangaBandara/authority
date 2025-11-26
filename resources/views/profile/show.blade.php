@@ -12,9 +12,11 @@
                     <div class="card card-teal">
                         <div class="card-header">
                             <i class="nav-icon fas fa-user nav-icon"></i> {{ __('My Profile') }}
-                            <a href="{{ route('profile.change-password') }}" class="btn btn-sm btn-warning float-right">
-                                <i class="fas fa-key"></i> Change Password
-                            </a>
+                            @if (auth()->user()->hasRole('System Administrator (DMOV)'))
+                                <a href="{{ route('profile.change-password') }}" class="btn btn-sm btn-warning float-right">
+                                    <i class="fas fa-key"></i> Change Password
+                                </a>
+                            @endif
                         </div>
 
                         <div class="card-body">
