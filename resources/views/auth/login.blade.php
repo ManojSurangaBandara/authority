@@ -38,6 +38,10 @@
                         {{-- {{ config('app.name') }} --}}
                         Authority Management System
                     </p>
+                    <p width="350px" align="centere"
+                        style="color:rgba(255, 165, 0, 0.8); font-size:20px; text-align: center; font-family: sans-serif; text-shadow: 1px 1px 2px black; margin-top: -10px;">
+                        Liberty Bus Pass Management System
+                    </p>
                 </div>
                 <br>
             </div>
