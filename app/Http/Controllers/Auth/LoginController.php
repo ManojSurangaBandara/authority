@@ -66,7 +66,7 @@ class LoginController extends Controller
      */
     public function username()
     {
-        return 'e_no';
+        return 'username';
     }
 
     /**
@@ -77,7 +77,7 @@ class LoginController extends Controller
      */
     protected function attemptLogin(Request $request)
     {
-        $login_input = $request->input('e_no'); // This field now accepts both E No and email
+        $login_input = $request->input('username'); // This field now accepts both E No and email
         $password = $request->input('password');
 
         // First, try to find user by E No
@@ -109,6 +109,7 @@ class LoginController extends Controller
             $authenticated = $this->authenticateWithAPI($user->e_no, $password);
 
             if ($authenticated) {
+
                 // Log the user in without password verification
                 Auth::login($user, $request->filled('remember'));
                 return true;
@@ -135,18 +136,40 @@ class LoginController extends Controller
         // In production, this should call the actual authentication API
 
         try {
-            // Example API call structure:
-            /*
-            $response = Http::post('https://api.army.lk/auth', [
-                'e_no' => $e_no,
+            $response = Http::withoutVerifying()->timeout(30)->post('https://192.168.100.41/eportal/api/busspass_login', [
+                'username' => $e_no,
                 'password' => $password
             ]);
 
-            return $response->successful() && $response->json('authenticated') === true;
-            */
+            // Check if the API call was successful and the response has success status
+            if ($response->successful()) {
 
-            // Temporary: Accept any non-empty password for testing
-            return !empty($password);
+                $responseData = $response->json();
+
+                // Check if the API returned success status
+                if (isset($responseData['status']) && $responseData['status'] === 'success') {
+                    Log::info('API Authentication successful for E No: ' . $e_no, [
+                        'user_data' => $responseData['user'] ?? null,
+                        'token_type' => $responseData['authorisation']['type'] ?? null
+                    ]);
+                    return true;
+                }
+
+                // Log the API response if status is not success
+                Log::warning('API Authentication failed - Status not success', [
+                    'e_no' => $e_no,
+                    'response' => $responseData
+                ]);
+                return false;
+            }
+
+            // Log HTTP error if API call failed
+            Log::error('API Authentication HTTP error', [
+                'e_no' => $e_no,
+                'status_code' => $response->status(),
+                'response' => $response->body()
+            ]);
+            return false;
         } catch (\Exception $e) {
             Log::error('API authentication error: ' . $e->getMessage());
             return false;
@@ -175,7 +198,7 @@ class LoginController extends Controller
      */
     protected function sendFailedLoginResponse(Request $request)
     {
-        $login_input = $request->input('e_no');
+        $login_input = $request->input('username');
 
         // Check if user exists by E No first
         $user = \App\Models\User::where('e_no', $login_input)->first();

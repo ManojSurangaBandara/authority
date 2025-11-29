@@ -38,6 +38,10 @@
                         {{-- {{ config('app.name') }} --}}
                         Authority Management System
                     </p>
+                    <p width="350px" align="centere"
+                        style="color:rgba(255, 165, 0, 0.8); font-size:20px; text-align: center; font-family: sans-serif; text-shadow: 1px 1px 2px black; margin-top: -10px;">
+                        Liberty Bus Pass Management System
+                    </p>
                 </div>
                 <br>
             </div>
@@ -50,32 +54,32 @@
                         <label class="form-label mt-4 login_title">Login </label>
                         <div class="form-floating mb-3">
                             <input type="text" class="form-control @error('e_no') is-invalid @enderror"
-                                id="floatingInput" placeholder="E No or Email" name="e_no" autocomplete="off"
+                                id="floatingInput" placeholder="E No or Email" name="username" autocomplete="off"
                                 value="{{ old('e_no') }}" pattern="^[a-zA-Z0-9_@.-]+$">
                             <label for="floatingInput">Username</label>
                             @error('e_no')
                                 <span class="error invalid-feedback">{{ $message }}</span>
                             @enderror
 
+                            }
+                            <div class="form-floating">
+                                <input type="password" class="form-control @error('password') is-invalid @enderror"
+                                    id="floatingPassword" placeholder="Password" name="password" pattern="^[^'"\\/]*$">
+                                <label for="floatingPassword">Password</label>
+                                @error('password')
+                                    <span class="error invalid-feedback">{{ $message }}</span>
+                                @enderror
+                            </div>
                         </div>
-                        <div class="form-floating">
-                            <input type="password" class="form-control @error('password') is-invalid @enderror"
-                                id="floatingPassword" placeholder="Password" name="password" pattern="^[^'"\\/]*$">
-                            <label for="floatingPassword">Password</label>
-                            @error('password')
-                                <span class="error invalid-feedback">{{ $message }}</span>
-                            @enderror
+                        <div class="form-group">
+                            <br>
+                            <input type="submit" class="btn btn-outline-info" value="Login">
+                            <div class="mt-3">
+                                <small style="color: rgba(255, 165, 0, 0.8); font-size: 12px;">
+                                    ⓘ Regular users: Enter E No | System Admin: Enter Email
+                                </small>
+                            </div>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <br>
-                        <input type="submit" class="btn btn-outline-info" value="Login">
-                        <div class="mt-3">
-                            <small style="color: rgba(255, 165, 0, 0.8); font-size: 12px;">
-                                ⓘ Regular users: Enter E No | System Admin: Enter Email
-                            </small>
-                        </div>
-                    </div>
 
                 </form>
             </div>

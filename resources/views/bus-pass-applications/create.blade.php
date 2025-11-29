@@ -1365,45 +1365,67 @@
                 $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Verifying...');
                 $('#verification_status').html('<span class="badge badge-info">Verifying...</span>');
 
-                // API call to verify branch card
+                // API call to verify branch card through backend proxy
                 $.ajax({
-                    url: 'https://abc.com/def',
+                    url: '{{ route('bus-pass-applications.verify-branch-card') }}',
                     method: 'POST',
                     data: {
-                        regiment_no: regimentNo,
-                        branch_card_id: branchCardId
+                        _token: '{{ csrf_token() }}',
+                        service_no: regimentNo,
+                        ser_no: branchCardId
                     },
                     success: function(response) {
-                        if (response.verified === true || response.status === 'verified' ||
-                            response.success === true) {
-                            $('#verification_status').html(
-                                '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Verified!</span>'
-                            );
-                            branchCardVerified = true;
+                        // Check if person data exists and is verified
+                        if (response.person && response.person.length > 0) {
+                            const personData = response.person[0];
+
+                            // Check if the person is active and approved
+                            if (personData.active === 1 && personData.approved === 3 &&
+                                personData.approval_card === 'Approved' && personData
+                                .status_card === 'Active') {
+                                $('#verification_status').html(
+                                    '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Verified!</span>'
+                                );
+                                branchCardVerified = true;
+
+                                // Show additional info for verification
+                                console.log('Branch Card Verified:', {
+                                    name: personData.name_with_initial,
+                                    rank: personData.rank,
+                                    unit: personData.unit,
+                                    establishment: personData.establishments
+                                });
+                            } else {
+                                $('#verification_status').html(
+                                    '<span class="badge badge-warning"><i class="fas fa-exclamation-triangle"></i> Card Not Active/Approved</span>'
+                                );
+                                branchCardVerified = false;
+                                alert('Branch card is not active or approved.');
+                            }
                         } else {
+                            // No person data found
                             $('#verification_status').html(
                                 '<span class="badge badge-danger"><i class="fas fa-times-circle"></i> Not Verified</span>'
                             );
                             branchCardVerified = false;
+                            alert(
+                                'Branch card not found. Please check your Regiment No and Branch Card ID.'
+                                );
                         }
-
                     },
                     error: function(xhr) {
-
                         $('#verification_status').html(
-                            '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Verified!</span>'
+                            '<span class="badge badge-danger"><i class="fas fa-times-circle"></i> Verification Failed</span>'
                         );
-                        branchCardVerified = true;
+                        branchCardVerified = false;
 
-
-                        // $('#verification_status').html('<span class="badge badge-danger"><i class="fas fa-times-circle"></i> Verification Failed</span>');
-                        // branchCardVerified = false;
-
-                        // let errorMsg = 'Branch card verification failed. Please try again.';
-                        // if (xhr.responseJSON && xhr.responseJSON.message) {
-                        //     errorMsg = xhr.responseJSON.message;
-                        // }
-                        // alert(errorMsg);
+                        let errorMsg = 'Branch card verification failed. Please try again.';
+                        if (xhr.status === 0) {
+                            errorMsg = 'Network error. Please check your internet connection.';
+                        } else if (xhr.status >= 500) {
+                            errorMsg = 'Server error. Please try again later.';
+                        }
+                        alert(errorMsg);
                     },
                     complete: function() {
                         $('#verify_branch_card').prop('disabled', false).html(

@@ -80,6 +80,7 @@ Route::middleware('auth')->group(function () {
     Route::get('bus-pass-applications/create-civil', [BusPassApplicationController::class, 'createCivil'])->name('bus-pass-applications.create-civil');
     Route::resource('bus-pass-applications', BusPassApplicationController::class);
     Route::get('bus-pass-applications-api/get-details', [BusPassApplicationController::class, 'getPersonDetails'])->name('bus-pass-applications.get-details');
+    Route::post('bus-pass-applications-api/verify-branch-card', [BusPassApplicationController::class, 'verifyBranchCard'])->name('bus-pass-applications.verify-branch-card');
 
     // Bus Pass Status routes (Master Data)
     Route::resource('bus-pass-statuses', BusPassStatusController::class);
@@ -192,8 +193,12 @@ Route::middleware('auth')->group(function () {
 
     // Profile routes (All authenticated users)
     Route::get('profile', [ProfileController::class, 'show'])->name('profile.show');
-    Route::get('profile/change-password', [ProfileController::class, 'editPassword'])->name('profile.change-password');
-    Route::post('profile/update-password', [ProfileController::class, 'updatePassword'])->name('profile.update-password');
+
+    // Change Password routes (System Administrator only)
+    Route::middleware('role:System Administrator (DMOV)')->group(function () {
+        Route::get('profile/change-password', [ProfileController::class, 'editPassword'])->name('profile.change-password');
+        Route::post('profile/update-password', [ProfileController::class, 'updatePassword'])->name('profile.update-password');
+    });
 });
 
 Route::get('/logout', function () {
