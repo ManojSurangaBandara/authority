@@ -42,12 +42,17 @@
                                 </thead>
                                 <tbody>
                                     @foreach ($pendingApplications as $application)
-                                        <tr class="{{ $application->wasRecentlyNotRecommended() ? 'table-warning' : '' }}">
+                                        <tr
+                                            class="{{ $application->wasRecentlyNotRecommended() || $application->wasRecentlyDmovNotRecommended() ? 'table-warning' : '' }}">
                                             <td>
                                                 <strong>#{{ $application->id }}</strong>
                                                 @if ($application->wasRecentlyNotRecommended())
                                                     <br><span class="badge badge-warning"><i
                                                             class="fas fa-exclamation-triangle"></i> Not Recommended</span>
+                                                @endif
+                                                @if ($application->wasRecentlyDmovNotRecommended())
+                                                    <br><span class="badge badge-danger"><i class="fas fa-arrow-left"></i>
+                                                        Returned from DMOV</span>
                                                 @endif
                                             </td>
                                             <td>
@@ -121,15 +126,36 @@
 
                                                     @can('approve_bus_pass')
                                                         @if (auth()->user()->hasRole('Staff Officer (Branch)'))
-                                                            {{-- Staff Officer Branch: Recommend/Not Recommend --}}
+                                                            @if ($application->wasRecentlyDmovNotRecommended())
+                                                                {{-- Application returned from DMOV: Only show forward to branch clerk --}}
+                                                                <button type="button" class="btn btn-sm btn-primary"
+                                                                    data-toggle="modal"
+                                                                    data-target="#forwardToBranchClerkModal{{ $application->id }}">
+                                                                    <i class="fas fa-arrow-left"></i> Forward to Branch Clerk
+                                                                </button>
+                                                            @else
+                                                                {{-- Normal workflow: Recommend/Not Recommend --}}
+                                                                <button type="button" class="btn btn-sm btn-success"
+                                                                    data-toggle="modal"
+                                                                    data-target="#recommendModal{{ $application->id }}">
+                                                                    <i class="fas fa-thumbs-up"></i> Recommend
+                                                                </button>
+                                                                <button type="button" class="btn btn-sm btn-warning"
+                                                                    data-toggle="modal"
+                                                                    data-target="#notRecommendModal{{ $application->id }}">
+                                                                    <i class="fas fa-thumbs-down"></i> Not Recommend
+                                                                </button>
+                                                            @endif
+                                                        @elseif (auth()->user()->hasRole('Subject Clerk (DMOV)'))
+                                                            {{-- Subject Clerk DMOV: Forward/Not Recommend --}}
                                                             <button type="button" class="btn btn-sm btn-success"
                                                                 data-toggle="modal"
-                                                                data-target="#recommendModal{{ $application->id }}">
-                                                                <i class="fas fa-thumbs-up"></i> Recommend
+                                                                data-target="#approveModal{{ $application->id }}">
+                                                                <i class="fas fa-arrow-right"></i> Forward
                                                             </button>
                                                             <button type="button" class="btn btn-sm btn-warning"
                                                                 data-toggle="modal"
-                                                                data-target="#notRecommendModal{{ $application->id }}">
+                                                                data-target="#dmovNotRecommendModal{{ $application->id }}">
                                                                 <i class="fas fa-thumbs-down"></i> Not Recommend
                                                             </button>
                                                         @else
@@ -137,14 +163,14 @@
                                                             <button type="button" class="btn btn-sm btn-success"
                                                                 data-toggle="modal"
                                                                 data-target="#approveModal{{ $application->id }}">
-                                                                @if (auth()->user()->hasRole(['Bus Pass Subject Clerk (Branch)', 'Subject Clerk (DMOV)']))
+                                                                @if (auth()->user()->hasRole('Bus Pass Subject Clerk (Branch)'))
                                                                     <i class="fas fa-arrow-right"></i> Forward
                                                                 @else
                                                                     <i class="fas fa-check"></i> Approve
                                                                 @endif
                                                             </button>
 
-                                                            @unless (auth()->user()->hasRole(['Bus Pass Subject Clerk (Branch)', 'Subject Clerk (DMOV)']))
+                                                            @unless (auth()->user()->hasRole('Bus Pass Subject Clerk (Branch)'))
                                                                 <button type="button" class="btn btn-sm btn-danger"
                                                                     data-toggle="modal"
                                                                     data-target="#rejectModal{{ $application->id }}">
@@ -183,6 +209,8 @@
         @include('bus-pass-approvals.modals.reject', ['application' => $application])
         @include('bus-pass-approvals.modals.recommend', ['application' => $application])
         @include('bus-pass-approvals.modals.not-recommend', ['application' => $application])
+        @include('bus-pass-approvals.modals.dmov-not-recommend', ['application' => $application])
+        @include('bus-pass-approvals.modals.forward-to-branch-clerk', ['application' => $application])
     @endforeach
 @stop
 

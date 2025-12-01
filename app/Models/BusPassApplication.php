@@ -204,4 +204,36 @@ class BusPassApplication extends Model
 
         return !$latestApprovalAfter;
     }
+
+    /**
+     * Get latest DMOV not recommended action
+     */
+    public function getLatestDmovNotRecommendedAction()
+    {
+        return $this->approvalHistory()
+            ->where('action', 'dmov_not_recommended')
+            ->with('user')
+            ->orderBy('action_date', 'desc')
+            ->first();
+    }
+
+    /**
+     * Check if application was recently not recommended by DMOV
+     */
+    public function wasRecentlyDmovNotRecommended()
+    {
+        $latestDmovNotRecommended = $this->getLatestDmovNotRecommendedAction();
+
+        if (!$latestDmovNotRecommended) {
+            return false;
+        }
+
+        // Check if the latest DMOV not recommended action is more recent than any approved/forwarded actions
+        $latestApprovalAfter = $this->approvalHistory()
+            ->whereIn('action', ['approved', 'forwarded', 'recommended'])
+            ->where('action_date', '>', $latestDmovNotRecommended->action_date)
+            ->exists();
+
+        return !$latestApprovalAfter;
+    }
 }
