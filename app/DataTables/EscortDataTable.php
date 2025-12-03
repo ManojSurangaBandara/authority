@@ -101,6 +101,7 @@ class EscortDataTable extends DataTable
         return [
             Column::make('DT_RowIndex')->title('#')->searchable(false)->orderable(false),
             Column::make('regiment_no')->title('Regiment No'),
+            Column::make('eno')->title('ENO'),
             Column::make('rank')->title('Rank'),
             Column::make('name')->title('Name'),
             Column::make('contact_no')->title('Contact No'),
