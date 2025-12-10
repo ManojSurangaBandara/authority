@@ -18,7 +18,7 @@
                         <h3 class="card-title"><i class="fas fa-link"></i> Assign Bus to Route</h3>
                     </div>
                     <div class="card-body">
-                        <form id="assignmentForm">
+                        <form id="assignmentForm" method="POST">
                             @csrf
                             <div class="form-group">
                                 <label for="bus_select">Select Bus:</label>
@@ -38,7 +38,9 @@
                                 <select id="route_select" name="route_id" class="form-control">
                                     <option value="">Choose a route...</option>
                                     @foreach ($unassignedRoutes as $route)
-                                        <option value="{{ $route->id }}">{{ $route->name }}</option>
+                                        <option value="{{ $route->id }}" data-route-type="{{ $route->type }}">
+                                            {{ $route->display_name }}
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>
@@ -68,6 +70,7 @@
                                 <thead>
                                     <tr>
                                         <th>Route Name</th>
+                                        <th>Route Type</th>
                                         <th>Bus Name</th>
                                         <th>Bus Number</th>
                                         <th>Seats</th>
@@ -76,25 +79,31 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($routes->where('bus_id') as $route)
-                                        <tr id="assignment-{{ $route->id }}">
-                                            <td>{{ $route->name }}</td>
-                                            <td>{{ $route->bus->name ?? 'N/A' }}</td>
-                                            <td>{{ $route->bus->no ?? 'N/A' }}</td>
-                                            <td>{{ $route->bus->no_of_seats ?? 'N/A' }}</td>
-                                            <td>{{ $route->bus->total_capacity ?? 'N/A' }}</td>
+                                    @forelse($assignments as $assignment)
+                                        <tr id="assignment-{{ $assignment->id }}">
+                                            <td>{{ $assignment->route_name }}</td>
+                                            <td>
+                                                <span
+                                                    class="badge badge-{{ $assignment->route_type === 'living_out' ? 'primary' : 'info' }}">
+                                                    {{ ucfirst(str_replace('_', ' ', $assignment->route_type)) }}
+                                                </span>
+                                            </td>
+                                            <td>{{ $assignment->bus->name ?? 'N/A' }}</td>
+                                            <td>{{ $assignment->bus->no ?? 'N/A' }}</td>
+                                            <td>{{ $assignment->bus->no_of_seats ?? 'N/A' }}</td>
+                                            <td>{{ $assignment->bus->total_capacity ?? 'N/A' }}</td>
                                             <td>
                                                 <button type="button" class="btn btn-sm btn-warning unassign-btn"
-                                                    data-route-id="{{ $route->id }}"
-                                                    data-route-name="{{ $route->name }}"
-                                                    data-bus-name="{{ $route->bus->name ?? '' }}">
+                                                    data-assignment-id="{{ $assignment->id }}"
+                                                    data-route-name="{{ $assignment->route_name }}"
+                                                    data-bus-name="{{ $assignment->bus->name ?? '' }}">
                                                     <i class="fas fa-unlink"></i> Unassign
                                                 </button>
                                             </td>
                                         </tr>
                                     @empty
                                         <tr id="no-assignments">
-                                            <td colspan="6" class="text-center text-muted">
+                                            <td colspan="7" class="text-center text-muted">
                                                 No bus-route assignments found
                                             </td>
                                         </tr>
@@ -124,7 +133,7 @@
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-success">
                     <div class="inner">
-                        <h3 id="assigned-buses">{{ $routes->where('bus_id')->count() }}</h3>
+                        <h3 id="assigned-buses">{{ $assignments->count() }}</h3>
                         <p>Assigned Buses</p>
                     </div>
                     <div class="icon">
@@ -194,6 +203,7 @@
 
                 let busId = $('#bus_select').val();
                 let routeId = $('#route_select').val();
+                let routeType = $('#route_select option:selected').data('route-type');
 
                 if (!busId || !routeId) {
                     showAlert('Please select both a bus and a route.', 'warning');
@@ -206,7 +216,8 @@
                     data: {
                         _token: $('meta[name="csrf-token"]').attr('content'),
                         bus_id: busId,
-                        route_id: routeId
+                        route_id: routeId,
+                        route_type: routeType
                     },
                     beforeSend: function() {
                         $('#assignmentForm button[type="submit"]').prop('disabled', true)
@@ -233,21 +244,22 @@
 
             // Unassign Button Click
             $(document).on('click', '.unassign-btn', function() {
-                let routeId = $(this).data('route-id');
+                let assignmentId = $(this).data('assignment-id');
                 let routeName = $(this).data('route-name');
                 let busName = $(this).data('bus-name');
 
                 if (confirm(
-                    `Are you sure you want to unassign bus "${busName}" from route "${routeName}"?`)) {
+                        `Are you sure you want to unassign bus "${busName}" from route "${routeName}"?`)) {
                     $.ajax({
                         url: '{{ route('bus-assignments.unassign') }}',
                         method: 'POST',
                         data: {
                             _token: $('meta[name="csrf-token"]').attr('content'),
-                            route_id: routeId
+                            assignment_id: assignmentId
                         },
                         beforeSend: function() {
-                            $(`#assignment-${routeId} .unassign-btn`).prop('disabled', true)
+                            $(`#assignment-${assignmentId} .unassign-btn`).prop('disabled',
+                                    true)
                                 .html('<i class="fas fa-spinner fa-spin"></i> Unassigning...');
                         },
                         success: function(response) {
@@ -262,7 +274,8 @@
                             showAlert('An error occurred while unassigning the bus.', 'error');
                         },
                         complete: function() {
-                            $(`#assignment-${routeId} .unassign-btn`).prop('disabled', false)
+                            $(`#assignment-${assignmentId} .unassign-btn`).prop('disabled',
+                                    false)
                                 .html('<i class="fas fa-unlink"></i> Unassign');
                         }
                     });
