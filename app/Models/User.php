@@ -105,7 +105,7 @@ class User extends Authenticatable implements JWTSubject
         if ($this->hasRole('Staff Officer 2 (DMOV)')) return 5;
         if ($this->hasRole('Staff Officer 1 (DMOV)')) return 6;
         if ($this->hasRole('Col Mov (DMOV)')) return 7;
-        if ($this->hasRole('Director (DMOV)')) return 8;
+        if ($this->hasRole('Director (DMOV)')) return 7;
         if ($this->hasRole('Bus Escort (DMOV)')) return 9;
 
         return 0;

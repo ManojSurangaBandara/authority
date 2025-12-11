@@ -32,11 +32,11 @@
                             $branchRoles = [
                                 1 => 'Bus Pass Subject Clerk (Branch)',
                                 2 => 'Staff Officer (Branch)',
-                                3 => 'Director (Branch)'
+                                3 => 'Director (Branch)',
                             ];
                         @endphp
-                        
-                        @foreach($branchRoles as $level => $roleName)
+
+                        @foreach ($branchRoles as $level => $roleName)
                             @php
                                 $role = $roles->where('name', $roleName)->first();
                             @endphp
@@ -50,19 +50,20 @@
                                             <div class="card-body py-2">
                                                 <h6 class="mb-1">
                                                     {{ $roleName }}
-                                                    @if($role)
+                                                    @if ($role)
                                                         <span class="badge badge-success ml-2">Active</span>
                                                     @else
                                                         <span class="badge badge-danger ml-2">Not Created</span>
                                                     @endif
                                                 </h6>
-                                                @if($role)
+                                                @if ($role)
                                                     <small class="text-muted">
-                                                        {{ $role->users->count() }} users | 
+                                                        {{ $role->users->count() }} users |
                                                         {{ $role->permissions->count() }} permissions
                                                     </small>
                                                     <div class="mt-1">
-                                                        <a href="{{ route('roles.show', $role) }}" class="btn btn-sm btn-outline-primary">
+                                                        <a href="{{ route('roles.show', $role) }}"
+                                                            class="btn btn-sm btn-outline-primary">
                                                             <i class="fas fa-eye"></i> View
                                                         </a>
                                                     </div>
@@ -71,14 +72,14 @@
                                         </div>
                                     </div>
                                 </div>
-                                @if($level < 3)
+                                @if ($level < 3)
                                     <div class="hierarchy-arrow text-center">
                                         <i class="fas fa-arrow-down text-primary"></i>
                                     </div>
                                 @endif
                             </div>
                         @endforeach
-                        
+
                         <!-- Forward to DMOV -->
                         <div class="text-center my-3">
                             <div class="badge badge-warning badge-lg">
@@ -105,13 +106,12 @@
                                 4 => 'Subject Clerk (DMOV)',
                                 5 => 'Staff Officer 2 (DMOV)',
                                 6 => 'Staff Officer 1 (DMOV)',
-                                7 => 'Col Mov (DMOV)',
-                                8 => 'Director (DMOV)',
-                                9 => 'Bus Escort (DMOV)'
+                                7 => 'Col Mov (DMOV) / Director (DMOV)',
+                                9 => 'Bus Escort (DMOV)',
                             ];
                         @endphp
-                        
-                        @foreach($dmovRoles as $level => $roleName)
+
+                        @foreach ($dmovRoles as $level => $roleName)
                             @php
                                 $role = $roles->where('name', $roleName)->first();
                             @endphp
@@ -125,19 +125,20 @@
                                             <div class="card-body py-2">
                                                 <h6 class="mb-1">
                                                     {{ $roleName }}
-                                                    @if($role)
+                                                    @if ($role)
                                                         <span class="badge badge-success ml-2">Active</span>
                                                     @else
                                                         <span class="badge badge-danger ml-2">Not Created</span>
                                                     @endif
                                                 </h6>
-                                                @if($role)
+                                                @if ($role)
                                                     <small class="text-muted">
-                                                        {{ $role->users->count() }} users | 
+                                                        {{ $role->users->count() }} users |
                                                         {{ $role->permissions->count() }} permissions
                                                     </small>
                                                     <div class="mt-1">
-                                                        <a href="{{ route('roles.show', $role) }}" class="btn btn-sm btn-outline-success">
+                                                        <a href="{{ route('roles.show', $role) }}"
+                                                            class="btn btn-sm btn-outline-success">
                                                             <i class="fas fa-eye"></i> View
                                                         </a>
                                                     </div>
@@ -146,7 +147,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                @if($level < 9)
+                                @if ($level < 9)
                                     <div class="hierarchy-arrow text-center">
                                         <i class="fas fa-arrow-down text-success"></i>
                                     </div>
@@ -172,7 +173,7 @@
                     @php
                         $systemAdminRole = $roles->where('name', 'System Administrator (DMOV)')->first();
                     @endphp
-                    
+
                     <div class="text-center">
                         <div class="hierarchy-item">
                             <div class="card border-danger" style="max-width: 400px; margin: 0 auto;">
@@ -180,22 +181,23 @@
                                     <h5 class="mb-2">
                                         <span class="badge badge-danger badge-lg">10</span>
                                         System Administrator (DMOV)
-                                        @if($systemAdminRole)
+                                        @if ($systemAdminRole)
                                             <span class="badge badge-success ml-2">Active</span>
                                         @else
                                             <span class="badge badge-danger ml-2">Not Created</span>
                                         @endif
                                     </h5>
-                                    @if($systemAdminRole)
+                                    @if ($systemAdminRole)
                                         <p class="text-muted mb-2">
-                                            {{ $systemAdminRole->users->count() }} users | 
+                                            {{ $systemAdminRole->users->count() }} users |
                                             {{ $systemAdminRole->permissions->count() }} permissions
                                         </p>
                                         <p class="text-sm mb-3">
-                                            Full system access including user management, role management, 
+                                            Full system access including user management, role management,
                                             bus route management, and all administrative functions.
                                         </p>
-                                        <a href="{{ route('roles.show', $systemAdminRole) }}" class="btn btn-outline-danger">
+                                        <a href="{{ route('roles.show', $systemAdminRole) }}"
+                                            class="btn btn-outline-danger">
                                             <i class="fas fa-eye"></i> View Details
                                         </a>
                                     @endif
@@ -268,25 +270,32 @@
         .hierarchy-container {
             padding: 1rem 0;
         }
+
         .hierarchy-level {
             min-width: 50px;
         }
+
         .hierarchy-arrow {
             margin: 0.5rem 0;
         }
+
         .badge-lg {
             font-size: 1rem;
             padding: 0.5rem 0.75rem;
         }
+
         .hierarchy-item {
             position: relative;
         }
+
         .list-group-numbered {
             counter-reset: section;
         }
+
         .list-group-numbered li {
             counter-increment: section;
         }
+
         .list-group-numbered li::before {
             content: counter(section) ".";
             font-weight: bold;

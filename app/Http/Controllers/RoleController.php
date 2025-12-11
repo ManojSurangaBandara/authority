@@ -27,7 +27,7 @@ class RoleController extends Controller
      */
     public function create()
     {
-        $permissions = Permission::all()->groupBy(function($permission) {
+        $permissions = Permission::all()->groupBy(function ($permission) {
             // Group permissions by category based on naming convention
             $parts = explode('_', $permission->name);
             return ucfirst($parts[count($parts) - 1] ?? 'General');
@@ -75,7 +75,7 @@ class RoleController extends Controller
     public function edit($id)
     {
         $role = Role::findOrFail($id);
-        $permissions = Permission::all()->groupBy(function($permission) {
+        $permissions = Permission::all()->groupBy(function ($permission) {
             // Group permissions by category based on naming convention
             $parts = explode('_', $permission->name);
             return ucfirst($parts[count($parts) - 1] ?? 'General');
@@ -159,7 +159,7 @@ class RoleController extends Controller
     public function permissions($id)
     {
         $role = Role::findOrFail($id);
-        $permissions = Permission::all()->groupBy(function($permission) {
+        $permissions = Permission::all()->groupBy(function ($permission) {
             // Group permissions by category
             $parts = explode('_', $permission->name);
             return ucfirst($parts[count($parts) - 1] ?? 'General');
@@ -205,8 +205,7 @@ class RoleController extends Controller
             4 => 'Subject Clerk (DMOV)',
             5 => 'Staff Officer 2 (DMOV)',
             6 => 'Staff Officer 1 (DMOV)',
-            7 => 'Col Mov (DMOV)',
-            8 => 'Director (DMOV)',
+            7 => 'Col Mov (DMOV) / Director (DMOV)',
             9 => 'Bus Escort (DMOV)',
             10 => 'System Administrator (DMOV)',
         ];

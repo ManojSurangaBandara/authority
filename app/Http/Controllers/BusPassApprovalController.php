@@ -411,6 +411,10 @@ class BusPassApprovalController extends Controller
             return 'pending_col_mov';
         }
 
+        if ($user->hasRole('Director (DMOV)')) {
+            return 'pending_col_mov';
+        }
+
         return null;
     }
 
