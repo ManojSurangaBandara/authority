@@ -236,4 +236,114 @@ class BusPassApplication extends Model
 
         return !$latestApprovalAfter;
     }
+
+    /**
+     * Get approved bus pass count for a specific route
+     */
+    public function getApprovedCountForRoute($routeName, $routeType = 'living_out')
+    {
+        if (!$routeName) {
+            return 0;
+        }
+
+        $query = self::where('status', 'approved');
+
+        if ($routeType === 'living_out') {
+            $query->where('requested_bus_name', $routeName);
+        } elseif ($routeType === 'living_in') {
+            $query->where('living_in_bus', $routeName);
+        } elseif ($routeType === 'weekend') {
+            $query->where('weekend_bus_name', $routeName);
+        }
+
+        return $query->count();
+    }
+
+    /**
+     * Get pending bus pass count for a specific route
+     */
+    public function getPendingCountForRoute($routeName, $routeType = 'living_out')
+    {
+        if (!$routeName) {
+            return 0;
+        }
+
+        $query = self::whereIn('status', [
+            'pending_subject_clerk',
+            'pending_staff_officer_branch',
+            'forwarded_to_movement',
+            'pending_staff_officer_2_mov',
+            'pending_col_mov',
+            'pending_director_branch',
+            'pending_director_dmov',
+            'not_recommended',
+            'dmov_not_recommended'
+        ]);
+
+        if ($routeType === 'living_out') {
+            $query->where('requested_bus_name', $routeName);
+        } elseif ($routeType === 'living_in') {
+            $query->where('living_in_bus', $routeName);
+        } elseif ($routeType === 'weekend') {
+            $query->where('weekend_bus_name', $routeName);
+        }
+
+        return $query->count();
+    }
+
+    /**
+     * Get seating capacity for a route based on assigned bus
+     */
+    public function getSeatingCapacityForRoute($routeName, $routeType = 'living_out')
+    {
+        if (!$routeName) {
+            return null;
+        }
+
+        // Find the route in bus_route_assignments
+        if ($routeType === 'living_out') {
+            // Find route ID from bus_routes table
+            $route = \App\Models\BusRoute::where('name', $routeName)->first();
+            if ($route) {
+                $assignment = \App\Models\BusRouteAssignment::active()
+                    ->where('route_id', $route->id)
+                    ->where('route_type', 'living_out')
+                    ->with('bus')
+                    ->first();
+            }
+        } elseif ($routeType === 'living_in') {
+            // Find route ID from living_in_buses table
+            $route = \App\Models\LivingInBuses::where('name', $routeName)->first();
+            if ($route) {
+                $assignment = \App\Models\BusRouteAssignment::active()
+                    ->where('route_id', $route->id)
+                    ->where('route_type', 'living_in')
+                    ->with('bus')
+                    ->first();
+            }
+        }
+
+        if (isset($assignment) && $assignment && $assignment->bus) {
+            return [
+                'seats' => $assignment->bus->no_of_seats,
+                'total_capacity' => $assignment->bus->total_capacity,
+                'bus_name' => $assignment->bus->name,
+                'bus_no' => $assignment->bus->no
+            ];
+        }
+
+        return null;
+    }
+
+    /**
+     * Get route statistics (approved count + pending count + seating capacity)
+     */
+    public function getRouteStatistics($routeName, $routeType = 'living_out')
+    {
+        return [
+            'approved_count' => $this->getApprovedCountForRoute($routeName, $routeType),
+            'pending_count' => $this->getPendingCountForRoute($routeName, $routeType),
+            'capacity_info' => $this->getSeatingCapacityForRoute($routeName, $routeType)
+        ];
+    }
 }
