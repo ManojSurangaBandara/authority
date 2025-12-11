@@ -13,7 +13,7 @@
                         <span>&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                     <div class="alert alert-danger">
                         <h5><i class="fas fa-exclamation-triangle"></i> Rejection Confirmation</h5>
                         You are about to reject the bus pass application for:

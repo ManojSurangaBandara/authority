@@ -15,7 +15,7 @@
 
             <form method="POST" action="{{ route('bus-pass-approvals.forward-to-branch-clerk', $application->id) }}">
                 @csrf
-                <div class="modal-body">
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle"></i>
                         <strong>Returning to Branch Clerk:</strong>

@@ -13,7 +13,7 @@
                         <span>&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                     <div class="alert alert-success">
                         <h5><i class="fas fa-info-circle"></i> Recommendation Confirmation</h5>
                         You are about to recommend the bus pass application for:

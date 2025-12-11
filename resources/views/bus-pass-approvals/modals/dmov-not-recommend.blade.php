@@ -13,7 +13,7 @@
                         <span>&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                     <div class="alert alert-warning">
                         <h5><i class="fas fa-exclamation-triangle"></i> Not Recommendation Confirmation</h5>
                         You are about to mark this bus pass application as "not recommended" for:
