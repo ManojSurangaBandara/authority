@@ -85,6 +85,12 @@ class BusPassApplication extends Model
     // Status label accessor
     public function getStatusLabelAttribute()
     {
+        // Check if current user is a branch user and status is in DMOV workflow
+        $dmovStatuses = ['forwarded_to_movement', 'pending_staff_officer_2_mov', 'pending_col_mov'];
+        if (auth()->check() && auth()->user()->isBranchUser() && in_array($this->status, $dmovStatuses)) {
+            return 'Submitted';
+        }
+
         $statusData = $this->statusData;
         if ($statusData) {
             return $statusData->label;
@@ -117,6 +123,15 @@ class BusPassApplication extends Model
     // Status badge accessor
     public function getStatusBadgeAttribute()
     {
+        // Check if current user is a branch user
+        if (auth()->check() && auth()->user()->isBranchUser()) {
+            // Branch users should only see real status for these two statuses
+            $allowedStatuses = ['pending_subject_clerk', 'pending_staff_officer_branch'];
+            if (!in_array($this->status, $allowedStatuses)) {
+                return '<span class="badge badge-secondary">Submitted</span>';
+            }
+        }
+
         $statusData = $this->statusData;
         if ($statusData) {
             return $statusData->badge_html;
