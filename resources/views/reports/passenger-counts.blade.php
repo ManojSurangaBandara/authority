@@ -64,6 +64,10 @@
                                                         <span class="badge badge-success ml-1">Living Out</span>
                                                     @endif
                                                 @endif
+                                                @if (isset($route['seating_capacity']) && $route['seating_capacity'])
+                                                    <br><small class="text-muted">Capacity: {{ $route['seating_capacity'] }}
+                                                        seats</small>
+                                                @endif
                                             </td>
                                             <td class="text-center">
                                                 {{ $route['army'] ?? 0 }}
