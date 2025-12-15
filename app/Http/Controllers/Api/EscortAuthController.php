@@ -56,7 +56,13 @@ class EscortAuthController extends Controller
                 return $this->unauthorizedResponse('Wrong credentials');
             }
 
-            // Step 3: Generate JWT token for escort
+            // Step 3: Get escort's active assignment with route and bus details
+            $assignment = $escort->escortAssignment()->with([
+                'busRoute.assignedBus',
+                'livingInBus.assignedBus'
+            ])->first();
+
+            // Step 4: Generate JWT token for escort
             $customClaims = [
                 'escort_id' => $escort->id,
                 'regiment_no' => $escort->regiment_no,
@@ -68,10 +74,39 @@ class EscortAuthController extends Controller
 
             $token = JWTAuth::claims($customClaims)->fromSubject($escort);
 
+            // Step 5: Prepare route information
+            $route = null;
+            if ($assignment) {
+                if ($assignment->route_type === 'living_out' && $assignment->busRoute) {
+                    $route = [
+                        'id' => $assignment->busRoute->id,
+                        'route_type' => 'living_out',
+                        'route_name' => $assignment->busRoute->name,
+                        'bus' => $assignment->busRoute->assignedBus ? [
+                            'id' => $assignment->busRoute->assignedBus->id,
+                            'name' => $assignment->busRoute->assignedBus->name,
+                            'no' => $assignment->busRoute->assignedBus->no,
+                        ] : null
+                    ];
+                } elseif ($assignment->route_type === 'living_in' && $assignment->livingInBus) {
+                    $route = [
+                        'id' => $assignment->livingInBus->id,
+                        'route_type' => 'living_in',
+                        'route_name' => $assignment->livingInBus->name,
+                        'bus' => $assignment->livingInBus->assignedBus ? [
+                            'id' => $assignment->livingInBus->assignedBus->id,
+                            'name' => $assignment->livingInBus->assignedBus->name,
+                            'no' => $assignment->livingInBus->assignedBus->no,
+                        ] : null
+                    ];
+                }
+            }
+
             Log::info('Escort login successful', [
                 'e_no' => $e_no,
                 'escort_id' => $escort->id,
                 'escort_name' => $escort->name,
+                'route_assigned' => $route !== null,
             ]);
 
             return response()->json([
@@ -89,7 +124,8 @@ class EscortAuthController extends Controller
                     'token' => $token,
                     'type' => 'bearer',
                     'expires_in' => JWTAuth::factory()->getTTL() * 60
-                ]
+                ],
+                'route' => $route
             ]);
         } catch (JWTException $e) {
             Log::error('Escort login failed - JWT error', [
