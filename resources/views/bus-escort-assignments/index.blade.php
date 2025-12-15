@@ -79,7 +79,6 @@
                                         <th>Escort</th>
                                         <th>Regiment No</th>
                                         <th>Assignment Date</th>
-                                        <th>Status</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -95,12 +94,14 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                @if ($assignment->route_type === 'living_out' && $assignment->busRoute && $assignment->busRoute->bus)
-                                                    {{ $assignment->busRoute->bus->name }}<br>
+                                                @if ($assignment->route_type === 'living_out' && $assignment->busRoute && $assignment->busRoute->assignedBus)
+                                                    {{ $assignment->busRoute->assignedBus->name }}<br>
                                                     <small
-                                                        class="text-muted">({{ $assignment->busRoute->bus->no }})</small>
-                                                @elseif ($assignment->route_type === 'living_in')
-                                                    <span class="text-info">Living In Bus</span>
+                                                        class="text-muted">({{ $assignment->busRoute->assignedBus->no }})</small>
+                                                @elseif ($assignment->route_type === 'living_in' && $assignment->livingInBus && $assignment->livingInBus->assignedBus)
+                                                    {{ $assignment->livingInBus->assignedBus->name }}<br>
+                                                    <small
+                                                        class="text-muted">({{ $assignment->livingInBus->assignedBus->no }})</small>
                                                 @else
                                                     <span class="text-muted">No bus assigned</span>
                                                 @endif
@@ -122,9 +123,6 @@
                                             </td>
                                             <td>{{ $assignment->assigned_date->format('d M Y') }}</td>
                                             <td>
-                                                <span class="badge badge-success">Active</span>
-                                            </td>
-                                            <td>
                                                 @if ($assignment->escort)
                                                     <button type="button" class="btn btn-sm btn-warning unassign-btn"
                                                         data-assignment-id="{{ $assignment->id }}"
@@ -139,7 +137,7 @@
                                         </tr>
                                     @empty
                                         <tr id="no-assignments">
-                                            <td colspan="7" class="text-center text-muted">
+                                            <td colspan="6" class="text-center text-muted">
                                                 No escort-route assignments found
                                             </td>
                                         </tr>

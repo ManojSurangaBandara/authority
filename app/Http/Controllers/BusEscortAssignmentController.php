@@ -20,7 +20,7 @@ class BusEscortAssignmentController extends Controller
     public function index()
     {
         // Get all assignments with their routes and escorts
-        $allAssignments = BusEscortAssignment::with(['escort', 'busRoute.bus', 'livingInBus'])
+        $allAssignments = BusEscortAssignment::with(['escort', 'busRoute.assignedBus', 'livingInBus.assignedBus'])
             ->where('status', 'active')
             ->get();
 

@@ -50,4 +50,30 @@ class BusRoute extends Model
     {
         return $this->hasMany(SlcmpInchargeAssignment::class, 'bus_route_id');
     }
+
+    public function routeAssignments()
+    {
+        return $this->hasMany(BusRouteAssignment::class, 'route_id')
+            ->where('route_type', 'living_out');
+    }
+
+    public function activeRouteAssignment()
+    {
+        return $this->hasOne(BusRouteAssignment::class, 'route_id')
+            ->where('route_type', 'living_out')
+            ->where('status', 'active');
+    }
+
+    public function assignedBus()
+    {
+        return $this->hasOneThrough(
+            Bus::class,
+            BusRouteAssignment::class,
+            'route_id', // Foreign key on BusRouteAssignment table
+            'id', // Foreign key on Bus table
+            'id', // Local key on BusRoute table
+            'bus_id' // Local key on BusRouteAssignment table
+        )->where('bus_route_assignments.route_type', 'living_out')
+            ->where('bus_route_assignments.status', 'active');
+    }
 }
