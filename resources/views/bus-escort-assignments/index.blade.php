@@ -38,8 +38,8 @@
                                 <select id="route_select" name="route_id" class="form-control">
                                     <option value="">Choose a route...</option>
                                     @foreach ($unassignedRoutes as $route)
-                                        <option value="{{ $route->id }}">
-                                            {{ $route->name }}
+                                        <option value="{{ $route->id }}" data-route-type="{{ $route->type }}">
+                                            {{ $route->display_name }}
                                             @if ($route->bus)
                                                 - {{ $route->bus->name }} ({{ $route->bus->no }})
                                             @endif
@@ -48,16 +48,7 @@
                                 </select>
                             </div>
 
-                            <div class="form-group">
-                                <label for="assigned_date">Assignment Date:</label>
-                                <input type="date" id="assigned_date" name="assigned_date" class="form-control"
-                                    value="{{ date('Y-m-d') }}" required>
-                            </div>
 
-                            <div class="form-group">
-                                <label for="end_date">End Date (Optional):</label>
-                                <input type="date" id="end_date" name="end_date" class="form-control">
-                            </div>
 
                             <button type="submit" class="btn btn-primary btn-block">
                                 <i class="fas fa-shield-alt"></i> Assign Escort to Route
@@ -93,42 +84,52 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($routes->filter(function($route) { return $route->escortAssignment && $route->escortAssignment->escort; }) as $route)
-                                        <tr id="assignment-{{ $route->escortAssignment->id }}">
-                                            <td>{{ $route->name }}</td>
+                                    @forelse($allAssignments as $assignment)
+                                        <tr id="assignment-{{ $assignment->id }}">
                                             <td>
-                                                @if ($route->bus)
-                                                    {{ $route->bus->name }}<br>
-                                                    <small class="text-muted">({{ $route->bus->no }})</small>
+                                                {{ $assignment->route_name }}
+                                                @if ($assignment->route_type === 'living_in')
+                                                    <span class="badge badge-info ml-1">Living In</span>
+                                                @else
+                                                    <span class="badge badge-primary ml-1">Living Out</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if ($assignment->route_type === 'living_out' && $assignment->busRoute && $assignment->busRoute->bus)
+                                                    {{ $assignment->busRoute->bus->name }}<br>
+                                                    <small
+                                                        class="text-muted">({{ $assignment->busRoute->bus->no }})</small>
+                                                @elseif ($assignment->route_type === 'living_in')
+                                                    <span class="text-info">Living In Bus</span>
                                                 @else
                                                     <span class="text-muted">No bus assigned</span>
                                                 @endif
                                             </td>
                                             <td>
-                                                @if ($route->escortAssignment && $route->escortAssignment->escort)
-                                                    {{ $route->escortAssignment->escort->rank ?? 'N/A' }}<br>
-                                                    <strong>{{ $route->escortAssignment->escort->name ?? 'Unknown' }}</strong>
+                                                @if ($assignment->escort)
+                                                    {{ $assignment->escort->rank ?? 'N/A' }}<br>
+                                                    <strong>{{ $assignment->escort->name ?? 'Unknown' }}</strong>
                                                 @else
                                                     <span class="text-muted">No escort</span>
                                                 @endif
                                             </td>
                                             <td>
-                                                @if ($route->escortAssignment && $route->escortAssignment->escort)
-                                                    {{ $route->escortAssignment->escort->regiment_no ?? 'N/A' }}
+                                                @if ($assignment->escort)
+                                                    {{ $assignment->escort->regiment_no ?? 'N/A' }}
                                                 @else
                                                     <span class="text-muted">N/A</span>
                                                 @endif
                                             </td>
-                                            <td>{{ $route->escortAssignment->assigned_date->format('d M Y') }}</td>
+                                            <td>{{ $assignment->assigned_date->format('d M Y') }}</td>
                                             <td>
                                                 <span class="badge badge-success">Active</span>
                                             </td>
                                             <td>
-                                                @if ($route->escortAssignment && $route->escortAssignment->escort)
+                                                @if ($assignment->escort)
                                                     <button type="button" class="btn btn-sm btn-warning unassign-btn"
-                                                        data-assignment-id="{{ $route->escortAssignment->id }}"
-                                                        data-route-name="{{ $route->name }}"
-                                                        data-escort-name="{{ $route->escortAssignment->escort->rank ?? 'N/A' }} {{ $route->escortAssignment->escort->name ?? 'Unknown' }}">
+                                                        data-assignment-id="{{ $assignment->id }}"
+                                                        data-route-name="{{ $assignment->route_name }}"
+                                                        data-escort-name="{{ $assignment->escort->rank ?? 'N/A' }} {{ $assignment->escort->name ?? 'Unknown' }}">
                                                         <i class="fas fa-user-times"></i> Unassign
                                                     </button>
                                                 @else
@@ -168,8 +169,7 @@
             <div class="col-lg-3 col-6">
                 <div class="small-box bg-success">
                     <div class="inner">
-                        <h3 id="assigned-escorts">
-                            {{ $routes->filter(function ($route) {return $route->escortAssignment;})->count() }}</h3>
+                        <h3 id="assigned-escorts">{{ $allAssignments->count() }}</h3>
                         <p>Assigned Escorts</p>
                     </div>
                     <div class="icon">
@@ -239,11 +239,10 @@
 
                 let escortId = $('#escort_select').val();
                 let routeId = $('#route_select').val();
-                let assignedDate = $('#assigned_date').val();
-                let endDate = $('#end_date').val();
+                let routeType = $('#route_select option:selected').data('route-type');
 
-                if (!escortId || !routeId || !assignedDate) {
-                    showAlert('Please select an escort, route, and assignment date.', 'warning');
+                if (!escortId || !routeId) {
+                    showAlert('Please select an escort and route.', 'warning');
                     return;
                 }
 
@@ -254,8 +253,7 @@
                         _token: $('meta[name="csrf-token"]').attr('content'),
                         escort_id: escortId,
                         route_id: routeId,
-                        assigned_date: assignedDate,
-                        end_date: endDate
+                        route_type: routeType
                     },
                     beforeSend: function() {
                         $('#assignmentForm button[type="submit"]').prop('disabled', true)
@@ -288,7 +286,7 @@
 
                 if (confirm(
                         `Are you sure you want to unassign escort "${escortName}" from route "${routeName}"?`
-                        )) {
+                    )) {
                     $.ajax({
                         url: '{{ route('bus-escort-assignments.unassign') }}',
                         method: 'POST',
@@ -331,7 +329,6 @@
             $('#assignmentForm')[0].reset();
             $('#escort_select').val('');
             $('#route_select').val('');
-            $('#assigned_date').val('{{ date('Y-m-d') }}');
         }
 
         function showAlert(message, type) {

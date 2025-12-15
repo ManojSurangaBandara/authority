@@ -7,6 +7,7 @@ use App\DataTables\BusEscortAssignmentDataTable;
 use App\Models\BusEscortAssignment;
 use App\Models\BusRoute;
 use App\Models\Escort;
+use App\Models\LivingInBuses;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
@@ -18,7 +19,12 @@ class BusEscortAssignmentController extends Controller
      */
     public function index()
     {
-        // Get all routes with their assigned escorts
+        // Get all assignments with their routes and escorts
+        $allAssignments = BusEscortAssignment::with(['escort', 'busRoute.bus', 'livingInBus'])
+            ->where('status', 'active')
+            ->get();
+
+        // Get all routes (for backwards compatibility with view)
         $routes = BusRoute::with(['bus', 'escortAssignment.escort'])->get();
 
         // Get available escorts (not currently assigned to active routes)
@@ -28,183 +34,54 @@ class BusEscortAssignmentController extends Controller
             ->toArray();
         $availableEscorts = Escort::whereNotIn('id', $assignedEscortIds)->get();
 
-        // Get routes without active escort assignments
-        $unassignedRoutes = BusRoute::with('bus')
+        // Get unassigned routes (both living out and living in)
+        $unassignedRoutes = collect();
+
+        // Get living out routes without active escort assignments
+        $unassignedLivingOutRoutes = BusRoute::with('bus')
             ->whereDoesntHave('escortAssignment', function ($query) {
-                $query->where('status', 'active');
+                $query->where('status', 'active')->where('route_type', 'living_out');
             })
             ->get();
 
-        return view('bus-escort-assignments.index', compact('routes', 'availableEscorts', 'unassignedRoutes'));
-    }
+        // Get living in routes without active escort assignments
+        $assignedLivingInRouteIds = BusEscortAssignment::where('status', 'active')
+            ->where('route_type', 'living_in')
+            ->pluck('living_in_bus_id')
+            ->toArray();
+        $unassignedLivingInRoutes = LivingInBuses::whereNotIn('id', $assignedLivingInRouteIds)->get();
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        $busRoutes = BusRoute::with('bus')->get();
-        return view('bus-escort-assignments.create', compact('busRoutes'));
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        $validatedData = $request->validate([
-            'bus_route_id' => 'required|exists:bus_routes,id',
-            'escort_regiment_no' => 'required|string|max:50',
-            'escort_rank' => 'required|string|max:100',
-            'escort_name' => 'required|string|max:200',
-            'escort_contact_no' => 'required|string|max:20',
-            'assigned_date' => 'required|date',
-            'end_date' => 'nullable|date|after:assigned_date',
-            'status' => 'required|in:active,inactive',
-        ]);
-
-        // Check if there's already an active assignment for this route
-        if ($validatedData['status'] === 'active') {
-            $existingAssignment = BusEscortAssignment::where('bus_route_id', $validatedData['bus_route_id'])
-                ->where('status', 'active')
-                ->first();
-
-            if ($existingAssignment) {
-                return back()->withErrors(['bus_route_id' => 'This bus route already has an active escort assignment.'])
-                    ->withInput();
-            }
-        }
-
-        // Check if escort exists by regiment number
-        $escort = Escort::where('regiment_no', $request->escort_regiment_no)->first();
-
-        if (!$escort) {
-            // Create new escort if doesn't exist
-            $escort = Escort::create([
-                'regiment_no' => $request->escort_regiment_no,
-                'rank' => $request->escort_rank,
-                'name' => $request->escort_name,
-                'contact_no' => $request->escort_contact_no,
-            ]);
-        } else {
-            // Update existing escort information
-            $escort->update([
-                'rank' => $request->escort_rank,
-                'name' => $request->escort_name,
-                'contact_no' => $request->escort_contact_no,
+        // Add living out routes to collection
+        foreach ($unassignedLivingOutRoutes as $route) {
+            $unassignedRoutes->push((object) [
+                'id' => $route->id,
+                'name' => $route->name,
+                'type' => 'living_out',
+                'display_name' => $route->name . ' (Living Out)',
+                'bus' => $route->bus
             ]);
         }
 
-        // Create assignment with escort_id instead of individual fields
-        $assignmentData = [
-            'bus_route_id' => $validatedData['bus_route_id'],
-            'escort_id' => $escort->id,
-            'assigned_date' => $validatedData['assigned_date'],
-            'end_date' => $validatedData['end_date'],
-            'status' => $validatedData['status'],
-            'created_by' => Auth::user()->name ?? 'System'
-        ];
+        // Add living in routes to collection
+        foreach ($unassignedLivingInRoutes as $route) {
+            $unassignedRoutes->push((object) [
+                'id' => $route->id,
+                'name' => $route->name,
+                'type' => 'living_in',
+                'display_name' => $route->name . ' (Living In)',
+                'bus' => null
+            ]);
+        }
 
-        BusEscortAssignment::create($assignmentData);
-
-        return redirect()->route('bus-escort-assignments.index')
-            ->with('success', 'Bus escort assignment created successfully. Escort information has been ' . ($escort->wasRecentlyCreated ? 'created' : 'updated') . ' in the system.');
+        return view('bus-escort-assignments.index', compact('allAssignments', 'routes', 'availableEscorts', 'unassignedRoutes'));
     }
+
+
 
     /**
      * Display the specified resource.
      */
-    public function show(BusEscortAssignment $bus_escort_assignment)
-    {
-        $bus_escort_assignment->load(['busRoute.bus']);
-        $assignment = $bus_escort_assignment;
-        return view('bus-escort-assignments.show', compact('assignment'));
-    }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(BusEscortAssignment $bus_escort_assignment)
-    {
-        $busRoutes = BusRoute::with('bus')->get();
-        $assignment = $bus_escort_assignment;
-        return view('bus-escort-assignments.edit', compact('assignment', 'busRoutes'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, BusEscortAssignment $bus_escort_assignment)
-    {
-        $validatedData = $request->validate([
-            'bus_route_id' => 'required|exists:bus_routes,id',
-            'escort_regiment_no' => 'required|string|max:50',
-            'escort_rank' => 'required|string|max:100',
-            'escort_name' => 'required|string|max:200',
-            'escort_contact_no' => 'required|string|max:20',
-            'assigned_date' => 'required|date',
-            'end_date' => 'nullable|date|after:assigned_date',
-            'status' => 'required|in:active,inactive',
-        ]);
-
-        // Check if there's already an active assignment for this route (excluding current assignment)
-        if ($validatedData['status'] === 'active') {
-            $existingAssignment = BusEscortAssignment::where('bus_route_id', $validatedData['bus_route_id'])
-                ->where('status', 'active')
-                ->where('id', '!=', $bus_escort_assignment->id)
-                ->first();
-
-            if ($existingAssignment) {
-                return back()->withErrors(['bus_route_id' => 'This bus route already has an active escort assignment.'])
-                    ->withInput();
-            }
-        }
-
-        // Update or create escort information
-        $escort = Escort::where('regiment_no', $request->escort_regiment_no)->first();
-
-        if (!$escort) {
-            // Create new escort if doesn't exist
-            $escort = Escort::create([
-                'regiment_no' => $request->escort_regiment_no,
-                'rank' => $request->escort_rank,
-                'name' => $request->escort_name,
-                'contact_no' => $request->escort_contact_no,
-            ]);
-        } else {
-            // Update existing escort information
-            $escort->update([
-                'rank' => $request->escort_rank,
-                'name' => $request->escort_name,
-                'contact_no' => $request->escort_contact_no,
-            ]);
-        }
-
-        // Update assignment with escort_id instead of individual fields
-        $assignmentData = [
-            'bus_route_id' => $validatedData['bus_route_id'],
-            'escort_id' => $escort->id,
-            'assigned_date' => $validatedData['assigned_date'],
-            'end_date' => $validatedData['end_date'],
-            'status' => $validatedData['status']
-        ];
-
-        $bus_escort_assignment->update($assignmentData);
-
-        return redirect()->route('bus-escort-assignments.index')
-            ->with('success', 'Bus escort assignment updated successfully. Escort information has been updated in the system.');
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(BusEscortAssignment $bus_escort_assignment)
-    {
-        $bus_escort_assignment->delete();
-
-        return redirect()->route('bus-escort-assignments.index')
-            ->with('success', 'Bus escort assignment deleted successfully.');
-    }
 
     /**
      * Assign an escort to a route
@@ -213,55 +90,75 @@ class BusEscortAssignmentController extends Controller
     {
         $request->validate([
             'escort_id' => 'required|exists:escorts,id',
-            'route_id' => 'required|exists:bus_routes,id',
-            'assigned_date' => 'required|date',
-            'end_date' => 'nullable|date|after:assigned_date',
+            'route_id' => 'required',
+            'route_type' => 'required|in:living_out,living_in',
         ]);
 
         $escort = Escort::findOrFail($request->escort_id);
-        $route = BusRoute::findOrFail($request->route_id);
+
+        // Validate and get route based on type
+        if ($request->route_type === 'living_out') {
+            $route = BusRoute::findOrFail($request->route_id);
+            $routeName = $route->name;
+        } else {
+            $route = LivingInBuses::findOrFail($request->route_id);
+            $routeName = $route->name;
+        }
 
         // Check if escort is already assigned to an active route
         $existingEscortAssignment = BusEscortAssignment::where('escort_id', $request->escort_id)
             ->where('status', 'active')
             ->first();
         if ($existingEscortAssignment) {
-            $existingRoute = BusRoute::find($existingEscortAssignment->bus_route_id);
             $escortName = ($escort->rank ?? 'N/A') . ' ' . ($escort->name ?? 'Unknown');
-            $routeName = $existingRoute ? $existingRoute->name : 'Unknown Route';
+            $existingRouteName = $existingEscortAssignment->route_name ?? 'Unknown Route';
             return response()->json([
                 'success' => false,
-                'message' => "Escort {$escortName} is already assigned to route {$routeName}."
+                'message' => "Escort {$escortName} is already assigned to route {$existingRouteName}."
             ]);
         }
 
-        // Check if route already has an active escort
-        $existingRouteAssignment = BusEscortAssignment::where('bus_route_id', $request->route_id)
-            ->where('status', 'active')
-            ->first();
+        // Check if route already has an active escort based on route type
+        $query = BusEscortAssignment::where('status', 'active');
+        if ($request->route_type === 'living_out') {
+            $query->where('bus_route_id', $request->route_id)->where('route_type', 'living_out');
+        } else {
+            $query->where('living_in_bus_id', $request->route_id)->where('route_type', 'living_in');
+        }
+
+        $existingRouteAssignment = $query->first();
         if ($existingRouteAssignment) {
             $existingEscort = Escort::find($existingRouteAssignment->escort_id);
             $existingEscortName = $existingEscort ? (($existingEscort->rank ?? 'N/A') . ' ' . ($existingEscort->name ?? 'Unknown')) : 'Unknown Escort';
             return response()->json([
                 'success' => false,
-                'message' => "Route {$route->name} already has escort {$existingEscortName} assigned."
+                'message' => "Route {$routeName} already has escort {$existingEscortName} assigned."
             ]);
         }
 
         // Create the assignment
-        BusEscortAssignment::create([
-            'bus_route_id' => $request->route_id,
+        $assignmentData = [
+            'route_type' => $request->route_type,
             'escort_id' => $request->escort_id,
-            'assigned_date' => $request->assigned_date,
-            'end_date' => $request->end_date,
+            'assigned_date' => now()->format('Y-m-d'),
+            'end_date' => null,
             'status' => 'active',
             'created_by' => Auth::user()->name ?? 'System'
-        ]);
+        ];
+
+        // Set the correct route ID based on route type
+        if ($request->route_type === 'living_out') {
+            $assignmentData['bus_route_id'] = $request->route_id;
+        } else {
+            $assignmentData['living_in_bus_id'] = $request->route_id;
+        }
+
+        BusEscortAssignment::create($assignmentData);
 
         $escortName = ($escort->rank ?? 'N/A') . ' ' . ($escort->name ?? 'Unknown');
         return response()->json([
             'success' => true,
-            'message' => "Escort {$escortName} has been successfully assigned to route {$route->name}."
+            'message' => "Escort {$escortName} has been successfully assigned to route {$routeName}."
         ]);
     }
 
@@ -324,87 +221,5 @@ class BusEscortAssignmentController extends Controller
             'routes' => $routes,
             'availableEscorts' => $availableEscorts
         ]);
-    }
-
-    /**
-     * Get escort details from Strength Management System API
-     */
-    public function getEscortDetails(Request $request)
-    {
-        $regimentNo = $request->input('regiment_no');
-
-        if (empty($regimentNo)) {
-            return response()->json(['success' => false, 'message' => 'Regiment number is required'], 400);
-        }
-
-        try {
-            // Call the actual Army API endpoint
-            $apiToken = '1189d8dde195a36a9c4a721a390a74e6';
-            $apiUrl = "https://str.army.lk/api/get_person/?str-token={$apiToken}&service_no={$regimentNo}";
-
-            $response = Http::timeout(10)->get($apiUrl);
-
-            if ($response->successful()) {
-                // The response comes as a JSON array with brackets, we need to decode it
-                $responseData = json_decode($response->body(), true);
-
-                // Check if the API returned valid data
-                if (is_array($responseData) && !empty($responseData)) {
-                    // Extract the first record from the array
-                    $data = $responseData[0];
-
-                    // Map API response fields to our application fields
-                    $escortData = [
-                        'rank' => $data['rank'] ?? '',
-                        'name' => $data['name'] ?? '',
-                        // Since contact_no is not directly available in the API response,
-                        // we'll leave it empty for the user to fill in
-                        'contact_no' => ''
-                    ];
-
-                    return response()->json([
-                        'success' => true,
-                        'data' => $escortData
-                    ]);
-                }
-
-                return response()->json(['success' => false, 'message' => 'No data found for this regiment number'], 404);
-            }
-
-            return response()->json(['success' => false, 'message' => 'Failed to fetch data from Army API'], $response->status());
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error fetching escort details: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Get bus details when route is selected
-     */
-    public function getBusDetails(Request $request)
-    {
-        $request->validate([
-            'bus_route_id' => 'required|exists:bus_routes,id'
-        ]);
-
-        $busRoute = BusRoute::with('bus')->find($request->bus_route_id);
-
-        if ($busRoute && $busRoute->bus) {
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'bus_no' => $busRoute->bus->no,
-                    'bus_name' => $busRoute->bus->name,
-                    'bus_type' => $busRoute->bus->type->name ?? 'N/A'
-                ]
-            ]);
-        }
-
-        return response()->json([
-            'success' => false,
-            'message' => 'Bus details not found for this route.'
-        ], 404);
     }
 }

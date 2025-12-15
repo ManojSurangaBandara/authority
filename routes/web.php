@@ -103,12 +103,10 @@ Route::middleware('auth')->group(function () {
     Route::get('bus-driver-assignments-api/get-bus-details', [BusDriverAssignmentController::class, 'getBusDetails'])->name('bus-driver-assignments.get-bus-details');
 
     // Bus Escort Assignment routes
-    Route::resource('bus-escort-assignments', BusEscortAssignmentController::class);
+    Route::get('bus-escort-assignments', [BusEscortAssignmentController::class, 'index'])->name('bus-escort-assignments.index');
     Route::post('bus-escort-assignments/assign', [BusEscortAssignmentController::class, 'assign'])->name('bus-escort-assignments.assign');
     Route::post('bus-escort-assignments/unassign', [BusEscortAssignmentController::class, 'unassign'])->name('bus-escort-assignments.unassign');
     Route::get('bus-escort-assignments/data', [BusEscortAssignmentController::class, 'getAssignmentData'])->name('bus-escort-assignments.data');
-    Route::get('bus-escort-assignments-api/get-escort-details', [BusEscortAssignmentController::class, 'getEscortDetails'])->name('bus-escort-assignments.get-escort-details');
-    Route::get('bus-escort-assignments-api/get-bus-details', [BusEscortAssignmentController::class, 'getBusDetails'])->name('bus-escort-assignments.get-bus-details');
 
     // SLCMP In-charge Assignment routes
     Route::resource('slcmp-incharge-assignments', SlcmpInchargeAssignmentController::class);
