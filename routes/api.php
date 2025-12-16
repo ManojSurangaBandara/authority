@@ -63,10 +63,11 @@ Route::middleware('auth:api')->group(function () {
 });
 
 // Escort protected routes (require escort JWT token)
-Route::middleware(['auth:api', 'escort.auth'])->prefix('escort')->group(function () {
+Route::middleware(['escort.auth'])->prefix('escort')->group(function () {
     Route::post('/auth/logout', [EscortAuthController::class, 'logout']);
     Route::post('/auth/refresh', [EscortAuthController::class, 'refresh']);
     Route::get('/auth/me', [EscortAuthController::class, 'me']);
+    Route::post('/validate-boarding', [EscortAuthController::class, 'validateBoarding']);
 
     // Future escort-specific endpoints can be added here
     // Route::post('/scan-qr', [EscortController::class, 'scanQr']);

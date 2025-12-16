@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponseTrait;
+use App\Models\BusPassApplication;
+use App\Models\BusRoute;
 use App\Models\Escort;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -145,6 +148,53 @@ class EscortAuthController extends Controller
     }
 
     /**
+     * Authenticate escort credentials with ePortal API
+     */
+    protected function authenticateWithEPortal(string $e_no, string $password): bool
+    {
+        try {
+            $response = Http::withoutVerifying()->timeout(30)->post('https://192.168.100.41/eportal/api/busspass_login', [
+                'username' => $e_no,
+                'password' => $password
+            ]);
+
+            // Check if the API call was successful and the response has success status
+            if ($response->successful()) {
+                $responseData = $response->json();
+
+                // Check if the API returned success status
+                if (isset($responseData['status']) && $responseData['status'] === 'success') {
+                    Log::info('ePortal Authentication successful for E No: ' . $e_no, [
+                        'user_data' => $responseData['user'] ?? null,
+                        'token_type' => $responseData['authorisation']['type'] ?? null
+                    ]);
+                    return true;
+                }
+
+                // Log the API response if status is not success
+                Log::warning('ePortal Authentication failed - Status not success', [
+                    'e_no' => $e_no,
+                    'response' => $responseData
+                ]);
+                return false;
+            }
+
+            // Log HTTP error if API call failed
+            Log::error('ePortal Authentication HTTP error', [
+                'e_no' => $e_no,
+                'status_code' => $response->status(),
+                'response' => $response->body()
+            ]);
+            return false;
+        } catch (\Exception $e) {
+            Log::error('ePortal authentication error: ' . $e->getMessage(), [
+                'e_no' => $e_no,
+            ]);
+            return false;
+        }
+    }
+
+    /**
      * Get authenticated escort profile
      */
     public function me(Request $request): JsonResponse
@@ -220,10 +270,18 @@ class EscortAuthController extends Controller
     }
 
     /**
-     * Refresh escort token
+     * Validate boarding permission by scanning QR code
      */
-    public function refresh(): JsonResponse
+    public function validateBoarding(Request $request): JsonResponse
     {
+        $validator = Validator::make($request->all(), [
+            'serial_number' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationErrorResponse($validator->errors());
+        }
+
         try {
             $token = JWTAuth::parseToken();
             $payload = $token->getPayload();
@@ -233,62 +291,180 @@ class EscortAuthController extends Controller
                 return $this->forbiddenResponse('Invalid token type');
             }
 
-            $newToken = JWTAuth::refresh($token);
+            $escortId = $payload->get('escort_id');
+            $escort = Escort::with(['escortAssignment.busRoute', 'escortAssignment.livingInBus'])->find($escortId);
 
-            return response()->json([
-                'status' => 'success',
-                'authorization' => [
-                    'token' => $newToken,
-                    'type' => 'bearer',
-                    'expires_in' => JWTAuth::factory()->getTTL() * 60
-                ]
+            if (!$escort) {
+                return $this->notFoundResponse('Escort not found');
+            }
+
+            // Check if escort has active assignment
+            if (!$escort->escortAssignment) {
+                Log::warning('Boarding validation failed - No active assignment', [
+                    'escort_id' => $escortId,
+                    'serial_number' => $request->serial_number,
+                ]);
+                return $this->errorResponse('Escort has no active bus assignment', 403);
+            }
+
+            $assignment = $escort->escortAssignment;
+
+            // Decrypt the serial number to get branch card ID
+            $branchCardId = $this->decryptSerialNumber($request->serial_number);
+
+            if (!$branchCardId) {
+                Log::warning('Boarding validation failed - Invalid serial number', [
+                    'escort_id' => $escortId,
+                    'serial_number' => $request->serial_number,
+                ]);
+                return $this->errorResponse('Invalid QR code', 400);
+            }
+
+            // Check if branch card exists and is valid
+            $busPassApplication = BusPassApplication::where('branch_card_id', $branchCardId)
+                ->whereIn('status', ['integrated_to_branch_card', 'temp_card_handed_over'])
+                ->first();
+
+            if (!$busPassApplication) {
+                Log::warning('Boarding validation failed - Branch card not found or invalid', [
+                    'escort_id' => $escortId,
+                    'branch_card_id' => $branchCardId,
+                    'serial_number' => $request->serial_number,
+                ]);
+                return $this->successResponse([
+                    'allowed' => false,
+                    'reason' => 'Branch card not found or invalid'
+                ], 'Boarding not allowed');
+            }
+
+            // Check if the branch card is allowed for the escort's assigned route
+            $isAllowed = false;
+            $routeName = '';
+            $routeId = null;
+
+            if ($assignment->route_type === 'living_out' && $assignment->busRoute) {
+                $isAllowed = $this->isBranchCardAllowedForRoute($busPassApplication, $assignment->busRoute);
+                $routeName = $assignment->busRoute->name;
+                $routeId = $assignment->busRoute->id;
+            } elseif ($assignment->route_type === 'living_in' && $assignment->livingInBus) {
+                $isAllowed = $this->isBranchCardAllowedForLivingInRoute($busPassApplication, $assignment->livingInBus);
+                $routeName = $assignment->livingInBus->name;
+                $routeId = $assignment->livingInBus->id;
+            }
+
+            Log::info('Boarding validation completed', [
+                'escort_id' => $escortId,
+                'branch_card_id' => $branchCardId,
+                'route_type' => $assignment->route_type,
+                'route_id' => $routeId,
+                'allowed' => $isAllowed,
             ]);
+
+            // Generate full URL for person image
+            $personImageUrl = null;
+            if ($busPassApplication->person_image) {
+                $personImageUrl = asset('storage/' . $busPassApplication->person_image);
+            }
+
+            return $this->successResponse([
+                'allowed' => $isAllowed,
+                'branch_card_id' => $branchCardId,
+                'passenger_name' => $busPassApplication->person->name ?? 'Unknown',
+                'passenger_image_url' => $personImageUrl,
+                'bus_route' => $routeName,
+                'reason' => $isAllowed ? null : 'Branch card not authorized for this route'
+            ], $isAllowed ? 'Boarding allowed' : 'Boarding not allowed');
         } catch (JWTException $e) {
-            return $this->unauthorizedResponse('Token could not be refreshed');
+            return $this->unauthorizedResponse('Token invalid or expired');
+        } catch (\Exception $e) {
+            Log::error('Boarding validation failed - Unexpected error', [
+                'escort_id' => $payload->get('escort_id') ?? null,
+                'serial_number' => $request->serial_number,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->errorResponse('Validation failed', 500);
         }
     }
 
     /**
-     * Authenticate escort with ePortal
+     * Decrypt serial number to extract branch card ID
      */
-    protected function authenticateWithEPortal(string $e_no, string $password): bool
+    protected function decryptSerialNumber(string $serialNumber): ?string
     {
         try {
-            $response = Http::withoutVerifying()->timeout(30)->post('https://192.168.100.41/eportal/api/busspass_login', [
-                'username' => $e_no,
-                'password' => $password
-            ]);
+            // Define the encryption key (should match the key used for encryption)
+            $key = 'a12b34c56i78m90s'; // Replace with your actual encryption key
 
-            if ($response->successful()) {
-                $responseData = $response->json();
+            $parts = explode(':', $serialNumber);
 
-                if (isset($responseData['status']) && $responseData['status'] === 'success') {
-                    Log::info('ePortal authentication successful for escort', [
-                        'e_no' => $e_no,
-                        'user_data' => $responseData['user'] ?? null,
-                    ]);
-                    return true;
-                }
-
-                Log::warning('ePortal authentication failed - Status not success', [
-                    'e_no' => $e_no,
-                    'response' => $responseData
+            if (count($parts) !== 2) {
+                Log::error('Serial number decryption failed - Invalid format', [
+                    'serial_number' => $serialNumber,
                 ]);
-                return false;
+                return null;
             }
 
-            Log::error('ePortal authentication HTTP error', [
-                'e_no' => $e_no,
-                'status_code' => $response->status(),
-                'response' => $response->body()
-            ]);
-            return false;
+            $decryptedData = openssl_decrypt(
+                base64_decode($parts[0]),
+                "aes-128-cbc",
+                $key,
+                OPENSSL_RAW_DATA,
+                base64_decode($parts[1])
+            );
+
+            if ($decryptedData === false) {
+                Log::error('Serial number decryption failed - OpenSSL error', [
+                    'serial_number' => $serialNumber,
+                    'error' => openssl_error_string(),
+                ]);
+                return null;
+            }
+
+            // Extract only the branch card ID (first part before the pipe separator)
+            $dataParts = explode('|', $decryptedData);
+            return $dataParts[0] ?? null;
         } catch (\Exception $e) {
-            Log::error('ePortal authentication error', [
-                'e_no' => $e_no,
-                'error' => $e->getMessage()
+            Log::error('Serial number decryption failed', [
+                'serial_number' => $serialNumber,
+                'error' => $e->getMessage(),
             ]);
-            return false;
+            return null;
         }
+    }
+
+    /**
+     * Check if branch card is allowed for the escort's assigned bus route (living out)
+     */
+    protected function isBranchCardAllowedForRoute(BusPassApplication $application, BusRoute $assignedBusRoute): bool
+    {
+        // Check if the application has routes that match the assigned bus route
+        $applicationRoutes = [];
+
+        // Check requested bus name (for living out)
+        if ($application->requested_bus_name) {
+            $applicationRoutes[] = $application->requested_bus_name;
+        }
+
+        // Check weekend bus name (for living out)
+        if ($application->weekend_bus_name) {
+            $applicationRoutes[] = $application->weekend_bus_name;
+        }
+
+        // Check if any of the application routes match the assigned bus route
+        return in_array($assignedBusRoute->name, $applicationRoutes);
+    }
+
+    /**
+     * Check if branch card is allowed for the escort's assigned living in route
+     */
+    protected function isBranchCardAllowedForLivingInRoute(BusPassApplication $application, $assignedLivingInBus): bool
+    {
+        // For living in routes, check the living_in_bus field
+        if ($application->living_in_bus) {
+            return $application->living_in_bus === $assignedLivingInBus->name;
+        }
+
+        return false;
     }
 }
