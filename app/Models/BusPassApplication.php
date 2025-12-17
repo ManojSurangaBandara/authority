@@ -46,6 +46,7 @@ class BusPassApplication extends Model
         'status',
         'remarks',
         'created_by',
+        'temp_card_qr',
     ];
 
     protected $casts = [

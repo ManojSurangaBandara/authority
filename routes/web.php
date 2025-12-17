@@ -17,6 +17,7 @@ use App\Http\Controllers\PersonController;
 use App\Http\Controllers\BusPassApplicationController;
 use App\Http\Controllers\BusPassStatusController;
 use App\Http\Controllers\BusPassApprovalController;
+use App\Http\Controllers\BusPassIntegrationController;
 use App\Http\Controllers\EstablishmentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
@@ -93,6 +94,14 @@ Route::middleware('auth')->group(function () {
     Route::post('bus-pass-approvals/{application}/not-recommend', [BusPassApprovalController::class, 'notRecommend'])->name('bus-pass-approvals.not-recommend');
     Route::post('bus-pass-approvals/{application}/dmov-not-recommend', [BusPassApprovalController::class, 'dmovNotRecommend'])->name('bus-pass-approvals.dmov-not-recommend');
     Route::post('bus-pass-approvals/{application}/forward-to-branch-clerk', [BusPassApprovalController::class, 'forwardToBranchClerk'])->name('bus-pass-approvals.forward-to-branch-clerk');
+
+    // Bus Pass Integration routes (DMOV access only)
+    Route::get('bus-pass-integration', [BusPassIntegrationController::class, 'index'])->name('bus-pass-integration.index');
+    Route::get('bus-pass-integration/chart-data', [BusPassIntegrationController::class, 'getChartData'])->name('bus-pass-integration.chart-data');
+    Route::get('bus-pass-integration/applications', [BusPassIntegrationController::class, 'getApplications'])->name('bus-pass-integration.applications');
+    Route::get('bus-pass-integration/{id}', [BusPassIntegrationController::class, 'show'])->name('bus-pass-integration.show');
+    Route::post('bus-pass-integration/{id}/integrate', [BusPassIntegrationController::class, 'integrate'])->name('bus-pass-integration.integrate');
+    Route::post('bus-pass-integration/{id}/undo-integrate', [BusPassIntegrationController::class, 'undoIntegrate'])->name('bus-pass-integration.undo-integrate');
 
     // Bus Driver Assignment routes
     Route::resource('bus-driver-assignments', BusDriverAssignmentController::class);

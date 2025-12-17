@@ -55,6 +55,16 @@ class AppServiceProvider extends ServiceProvider
             ]) && !$user->hasRole('Staff Officer 1 (DMOV)');
         });
 
+        // Gate for Bus Pass Integration - DMOV users only
+        Gate::define('access_bus_pass_integration', function ($user) {
+            return $user->hasAnyRole([
+                'Subject Clerk (DMOV)',
+                'Staff Officer 2 (DMOV)',
+                'Col Mov (DMOV)',
+                'Director (DMOV)'
+            ]);
+        });
+
         // Individual role gates for more granular control if needed
         Gate::define('bus_pass_subject_clerk_branch', function ($user) {
             return $user->hasRole('Bus Pass Subject Clerk (Branch)');

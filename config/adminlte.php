@@ -509,6 +509,17 @@ return [
             'classes' => 'bus-pass-approvals-menu',
         ],
 
+        [
+            'text' => 'Bus Pass Integration',
+            'url' => 'bus-pass-integration',
+            'icon' => 'fas fa-fw fa-chart-bar',
+            'can' => 'access_bus_pass_integration',
+            'active' => [
+                'bus-pass-integration*',
+            ],
+            'classes' => 'bus-pass-integration-menu',
+        ],
+
         // System Administration (System Administrator only)
         [
             'text' => 'System Administration',
