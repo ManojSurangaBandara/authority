@@ -340,12 +340,12 @@
                             ${canIntegrate ?
                                 (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                                     `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                <i class="fas fa-arrow-up"></i>
-                                            </button>` :
+                                                    <i class="fas fa-arrow-up"></i>
+                                                </button>` :
                                 (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                                     `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                <i class="fas fa-arrow-down"></i>
-                                            </button>` : ''
+                                                    <i class="fas fa-arrow-down"></i>
+                                                </button>` : ''
                                 : ''}
                         </td>
                     </tr>
@@ -437,7 +437,26 @@
         function displayApplicationModal(data) {
             const app = data.application;
             const person = data.person;
+            const personTypeName = data.person_type_name;
             const establishment = data.establishment;
+
+            // Determine service ID label and value based on person type
+            let serviceIdLabel = 'Service ID';
+            let serviceIdValue = 'N/A';
+
+            if (personTypeName === 'Army') {
+                serviceIdLabel = 'Army ID';
+                serviceIdValue = person?.army_id || 'N/A';
+            } else if (personTypeName === 'Navy') {
+                serviceIdLabel = 'Navy ID';
+                serviceIdValue = person?.navy_id || 'N/A';
+            } else if (personTypeName === 'Air Force') {
+                serviceIdLabel = 'Airforce ID';
+                serviceIdValue = person?.airforce_id || 'N/A';
+            } else {
+                // Default fallback - try to find any service ID
+                serviceIdValue = person?.army_id || person?.navy_id || person?.airforce_id || 'N/A';
+            }
 
             const modalContent = `
                 <div class="row">
@@ -454,7 +473,7 @@
                         <h5>Person Information</h5>
                         <p><strong>Name:</strong> ${person?.name || 'N/A'}</p>
                         <p><strong>Rank:</strong> ${person?.rank || 'N/A'}</p>
-                        <p><strong>Army ID:</strong> ${person?.army_id || 'N/A'}</p>
+                        <p><strong>${serviceIdLabel}:</strong> ${serviceIdValue}</p>
                         <p><strong>NIC:</strong> ${person?.nic || 'N/A'}</p>
                         <p><strong>Unit:</strong> ${person?.unit || 'N/A'}</p>
                         <p><strong>Establishment:</strong> ${establishment?.name || 'N/A'}</p>

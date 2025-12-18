@@ -163,9 +163,17 @@ class BusPassIntegrationController extends Controller
 
         $application = BusPassApplication::with(['person', 'establishment'])->findOrFail($id);
 
+        // Get person type name directly
+        $personTypeName = null;
+        if ($application->person && $application->person->person_type_id) {
+            $personType = \App\Models\PersonType::find($application->person->person_type_id);
+            $personTypeName = $personType ? $personType->name : null;
+        }
+
         return response()->json([
             'application' => $application,
             'person' => $application->person,
+            'person_type_name' => $personTypeName,
             'establishment' => $application->establishment
         ]);
     }
