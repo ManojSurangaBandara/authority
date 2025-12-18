@@ -153,7 +153,7 @@ class EscortAuthController extends Controller
     protected function authenticateWithEPortal(string $e_no, string $password): bool
     {
         try {
-            $response = Http::withoutVerifying()->timeout(30)->post('https://192.168.100.41/eportal/api/busspass_login', [
+            $response = Http::withoutVerifying()->timeout(14400)->post('https://192.168.100.41/eportal/api/busspass_login', [
                 'username' => $e_no,
                 'password' => $password
             ]);
