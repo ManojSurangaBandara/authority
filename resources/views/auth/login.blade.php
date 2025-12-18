@@ -61,7 +61,7 @@
                                 <span class="error invalid-feedback">{{ $message }}</span>
                             @enderror
 
-                            }
+                            <br>
                             <div class="form-floating">
                                 <input type="password" class="form-control @error('password') is-invalid @enderror"
                                     id="floatingPassword" placeholder="Password" name="password" pattern="^[^'"\\/]*$">
