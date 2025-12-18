@@ -467,4 +467,144 @@ class EscortAuthController extends Controller
 
         return false;
     }
+
+    /**
+     * Validate temporary card for boarding
+     */
+    public function validateTempCardBoarding(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'serial_number' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationErrorResponse($validator->errors());
+        }
+
+        try {
+            $token = JWTAuth::parseToken();
+            $payload = $token->getPayload();
+
+            // Verify this is an escort token
+            if ($payload->get('type') !== 'escort') {
+                return $this->forbiddenResponse('Invalid token type');
+            }
+
+            $escortId = $payload->get('escort_id');
+            $escort = Escort::with(['escortAssignment.busRoute', 'escortAssignment.livingInBus'])->find($escortId);
+
+            if (!$escort) {
+                return $this->notFoundResponse('Escort not found');
+            }
+
+            // Check if escort has active assignment
+            if (!$escort->escortAssignment) {
+                Log::warning('Temp card boarding validation failed - No active assignment', [
+                    'escort_id' => $escortId,
+                    'serial_number' => $request->serial_number,
+                ]);
+                return $this->errorResponse('Escort has no active bus assignment', 403);
+            }
+
+            $assignment = $escort->escortAssignment;
+
+            // Find bus pass application by temp_card_qr
+            $busPassApplication = BusPassApplication::with(['person', 'establishment'])
+                ->where('temp_card_qr', $request->serial_number)
+                ->where('status', 'integrated_to_temp_card')
+                ->first();
+
+            if (!$busPassApplication) {
+                Log::warning('Temp card boarding validation failed - Card not found or invalid', [
+                    'escort_id' => $escortId,
+                    'temp_card_qr' => $request->serial_number,
+                ]);
+                return $this->successResponse([
+                    'allowed' => false,
+                    'passenger_name' => null,
+                    'passenger_image_url' => null,
+                    'bus_route' => null,
+                    'reason' => 'Temporary card not found or invalid'
+                ], 'Boarding not allowed');
+            }
+
+            // Check if the temporary card is allowed for the escort's assigned route
+            $isAllowed = false;
+            $routeName = '';
+            $routeId = null;
+
+            if ($assignment->route_type === 'living_out' && $assignment->busRoute) {
+                $isAllowed = $this->isTempCardAllowedForRoute($busPassApplication, $assignment->busRoute);
+                $routeName = $assignment->busRoute->name;
+                $routeId = $assignment->busRoute->id;
+            } elseif ($assignment->route_type === 'living_in' && $assignment->livingInBus) {
+                $isAllowed = $this->isTempCardAllowedForLivingInRoute($busPassApplication, $assignment->livingInBus);
+                $routeName = $assignment->livingInBus->name;
+                $routeId = $assignment->livingInBus->id;
+            }
+
+            Log::info('Temp card boarding validation completed', [
+                'escort_id' => $escortId,
+                'temp_card_qr' => $request->serial_number,
+                'route_type' => $assignment->route_type,
+                'route_id' => $routeId,
+                'allowed' => $isAllowed,
+            ]);
+
+            // Generate full URL for person image
+            $personImageUrl = null;
+            if ($busPassApplication->person_image) {
+                $personImageUrl = asset('storage/' . $busPassApplication->person_image);
+            }
+
+            return $this->successResponse([
+                'allowed' => $isAllowed,
+                'application_id' => $busPassApplication->id,
+                'passenger_name' => $busPassApplication->person->name ?? 'Unknown',
+                'passenger_image_url' => $personImageUrl,
+                'bus_route' => $routeName,
+                'reason' => $isAllowed ? null : 'Temporary card not authorized for this route'
+            ], $isAllowed ? 'Boarding allowed' : 'Boarding not allowed');
+        } catch (JWTException $e) {
+            return $this->unauthorizedResponse('Token invalid or expired');
+        } catch (\Exception $e) {
+            Log::error('Temp card boarding validation failed - Unexpected error', [
+                'escort_id' => $escortId,
+                'temp_card_qr' => $request->serial_number,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->errorResponse('Boarding validation failed', 500);
+        }
+    }
+
+    /**
+     * Check if temporary card is allowed for specific route
+     */
+    protected function isTempCardAllowedForRoute(BusPassApplication $application, $assignedRoute): bool
+    {
+        // Check if the application's bus matches the assigned route
+        if ($application->requested_bus_name && $application->requested_bus_name === $assignedRoute->name) {
+            return true;
+        }
+
+        if ($application->weekend_bus_name && $application->weekend_bus_name === $assignedRoute->name) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if temporary card is allowed for living in route
+     */
+    protected function isTempCardAllowedForLivingInRoute(BusPassApplication $application, $assignedLivingInBus): bool
+    {
+        // For living in routes, check the living_in_bus field
+        if ($application->living_in_bus) {
+            return $application->living_in_bus === $assignedLivingInBus->name;
+        }
+
+        return false;
+    }
 }

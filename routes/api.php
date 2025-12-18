@@ -68,6 +68,7 @@ Route::middleware(['escort.auth'])->prefix('escort')->group(function () {
     Route::post('/auth/refresh', [EscortAuthController::class, 'refresh']);
     Route::get('/auth/me', [EscortAuthController::class, 'me']);
     Route::post('/validate-boarding', [EscortAuthController::class, 'validateBoarding']);
+    Route::post('/validate-temp-card-boarding', [EscortAuthController::class, 'validateTempCardBoarding']);
 
     // Future escort-specific endpoints can be added here
     // Route::post('/scan-qr', [EscortController::class, 'scanQr']);
