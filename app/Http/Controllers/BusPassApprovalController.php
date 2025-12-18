@@ -367,13 +367,13 @@ class BusPassApprovalController extends Controller
      */
     private function getPendingApplicationsForUser($user)
     {
-        $status = $this->getPendingStatusForUserRole($user);
+        $statuses = $this->getPendingStatusesForUserRole($user);
 
-        if (!$status) {
+        if (empty($statuses)) {
             return collect();
         }
 
-        $query = BusPassApplication::where('status', $status)
+        $query = BusPassApplication::whereIn('status', $statuses)
             ->with(['person.gsDivision', 'person.policeStation', 'statusData', 'establishment', 'approvalHistory.user']);
 
         // Filter by establishment for branch roles
@@ -387,35 +387,43 @@ class BusPassApprovalController extends Controller
     }
 
     /**
-     * Get the pending status that a user role should handle
+     * Get the pending statuses that a user role should handle
      */
-    private function getPendingStatusForUserRole($user)
+    private function getPendingStatusesForUserRole($user)
     {
         if ($user->hasRole('Bus Pass Subject Clerk (Branch)')) {
-            return 'pending_subject_clerk';
+            return ['pending_subject_clerk'];
         }
 
         if ($user->hasRole('Staff Officer (Branch)')) {
-            return 'pending_staff_officer_branch';
+            return [
+                'pending_staff_officer_branch',
+                'integrated_to_branch_card',
+                'integrated_to_temp_card',
+                'temp_card_printed',
+                'temp_card_handed_over',
+                'rejected',
+                'deactivated'
+            ];
         }
 
         if ($user->hasRole('Subject Clerk (DMOV)')) {
-            return 'forwarded_to_movement';
+            return ['forwarded_to_movement'];
         }
 
         if ($user->hasRole('Staff Officer 2 (DMOV)')) {
-            return 'pending_staff_officer_2_mov';
+            return ['pending_staff_officer_2_mov'];
         }
 
         if ($user->hasRole('Col Mov (DMOV)')) {
-            return 'pending_col_mov';
+            return ['pending_col_mov'];
         }
 
         if ($user->hasRole('Director (DMOV)')) {
-            return 'pending_col_mov';
+            return ['pending_col_mov'];
         }
 
-        return null;
+        return [];
     }
 
     /**

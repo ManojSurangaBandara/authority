@@ -126,8 +126,17 @@ class BusPassApplication extends Model
     {
         // Check if current user is a branch user
         if (auth()->check() && auth()->user()->isBranchUser()) {
-            // Branch users should only see real status for these two statuses
-            $allowedStatuses = ['pending_subject_clerk', 'pending_staff_officer_branch'];
+            // Branch users should see real status for these statuses
+            $allowedStatuses = [
+                'pending_subject_clerk',
+                'pending_staff_officer_branch',
+                'integrated_to_branch_card',
+                'integrated_to_temp_card',
+                'temp_card_printed',
+                'temp_card_handed_over',
+                'rejected',
+                'deactivated'
+            ];
             if (!in_array($this->status, $allowedStatuses)) {
                 return '<span class="badge badge-secondary">Submitted</span>';
             }
