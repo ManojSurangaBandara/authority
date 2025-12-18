@@ -61,14 +61,44 @@ class BusPassApplicationController extends Controller
     }
 
     /**
+     * Show the form for creating a new navy application.
+     */
+    public function createNavy()
+    {
+        $busRoutes = BusRoute::all();
+        $establishment = Establishment::orderBy('name')->get();
+        $provinces = Province::orderBy('name')->get();
+        $districts = District::orderBy('name')->get();
+        $gsDivisions = GsDivision::orderBy('name')->get();
+        $policeStations = PoliceStation::orderBy('name')->get();
+
+        return view('bus-pass-applications.create-navy', compact('busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations'));
+    }
+
+    /**
+     * Show the form for creating a new airforce application.
+     */
+    public function createAirforce()
+    {
+        $busRoutes = BusRoute::all();
+        $establishment = Establishment::orderBy('name')->get();
+        $provinces = Province::orderBy('name')->get();
+        $districts = District::orderBy('name')->get();
+        $gsDivisions = GsDivision::orderBy('name')->get();
+        $policeStations = PoliceStation::orderBy('name')->get();
+
+        return view('bus-pass-applications.create-airforce', compact('busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations'));
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        // Check if this is a civil application
-        $isCivil = $request->input('application_type') === 'civil';
+        // Check application type
+        $applicationType = $request->input('application_type', 'army');
 
-        if ($isCivil) {
+        if ($applicationType === 'civil') {
             $validationRules = [
                 'name' => 'required|string|max:100',
                 'nic' => 'required|string|max:15',
@@ -89,7 +119,64 @@ class BusPassApplicationController extends Controller
                 'declaration_1' => 'required|in:yes',
                 'declaration_2' => 'required|in:yes',
             ];
+        } elseif ($applicationType === 'navy') {
+            $validationRules = [
+                'regiment_no' => 'required|string|max:20',
+                'rank' => 'required|string|max:50',
+                'name' => 'required|string|max:100',
+                'unit' => 'required|string|max:100',
+                'nic' => 'required|string|max:15',
+                'navy_id' => 'required|string|max:50',
+                'permanent_address' => 'required|string',
+                'telephone_no' => 'required|string|max:20',
+                'province_id' => 'required|exists:provinces,id',
+                'district_id' => 'required|exists:districts,id',
+                'gs_division_id' => 'required|exists:gs_divisions,id',
+                'police_station_id' => 'required|exists:police_stations,id',
+                'marital_status' => 'required|in:single,married',
+                'approval_living_out' => 'required|in:yes,no',
+                'obtain_sltb_season' => 'required|in:yes,no',
+                'branch_card_availability' => 'required|in:has_branch_card,no_branch_card',
+                'branch_card_id' => $request->branch_card_availability === 'has_branch_card' ? 'required|string|max:50' : 'nullable|string|max:50',
+                'date_arrival_ahq' => 'required|date',
+                'grama_niladari_certificate' => ($request->bus_pass_type !== 'living_in_only') ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'person_image' => 'required|file|mimes:jpg,jpeg,png|max:5120',
+                'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only,unmarried_daily_travel',
+                'marriage_part_ii_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only' && $request->bus_pass_type !== 'unmarried_daily_travel') ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'permission_letter' => ($request->bus_pass_type === 'unmarried_daily_travel') ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'declaration_1' => 'required|in:yes',
+                'declaration_2' => 'required|in:yes',
+            ];
+        } elseif ($applicationType === 'airforce') {
+            $validationRules = [
+                'regiment_no' => 'required|string|max:20',
+                'rank' => 'required|string|max:50',
+                'name' => 'required|string|max:100',
+                'unit' => 'required|string|max:100',
+                'nic' => 'required|string|max:15',
+                'airforce_id' => 'required|string|max:50',
+                'permanent_address' => 'required|string',
+                'telephone_no' => 'required|string|max:20',
+                'province_id' => 'required|exists:provinces,id',
+                'district_id' => 'required|exists:districts,id',
+                'gs_division_id' => 'required|exists:gs_divisions,id',
+                'police_station_id' => 'required|exists:police_stations,id',
+                'marital_status' => 'required|in:single,married',
+                'approval_living_out' => 'required|in:yes,no',
+                'obtain_sltb_season' => 'required|in:yes,no',
+                'branch_card_availability' => 'required|in:has_branch_card,no_branch_card',
+                'branch_card_id' => $request->branch_card_availability === 'has_branch_card' ? 'required|string|max:50' : 'nullable|string|max:50',
+                'date_arrival_ahq' => 'required|date',
+                'grama_niladari_certificate' => ($request->bus_pass_type !== 'living_in_only') ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'person_image' => 'required|file|mimes:jpg,jpeg,png|max:5120',
+                'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only,unmarried_daily_travel',
+                'marriage_part_ii_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only' && $request->bus_pass_type !== 'unmarried_daily_travel') ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'permission_letter' => ($request->bus_pass_type === 'unmarried_daily_travel') ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'declaration_1' => 'required|in:yes',
+                'declaration_2' => 'required|in:yes',
+            ];
         } else {
+            // Army
             $validationRules = [
                 'regiment_no' => 'required|string|max:20',
                 'rank' => 'required|string|max:50',
@@ -167,10 +254,11 @@ class BusPassApplicationController extends Controller
         // Debug: Log successful validation
         Log::info('Validation passed for bus pass application', [
             'regiment_no' => $request->regiment_no,
-            'establishment_id' => $request->establishment_id
+            'establishment_id' => $request->establishment_id,
+            'application_type' => $applicationType
         ]);
 
-        if ($isCivil) {
+        if ($applicationType === 'civil') {
             // For civil applications, check by NIC since there's no regiment number
             $person = Person::where('nic', $request->nic)->first();
 
@@ -208,7 +296,84 @@ class BusPassApplicationController extends Controller
                     'police_station_id' => $request->police_station_id,
                 ]);
             }
+        } elseif ($applicationType === 'navy') {
+            // For navy applications, check by regiment number
+            $person = Person::where('regiment_no', $request->regiment_no)->first();
+
+            if (!$person) {
+                // Create new navy person
+                $navyPersonType = PersonType::where('name', 'Navy')->first();
+                $person = Person::create([
+                    'person_type_id' => $navyPersonType ? $navyPersonType->id : null,
+                    'regiment_no' => $request->regiment_no,
+                    'rank' => $request->rank,
+                    'name' => $request->name,
+                    'unit' => $request->unit,
+                    'nic' => $request->nic,
+                    'navy_id' => $request->navy_id,
+                    'permanent_address' => $request->permanent_address,
+                    'telephone_no' => $request->telephone_no,
+                    'province_id' => $request->province_id,
+                    'district_id' => $request->district_id,
+                    'gs_division_id' => $request->gs_division_id,
+                    'police_station_id' => $request->police_station_id,
+                ]);
+            } else {
+                // Update existing navy person data
+                $person->update([
+                    'rank' => $request->rank,
+                    'name' => $request->name,
+                    'unit' => $request->unit,
+                    'nic' => $request->nic,
+                    'navy_id' => $request->navy_id,
+                    'permanent_address' => $request->permanent_address,
+                    'telephone_no' => $request->telephone_no,
+                    'province_id' => $request->province_id,
+                    'district_id' => $request->district_id,
+                    'gs_division_id' => $request->gs_division_id,
+                    'police_station_id' => $request->police_station_id,
+                ]);
+            }
+        } elseif ($applicationType === 'airforce') {
+            // For airforce applications, check by regiment number
+            $person = Person::where('regiment_no', $request->regiment_no)->first();
+
+            if (!$person) {
+                // Create new airforce person
+                $airforcePersonType = PersonType::where('name', 'Air Force')->first();
+                $person = Person::create([
+                    'person_type_id' => $airforcePersonType ? $airforcePersonType->id : null,
+                    'regiment_no' => $request->regiment_no,
+                    'rank' => $request->rank,
+                    'name' => $request->name,
+                    'unit' => $request->unit,
+                    'nic' => $request->nic,
+                    'airforce_id' => $request->airforce_id,
+                    'permanent_address' => $request->permanent_address,
+                    'telephone_no' => $request->telephone_no,
+                    'province_id' => $request->province_id,
+                    'district_id' => $request->district_id,
+                    'gs_division_id' => $request->gs_division_id,
+                    'police_station_id' => $request->police_station_id,
+                ]);
+            } else {
+                // Update existing airforce person data
+                $person->update([
+                    'rank' => $request->rank,
+                    'name' => $request->name,
+                    'unit' => $request->unit,
+                    'nic' => $request->nic,
+                    'airforce_id' => $request->airforce_id,
+                    'permanent_address' => $request->permanent_address,
+                    'telephone_no' => $request->telephone_no,
+                    'province_id' => $request->province_id,
+                    'district_id' => $request->district_id,
+                    'gs_division_id' => $request->gs_division_id,
+                    'police_station_id' => $request->police_station_id,
+                ]);
+            }
         } else {
+            // Army applications
             // Check if person exists by regiment number (military personnel)
             $person = Person::where('regiment_no', $request->regiment_no)->first();
 
@@ -326,7 +491,7 @@ class BusPassApplicationController extends Controller
         $establishment = Establishment::find($data['establishment_id']);
         $data['branch_directorate'] = $establishment ? $establishment->name : 'Unknown';
 
-        if ($isCivil) {
+        if ($applicationType === 'civil') {
             // Set default values for civil applications
             $data['marital_status'] = 'single'; // Default for civil persons
             $data['approval_living_out'] = 'no'; // Not applicable for civil persons
@@ -389,13 +554,18 @@ class BusPassApplicationController extends Controller
         // Load all person relationships including police station
         $bus_pass_application->load('destinationLocation', 'person.province', 'person.district', 'person.policeStation', 'person.gsDivision', 'establishment');
 
-        // Check if this is a civil application
-        $isCivil = is_null($bus_pass_application->person->regiment_no);
+        // Check application type based on person type
+        $personType = $bus_pass_application->person->personType;
 
-        if ($isCivil) {
+        if ($personType && $personType->name === 'Civil') {
             return view('bus-pass-applications.show-civil', compact('bus_pass_application'));
+        } elseif ($personType && $personType->name === 'Navy') {
+            return view('bus-pass-applications.show-navy', compact('bus_pass_application'));
+        } elseif ($personType && $personType->name === 'Air Force') {
+            return view('bus-pass-applications.show-airforce', compact('bus_pass_application'));
         }
 
+        // Default to army
         return view('bus-pass-applications.show', compact('bus_pass_application'));
     }
 
@@ -414,13 +584,18 @@ class BusPassApplicationController extends Controller
         // Load the destination location relationship if needed
         $bus_pass_application->load('destinationLocation');
 
-        // Check if this is a civil application
-        $isCivil = is_null($bus_pass_application->person->regiment_no);
+        // Check application type based on person type
+        $personType = $bus_pass_application->person->personType;
 
-        if ($isCivil) {
+        if ($personType && $personType->name === 'Civil') {
             return view('bus-pass-applications.edit-civil', compact('bus_pass_application', 'busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations'));
+        } elseif ($personType && $personType->name === 'Navy') {
+            return view('bus-pass-applications.edit-navy', compact('bus_pass_application', 'busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations'));
+        } elseif ($personType && $personType->name === 'Air Force') {
+            return view('bus-pass-applications.edit-airforce', compact('bus_pass_application', 'busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations'));
         }
 
+        // Default to army
         return view('bus-pass-applications.edit', compact('bus_pass_application', 'busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations'));
     }
 
@@ -429,10 +604,20 @@ class BusPassApplicationController extends Controller
      */
     public function update(Request $request, BusPassApplication $bus_pass_application)
     {
-        // Check if this is a civil application
-        $isCivil = $request->input('application_type') === 'civil';
+        // Check application type based on existing person type
+        $personType = $bus_pass_application->person->personType;
 
-        if ($isCivil) {
+        if ($personType && $personType->name === 'Civil') {
+            $applicationType = 'civil';
+        } elseif ($personType && $personType->name === 'Navy') {
+            $applicationType = 'navy';
+        } elseif ($personType && $personType->name === 'Air Force') {
+            $applicationType = 'airforce';
+        } else {
+            $applicationType = 'army'; // Default to army
+        }
+
+        if ($applicationType === 'civil') {
             $validationRules = [
                 'name' => 'required|string|max:100',
                 'nic' => 'required|string|max:15',
@@ -453,7 +638,64 @@ class BusPassApplicationController extends Controller
                 'declaration_1' => 'required|in:yes',
                 'declaration_2' => 'required|in:yes',
             ];
+        } elseif ($applicationType === 'navy') {
+            $validationRules = [
+                'regiment_no' => 'required|string|max:20',
+                'rank' => 'required|string|max:50',
+                'name' => 'required|string|max:100',
+                'unit' => 'required|string|max:100',
+                'nic' => 'required|string|max:15',
+                'navy_id' => 'required|string|max:50',
+                'permanent_address' => 'required|string',
+                'telephone_no' => 'required|string|max:20',
+                'province_id' => 'required|exists:provinces,id',
+                'district_id' => 'required|exists:districts,id',
+                'gs_division_id' => 'required|exists:gs_divisions,id',
+                'police_station_id' => 'required|exists:police_stations,id',
+                'marital_status' => 'required|in:single,married',
+                'approval_living_out' => 'required|in:yes,no',
+                'obtain_sltb_season' => 'required|in:yes,no',
+                'branch_card_availability' => 'required|in:has_branch_card,no_branch_card',
+                'branch_card_id' => $request->branch_card_availability === 'has_branch_card' ? 'required|string|max:50' : 'nullable|string|max:50',
+                'date_arrival_ahq' => 'required|date',
+                'grama_niladari_certificate' => !$bus_pass_application->grama_niladari_certificate ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'person_image' => !$bus_pass_application->person_image ? 'required|file|mimes:jpg,jpeg,png|max:5120' : 'nullable|file|mimes:jpg,jpeg,png|max:5120',
+                'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only,unmarried_daily_travel',
+                'marriage_part_ii_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only' && $request->bus_pass_type !== 'unmarried_daily_travel') ? (!$bus_pass_application->marriage_part_ii_order ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240') : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'permission_letter' => ($request->bus_pass_type === 'unmarried_daily_travel') ? (!$bus_pass_application->permission_letter ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240') : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'declaration_1' => 'required|in:yes',
+                'declaration_2' => 'required|in:yes',
+            ];
+        } elseif ($applicationType === 'airforce') {
+            $validationRules = [
+                'regiment_no' => 'required|string|max:20',
+                'rank' => 'required|string|max:50',
+                'name' => 'required|string|max:100',
+                'unit' => 'required|string|max:100',
+                'nic' => 'required|string|max:15',
+                'airforce_id' => 'required|string|max:50',
+                'permanent_address' => 'required|string',
+                'telephone_no' => 'required|string|max:20',
+                'province_id' => 'required|exists:provinces,id',
+                'district_id' => 'required|exists:districts,id',
+                'gs_division_id' => 'required|exists:gs_divisions,id',
+                'police_station_id' => 'required|exists:police_stations,id',
+                'marital_status' => 'required|in:single,married',
+                'approval_living_out' => 'required|in:yes,no',
+                'obtain_sltb_season' => 'required|in:yes,no',
+                'branch_card_availability' => 'required|in:has_branch_card,no_branch_card',
+                'branch_card_id' => $request->branch_card_availability === 'has_branch_card' ? 'required|string|max:50' : 'nullable|string|max:50',
+                'date_arrival_ahq' => 'required|date',
+                'grama_niladari_certificate' => !$bus_pass_application->grama_niladari_certificate ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'person_image' => !$bus_pass_application->person_image ? 'required|file|mimes:jpg,jpeg,png|max:5120' : 'nullable|file|mimes:jpg,jpeg,png|max:5120',
+                'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only,unmarried_daily_travel',
+                'marriage_part_ii_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only' && $request->bus_pass_type !== 'unmarried_daily_travel') ? (!$bus_pass_application->marriage_part_ii_order ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240') : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'permission_letter' => ($request->bus_pass_type === 'unmarried_daily_travel') ? (!$bus_pass_application->permission_letter ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240') : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'declaration_1' => 'required|in:yes',
+                'declaration_2' => 'required|in:yes',
+            ];
         } else {
+            // Army
             $validationRules = [
                 'regiment_no' => 'required|string|max:20',
                 'rank' => 'required|string|max:50',
@@ -473,11 +715,11 @@ class BusPassApplicationController extends Controller
                 'branch_card_availability' => 'required|in:has_branch_card,no_branch_card',
                 'branch_card_id' => $request->branch_card_availability === 'has_branch_card' ? 'required|string|max:50' : 'nullable|string|max:50',
                 'date_arrival_ahq' => 'required|date',
-                'grama_niladari_certificate' => ($request->bus_pass_type !== 'living_in_only' && !$bus_pass_application->grama_niladari_certificate) ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'grama_niladari_certificate' => !$bus_pass_application->grama_niladari_certificate ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
                 'person_image' => !$bus_pass_application->person_image ? 'required|file|mimes:jpg,jpeg,png|max:5120' : 'nullable|file|mimes:jpg,jpeg,png|max:5120',
                 'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only,unmarried_daily_travel',
-                'marriage_part_ii_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only' && $request->bus_pass_type !== 'unmarried_daily_travel' && !$bus_pass_application->marriage_part_ii_order) ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'permission_letter' => ($request->bus_pass_type === 'unmarried_daily_travel' && !$bus_pass_application->permission_letter) ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'marriage_part_ii_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only' && $request->bus_pass_type !== 'unmarried_daily_travel') ? (!$bus_pass_application->marriage_part_ii_order ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240') : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'permission_letter' => ($request->bus_pass_type === 'unmarried_daily_travel') ? (!$bus_pass_application->permission_letter ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240') : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
                 'declaration_1' => 'required|in:yes',
                 'declaration_2' => 'required|in:yes',
             ];
@@ -536,7 +778,7 @@ class BusPassApplicationController extends Controller
         ]);
 
         // Handle person data update based on application type
-        if ($isCivil) {
+        if ($applicationType === 'civil') {
             // For civil applications, update person data directly
             $bus_pass_application->person->update([
                 'name' => $request->name,
@@ -549,8 +791,40 @@ class BusPassApplicationController extends Controller
                 'gs_division_id' => $request->gs_division_id,
                 'police_station_id' => $request->police_station_id,
             ]);
+        } elseif ($applicationType === 'navy') {
+            // For navy applications, update person data
+            $bus_pass_application->person->update([
+                'regiment_no' => $request->regiment_no,
+                'rank' => $request->rank,
+                'name' => $request->name,
+                'unit' => $request->unit,
+                'nic' => $request->nic,
+                'navy_id' => $request->navy_id,
+                'permanent_address' => $request->permanent_address,
+                'telephone_no' => $request->telephone_no,
+                'province_id' => $request->province_id,
+                'district_id' => $request->district_id,
+                'gs_division_id' => $request->gs_division_id,
+                'police_station_id' => $request->police_station_id,
+            ]);
+        } elseif ($applicationType === 'airforce') {
+            // For airforce applications, update person data
+            $bus_pass_application->person->update([
+                'regiment_no' => $request->regiment_no,
+                'rank' => $request->rank,
+                'name' => $request->name,
+                'unit' => $request->unit,
+                'nic' => $request->nic,
+                'airforce_id' => $request->airforce_id,
+                'permanent_address' => $request->permanent_address,
+                'telephone_no' => $request->telephone_no,
+                'province_id' => $request->province_id,
+                'district_id' => $request->district_id,
+                'gs_division_id' => $request->gs_division_id,
+                'police_station_id' => $request->police_station_id,
+            ]);
         } else {
-            // Check if regiment number is being changed and validate for duplicates BEFORE updating
+            // For army applications, handle person data update with regiment number validation
             $originalPersonId = $bus_pass_application->person_id;
             $originalRegimentNo = $bus_pass_application->person->regiment_no;
 
@@ -698,7 +972,7 @@ class BusPassApplicationController extends Controller
         $establishment = Establishment::find($data['establishment_id']);
         $data['branch_directorate'] = $establishment ? $establishment->name : 'Unknown';
 
-        if ($isCivil) {
+        if ($applicationType === 'civil') {
             // Set default values for civil applications
             $data['marital_status'] =  'single'; // Default for civil persons
             $data['approval_living_out'] = 'no'; // Not applicable for civil persons

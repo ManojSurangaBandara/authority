@@ -103,19 +103,23 @@
                                             </td>
                                             <td>
                                                 <div class="btn-group" role="group">
-                                                    @if (is_null($application->person->regiment_no))
-                                                        <button type="button" class="btn btn-sm btn-info"
-                                                            data-toggle="modal"
-                                                            data-target="#viewCivilModal{{ $application->id }}">
-                                                            <i class="fas fa-eye"></i> View
-                                                        </button>
-                                                    @else
-                                                        <button type="button" class="btn btn-sm btn-info"
-                                                            data-toggle="modal"
-                                                            data-target="#viewModal{{ $application->id }}">
-                                                            <i class="fas fa-eye"></i> View
-                                                        </button>
-                                                    @endif
+                                                    @php
+                                                        $personType = $application->person->personType;
+                                                        $modalTarget = '#viewModal' . $application->id; // Default
+
+                                                        if ($personType && $personType->name === 'Civil') {
+                                                            $modalTarget = '#viewCivilModal' . $application->id;
+                                                        } elseif ($personType && $personType->name === 'Navy') {
+                                                            $modalTarget = '#viewNavyModal' . $application->id;
+                                                        } elseif ($personType && $personType->name === 'Air Force') {
+                                                            $modalTarget = '#viewAirforceModal' . $application->id;
+                                                        }
+                                                    @endphp
+
+                                                    <button type="button" class="btn btn-sm btn-info" data-toggle="modal"
+                                                        data-target="{{ $modalTarget }}">
+                                                        <i class="fas fa-eye"></i> View
+                                                    </button>
 
                                                     @if (auth()->user()->hasRole('Bus Pass Subject Clerk (Branch)'))
                                                         <a href="{{ route('bus-pass-applications.edit', $application->id) }}"
@@ -144,11 +148,20 @@
 
     <!-- Modals for each application -->
     @foreach ($pendingApplications as $application)
-        @if (is_null($application->person->regiment_no))
+        @php
+            $personType = $application->person->personType;
+        @endphp
+
+        @if ($personType && $personType->name === 'Civil')
             @include('bus-pass-approvals.modals.view-civil', ['application' => $application])
+        @elseif ($personType && $personType->name === 'Navy')
+            @include('bus-pass-approvals.modals.view-navy', ['application' => $application])
+        @elseif ($personType && $personType->name === 'Air Force')
+            @include('bus-pass-approvals.modals.view-airforce', ['application' => $application])
         @else
             @include('bus-pass-approvals.modals.view', ['application' => $application])
         @endif
+
         @include('bus-pass-approvals.modals.approve', ['application' => $application])
         @include('bus-pass-approvals.modals.reject', ['application' => $application])
         @include('bus-pass-approvals.modals.recommend', ['application' => $application])

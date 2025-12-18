@@ -18,6 +18,14 @@
                                         class="btn btn-sm btn-primary mr-2">
                                         <i class="fas fa-plus"></i> Create Army Application
                                     </a>
+                                    <a href="{{ route('bus-pass-applications.create-navy') }}"
+                                        class="btn btn-sm btn-info mr-2">
+                                        <i class="fas fa-anchor"></i> Create Navy Application
+                                    </a>
+                                    <a href="{{ route('bus-pass-applications.create-airforce') }}"
+                                        class="btn btn-sm btn-warning mr-2">
+                                        <i class="fas fa-plane"></i> Create Airforce Application
+                                    </a>
                                     <a href="{{ route('bus-pass-applications.create-civil') }}"
                                         class="btn btn-sm btn-success">
                                         <i class="fas fa-user-plus"></i> Create Civil Application

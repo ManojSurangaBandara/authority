@@ -79,6 +79,8 @@ Route::middleware('auth')->group(function () {
 
     // Bus Pass Application routes
     Route::get('bus-pass-applications/create-civil', [BusPassApplicationController::class, 'createCivil'])->name('bus-pass-applications.create-civil');
+    Route::get('bus-pass-applications/create-navy', [BusPassApplicationController::class, 'createNavy'])->name('bus-pass-applications.create-navy');
+    Route::get('bus-pass-applications/create-airforce', [BusPassApplicationController::class, 'createAirforce'])->name('bus-pass-applications.create-airforce');
     Route::resource('bus-pass-applications', BusPassApplicationController::class);
     Route::get('bus-pass-applications-api/get-details', [BusPassApplicationController::class, 'getPersonDetails'])->name('bus-pass-applications.get-details');
     Route::post('bus-pass-applications-api/verify-branch-card', [BusPassApplicationController::class, 'verifyBranchCard'])->name('bus-pass-applications.verify-branch-card');
