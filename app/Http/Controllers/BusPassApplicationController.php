@@ -796,7 +796,19 @@ class BusPassApplicationController extends Controller
                 $responseData = json_decode($response->body(), true);
 
                 if (is_array($responseData) && !empty($responseData)) {
-                    $data = $responseData[0];
+                    // Find the object with matching service_no
+                    $data = null;
+                    foreach ($responseData as $person) {
+                        if (isset($person['service_no']) && strtolower($person['service_no']) === strtolower($regimentNo)) {
+                            $data = $person;
+                            break;
+                        }
+                    }
+
+                    if (!$data) {
+                        return response()->json(['success' => false, 'message' => 'No matching service number found'], 404);
+                    }
+
 
                     // Get rank text from API
                     $rankText = $data['rank'] ?? '';
