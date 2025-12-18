@@ -396,15 +396,7 @@ class BusPassApprovalController extends Controller
         }
 
         if ($user->hasRole('Staff Officer (Branch)')) {
-            return [
-                'pending_staff_officer_branch',
-                'integrated_to_branch_card',
-                'integrated_to_temp_card',
-                'temp_card_printed',
-                'temp_card_handed_over',
-                'rejected',
-                'deactivated'
-            ];
+            return ['pending_staff_officer_branch'];
         }
 
         if ($user->hasRole('Subject Clerk (DMOV)')) {
