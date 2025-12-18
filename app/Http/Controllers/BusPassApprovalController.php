@@ -431,10 +431,10 @@ class BusPassApprovalController extends Controller
      */
     private function canUserApprove($user, $application)
     {
-        $userPendingStatus = $this->getPendingStatusForUserRole($user);
+        $userPendingStatuses = $this->getPendingStatusesForUserRole($user);
 
-        // Check if user's role matches the application status
-        if ($userPendingStatus !== $application->status) {
+        // Check if user's role can handle the application status
+        if (!in_array($application->status, $userPendingStatuses)) {
             return false;
         }
 
