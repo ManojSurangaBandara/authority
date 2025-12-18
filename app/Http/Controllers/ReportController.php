@@ -219,7 +219,9 @@ class ReportController extends Controller
             }
 
             // Calculate total
-            $counts['total'] = array_sum(array_filter($counts, 'is_numeric'));
+            $counts['total'] = array_sum(array_filter($counts, function ($value, $key) {
+                return is_numeric($value) && $key !== 'seating_capacity';
+            }, ARRAY_FILTER_USE_BOTH));
 
             $routeData->push($counts);
         }
