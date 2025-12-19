@@ -287,7 +287,7 @@ class BusPassIntegrationController extends Controller
     private function generateTempCardQR(): string
     {
         do {
-            $qrCode = 'TEMP-' . strtoupper(Str::random(10)) . '-' . now()->format('Ymd');
+            $qrCode = 'TEMP-' . strtoupper(Str::random(20)) . '-' . now()->format('Ymd');
         } while (BusPassApplication::where('temp_card_qr', $qrCode)->exists());
 
         return $qrCode;
