@@ -125,7 +125,7 @@ class BusPassApprovalController extends Controller
             $this->recordApprovalAction($application, $user, $action, $remarks);
 
             // Update application status based on workflow
-            $newStatus = $this->getNextApprovalStatus($application->status, $action);
+            $newStatus = $this->getNextApprovalStatus($application->status, $action, $application);
 
             // Prepare update data
             $updateData = [
@@ -247,7 +247,7 @@ class BusPassApprovalController extends Controller
             $this->recordApprovalAction($application, $user, 'recommended', $request->remarks);
 
             // Update application status to next level
-            $newStatus = $this->getNextApprovalStatus($application->status, 'approved');
+            $newStatus = $this->getNextApprovalStatus($application->status, 'approved', $application);
             $application->update([
                 'status' => $newStatus,
                 'remarks' => $request->remarks
@@ -442,7 +442,7 @@ class BusPassApprovalController extends Controller
     /**
      * Get the next status in the approval workflow
      */
-    private function getNextApprovalStatus($currentStatus, $action)
+    private function getNextApprovalStatus($currentStatus, $action, $application = null)
     {
         if ($action === 'rejected') {
             return 'rejected';
@@ -472,6 +472,10 @@ class BusPassApprovalController extends Controller
         }
 
         if ($currentStatus === 'pending_col_mov') {
+            // Check if application has a branch card
+            if ($application && !$application->branch_card_id) {
+                return 'approved_for_temp_card';
+            }
             return 'approved_for_integration';
         }
 
@@ -494,7 +498,7 @@ class BusPassApprovalController extends Controller
         } elseif ($action === 'forwarded_to_branch_clerk') {
             $newStatus = 'pending_subject_clerk';
         } elseif ($action === 'recommended' || $action === 'approved' || $action === 'forwarded') {
-            $newStatus = $this->getNextApprovalStatus($application->status, $action);
+            $newStatus = $this->getNextApprovalStatus($application->status, $action, $application);
         }
 
         BusPassApprovalHistory::create([
