@@ -85,6 +85,12 @@ class BusPassApplication extends Model
     // Status label accessor
     public function getStatusLabelAttribute()
     {
+        // Check if current user is a branch user and status is in DMOV workflow
+        $dmovStatuses = ['forwarded_to_movement', 'pending_staff_officer_2_mov', 'pending_col_mov'];
+        if (auth()->check() && auth()->user()->isBranchUser() && in_array($this->status, $dmovStatuses)) {
+            return 'Submitted';
+        }
+
         $statusData = $this->statusData;
         if ($statusData) {
             return $statusData->label;
@@ -117,6 +123,15 @@ class BusPassApplication extends Model
     // Status badge accessor
     public function getStatusBadgeAttribute()
     {
+        // Check if current user is a branch user
+        if (auth()->check() && auth()->user()->isBranchUser()) {
+            // Branch users should only see real status for these two statuses
+            $allowedStatuses = ['pending_subject_clerk', 'pending_staff_officer_branch'];
+            if (!in_array($this->status, $allowedStatuses)) {
+                return '<span class="badge badge-secondary">Submitted</span>';
+            }
+        }
+
         $statusData = $this->statusData;
         if ($statusData) {
             return $statusData->badge_html;
@@ -203,5 +218,147 @@ class BusPassApplication extends Model
             ->exists();
 
         return !$latestApprovalAfter;
+    }
+
+    /**
+     * Get latest DMOV not recommended action
+     */
+    public function getLatestDmovNotRecommendedAction()
+    {
+        return $this->approvalHistory()
+            ->where('action', 'dmov_not_recommended')
+            ->with('user')
+            ->orderBy('action_date', 'desc')
+            ->first();
+    }
+
+    /**
+     * Check if application was recently not recommended by DMOV
+     */
+    public function wasRecentlyDmovNotRecommended()
+    {
+        $latestDmovNotRecommended = $this->getLatestDmovNotRecommendedAction();
+
+        if (!$latestDmovNotRecommended) {
+            return false;
+        }
+
+        // Check if the latest DMOV not recommended action is more recent than any approved/forwarded actions
+        $latestApprovalAfter = $this->approvalHistory()
+            ->whereIn('action', ['approved', 'forwarded', 'recommended'])
+            ->where('action_date', '>', $latestDmovNotRecommended->action_date)
+            ->exists();
+
+        return !$latestApprovalAfter;
+    }
+
+    /**
+     * Get approved bus pass count for a specific route
+     */
+    public function getApprovedCountForRoute($routeName, $routeType = 'living_out')
+    {
+        if (!$routeName) {
+            return 0;
+        }
+
+        $query = self::where('status', 'approved');
+
+        if ($routeType === 'living_out') {
+            $query->where('requested_bus_name', $routeName);
+        } elseif ($routeType === 'living_in') {
+            $query->where('living_in_bus', $routeName);
+        } elseif ($routeType === 'weekend') {
+            $query->where('weekend_bus_name', $routeName);
+        }
+
+        return $query->count();
+    }
+
+    /**
+     * Get pending bus pass count for a specific route
+     */
+    public function getPendingCountForRoute($routeName, $routeType = 'living_out')
+    {
+        if (!$routeName) {
+            return 0;
+        }
+
+        $query = self::whereIn('status', [
+            'pending_subject_clerk',
+            'pending_staff_officer_branch',
+            'forwarded_to_movement',
+            'pending_staff_officer_2_mov',
+            'pending_col_mov',
+            'pending_director_branch',
+            'pending_director_dmov',
+            'not_recommended',
+            'dmov_not_recommended'
+        ]);
+
+        if ($routeType === 'living_out') {
+            $query->where('requested_bus_name', $routeName);
+        } elseif ($routeType === 'living_in') {
+            $query->where('living_in_bus', $routeName);
+        } elseif ($routeType === 'weekend') {
+            $query->where('weekend_bus_name', $routeName);
+        }
+
+        return $query->count();
+    }
+
+    /**
+     * Get seating capacity for a route based on assigned bus
+     */
+    public function getSeatingCapacityForRoute($routeName, $routeType = 'living_out')
+    {
+        if (!$routeName) {
+            return null;
+        }
+
+        // Find the route in bus_route_assignments
+        if ($routeType === 'living_out') {
+            // Find route ID from bus_routes table
+            $route = \App\Models\BusRoute::where('name', $routeName)->first();
+            if ($route) {
+                $assignment = \App\Models\BusRouteAssignment::active()
+                    ->where('route_id', $route->id)
+                    ->where('route_type', 'living_out')
+                    ->with('bus')
+                    ->first();
+            }
+        } elseif ($routeType === 'living_in') {
+            // Find route ID from living_in_buses table
+            $route = \App\Models\LivingInBuses::where('name', $routeName)->first();
+            if ($route) {
+                $assignment = \App\Models\BusRouteAssignment::active()
+                    ->where('route_id', $route->id)
+                    ->where('route_type', 'living_in')
+                    ->with('bus')
+                    ->first();
+            }
+        }
+
+        if (isset($assignment) && $assignment && $assignment->bus) {
+            return [
+                'seats' => $assignment->bus->no_of_seats,
+                'total_capacity' => $assignment->bus->total_capacity,
+                'bus_name' => $assignment->bus->name,
+                'bus_no' => $assignment->bus->no
+            ];
+        }
+
+        return null;
+    }
+
+    /**
+     * Get route statistics (approved count + pending count + seating capacity)
+     */
+    public function getRouteStatistics($routeName, $routeType = 'living_out')
+    {
+        return [
+            'approved_count' => $this->getApprovedCountForRoute($routeName, $routeType),
+            'pending_count' => $this->getPendingCountForRoute($routeName, $routeType),
+            'capacity_info' => $this->getSeatingCapacityForRoute($routeName, $routeType)
+        ];
     }
 }

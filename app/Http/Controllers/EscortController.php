@@ -33,6 +33,7 @@ class EscortController extends Controller
     {
         $request->validate([
             'regiment_no' => 'required|unique:escorts,regiment_no|max:20',
+            'eno' => 'required|unique:escorts,eno|max:20',
             'rank' => 'required|max:50',
             'name' => 'required|max:100',
             'contact_no' => 'required|max:20',
@@ -88,9 +89,11 @@ class EscortController extends Controller
         // Only validate regiment_no if it's not in use (allowing changes)
         if (!$isUsed) {
             $rules['regiment_no'] = 'required|max:20|unique:escorts,regiment_no,' . $id;
+            $rules['eno'] = 'required|max:20|unique:escorts,eno,' . $id;
         } else {
-            // If escort is in use, ensure the submitted regiment_no matches the existing one
+            // If escort is in use, ensure the submitted regiment_no and eno match the existing ones
             $rules['regiment_no'] = 'required|max:20|in:' . $escort->regiment_no;
+            $rules['eno'] = 'required|max:20|in:' . $escort->eno;
         }
 
         $request->validate($rules);
@@ -98,9 +101,10 @@ class EscortController extends Controller
         // Prepare data for update
         $updateData = $request->only(['rank', 'name', 'contact_no']);
 
-        // Only update regiment_no if not in use
+        // Only update regiment_no and eno if not in use
         if (!$isUsed) {
             $updateData['regiment_no'] = $request->regiment_no;
+            $updateData['eno'] = $request->eno;
         }
 
         $escort->update($updateData);

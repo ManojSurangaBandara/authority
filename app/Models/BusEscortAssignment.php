@@ -11,6 +11,8 @@ class BusEscortAssignment extends Model
 
     protected $fillable = [
         'bus_route_id',
+        'route_type',
+        'living_in_bus_id',
         'escort_id',
         'assigned_date',
         'end_date',
@@ -35,6 +37,11 @@ class BusEscortAssignment extends Model
         return $this->belongsTo(BusRoute::class, 'bus_route_id');
     }
 
+    public function livingInBus()
+    {
+        return $this->belongsTo(LivingInBuses::class, 'living_in_bus_id');
+    }
+
     /**
      * Relationship with Escort
      */
@@ -43,9 +50,22 @@ class BusEscortAssignment extends Model
         return $this->belongsTo(Escort::class, 'escort_id');
     }
 
+    /**
+     * Get the route name based on route type
+     */
+    public function getRouteNameAttribute()
+    {
+        if ($this->route_type === 'living_in' && $this->livingInBus) {
+            return $this->livingInBus->name;
+        } elseif ($this->route_type === 'living_out' && $this->busRoute) {
+            return $this->busRoute->name;
+        }
+        return 'Unknown Route';
+    }
+
     public function getStatusBadgeAttribute()
     {
-        return $this->status === 'active' 
+        return $this->status === 'active'
             ? '<span class="badge badge-success">Active</span>'
             : '<span class="badge badge-secondary">Inactive</span>';
     }

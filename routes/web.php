@@ -91,6 +91,8 @@ Route::middleware('auth')->group(function () {
     Route::post('bus-pass-approvals/{application}/reject', [BusPassApprovalController::class, 'reject'])->name('bus-pass-approvals.reject');
     Route::post('bus-pass-approvals/{application}/recommend', [BusPassApprovalController::class, 'recommend'])->name('bus-pass-approvals.recommend');
     Route::post('bus-pass-approvals/{application}/not-recommend', [BusPassApprovalController::class, 'notRecommend'])->name('bus-pass-approvals.not-recommend');
+    Route::post('bus-pass-approvals/{application}/dmov-not-recommend', [BusPassApprovalController::class, 'dmovNotRecommend'])->name('bus-pass-approvals.dmov-not-recommend');
+    Route::post('bus-pass-approvals/{application}/forward-to-branch-clerk', [BusPassApprovalController::class, 'forwardToBranchClerk'])->name('bus-pass-approvals.forward-to-branch-clerk');
 
     // Bus Driver Assignment routes
     Route::resource('bus-driver-assignments', BusDriverAssignmentController::class);
@@ -101,12 +103,10 @@ Route::middleware('auth')->group(function () {
     Route::get('bus-driver-assignments-api/get-bus-details', [BusDriverAssignmentController::class, 'getBusDetails'])->name('bus-driver-assignments.get-bus-details');
 
     // Bus Escort Assignment routes
-    Route::resource('bus-escort-assignments', BusEscortAssignmentController::class);
+    Route::get('bus-escort-assignments', [BusEscortAssignmentController::class, 'index'])->name('bus-escort-assignments.index');
     Route::post('bus-escort-assignments/assign', [BusEscortAssignmentController::class, 'assign'])->name('bus-escort-assignments.assign');
     Route::post('bus-escort-assignments/unassign', [BusEscortAssignmentController::class, 'unassign'])->name('bus-escort-assignments.unassign');
     Route::get('bus-escort-assignments/data', [BusEscortAssignmentController::class, 'getAssignmentData'])->name('bus-escort-assignments.data');
-    Route::get('bus-escort-assignments-api/get-escort-details', [BusEscortAssignmentController::class, 'getEscortDetails'])->name('bus-escort-assignments.get-escort-details');
-    Route::get('bus-escort-assignments-api/get-bus-details', [BusEscortAssignmentController::class, 'getBusDetails'])->name('bus-escort-assignments.get-bus-details');
 
     // SLCMP In-charge Assignment routes
     Route::resource('slcmp-incharge-assignments', SlcmpInchargeAssignmentController::class);

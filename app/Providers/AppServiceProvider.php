@@ -50,7 +50,8 @@ class AppServiceProvider extends ServiceProvider
                 'Staff Officer (Branch)',
                 'Subject Clerk (DMOV)',
                 'Staff Officer 2 (DMOV)',
-                'Col Mov (DMOV)'
+                'Col Mov (DMOV)',
+                'Director (DMOV)'
             ]) && !$user->hasRole('Staff Officer 1 (DMOV)');
         });
 
@@ -96,7 +97,7 @@ class AppServiceProvider extends ServiceProvider
                     $pendingCount = BusPassApplication::where('status', 'forwarded_to_movement')->count();
                 } elseif ($user->hasRole('Staff Officer 2 (DMOV)')) {
                     $pendingCount = BusPassApplication::where('status', 'pending_staff_officer_2_mov')->count();
-                } elseif ($user->hasRole('Col Mov (DMOV)')) {
+                } elseif ($user->hasRole('Col Mov (DMOV)') || $user->hasRole('Director (DMOV)')) {
                     $pendingCount = BusPassApplication::where('status', 'pending_col_mov')->count();
                 }
 
@@ -131,7 +132,7 @@ class AppServiceProvider extends ServiceProvider
                     $pendingCount = BusPassApplication::where('status', 'forwarded_to_movement')->count();
                 } elseif ($user->hasRole('Staff Officer 2 (DMOV)')) {
                     $pendingCount = BusPassApplication::where('status', 'pending_staff_officer_2_mov')->count();
-                } elseif ($user->hasRole('Col Mov (DMOV)')) {
+                } elseif ($user->hasRole('Col Mov (DMOV)') || $user->hasRole('Director (DMOV)')) {
                     $pendingCount = BusPassApplication::where('status', 'pending_col_mov')->count();
                 }
 

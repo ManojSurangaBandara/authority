@@ -8,8 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasRoles;
@@ -104,7 +105,7 @@ class User extends Authenticatable
         if ($this->hasRole('Staff Officer 2 (DMOV)')) return 5;
         if ($this->hasRole('Staff Officer 1 (DMOV)')) return 6;
         if ($this->hasRole('Col Mov (DMOV)')) return 7;
-        if ($this->hasRole('Director (DMOV)')) return 8;
+        if ($this->hasRole('Director (DMOV)')) return 7;
         if ($this->hasRole('Bus Escort (DMOV)')) return 9;
 
         return 0;
@@ -124,5 +125,27 @@ class User extends Authenticatable
     public function adminlte_profile_url(): string
     {
         return route('profile.show');
+    }
+
+    /**
+     * Get the identifier that will be stored in the subject claim of the JWT.
+     */
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    /**
+     * Return a key value array, containing any custom claims to be added to the JWT.
+     */
+    public function getJWTCustomClaims()
+    {
+        return [
+            'name' => $this->name,
+            'email' => $this->email,
+            'e_no' => $this->e_no,
+            'roles' => $this->roles->pluck('name')->toArray(),
+            'establishment_id' => $this->establishment_id,
+        ];
     }
 }

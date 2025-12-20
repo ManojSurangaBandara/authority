@@ -293,6 +293,76 @@ class BusPassApprovalController extends Controller
     }
 
     /**
+     * DMOV not recommend a bus pass application (Subject Clerk DMOV only)
+     */
+    public function dmovNotRecommend(Request $request, BusPassApplication $application)
+    {
+        $request->validate([
+            'remarks' => 'required|string|max:500'
+        ]);
+
+        $user = Auth::user();
+
+        // Check if user is Subject Clerk (DMOV)
+        if (!$user->hasRole('Subject Clerk (DMOV)')) {
+            return redirect()->back()->with('error', 'You do not have permission to process this application.');
+        }
+
+        // Check if user can process this application
+        if (!$this->canUserApprove($user, $application)) {
+            return redirect()->back()->with('error', 'You do not have permission to process this application.');
+        }
+
+        DB::transaction(function () use ($application, $user, $request) {
+            // Record DMOV not recommendation in history
+            $this->recordApprovalAction($application, $user, 'dmov_not_recommended', $request->remarks);
+
+            // Set application status back to branch staff officer for review
+            $application->update([
+                'status' => 'pending_staff_officer_branch',
+                'remarks' => $request->remarks
+            ]);
+        });
+
+        return redirect()->back()->with('success', 'Application not recommended and returned to Branch Staff Officer for review.');
+    }
+
+    /**
+     * Forward application back to Branch Clerk (Staff Officer Branch only for DMOV returned applications)
+     */
+    public function forwardToBranchClerk(Request $request, BusPassApplication $application)
+    {
+        $request->validate([
+            'remarks' => 'required|string|max:500'
+        ]);
+
+        $user = Auth::user();
+
+        // Check if user is Staff Officer (Branch)
+        if (!$user->hasRole('Staff Officer (Branch)')) {
+            return redirect()->back()->with('error', 'You do not have permission to process this application.');
+        }
+
+        // Check if application was recently returned from DMOV
+        if (!$application->wasRecentlyDmovNotRecommended()) {
+            return redirect()->back()->with('error', 'This action is only available for applications returned from DMOV.');
+        }
+
+        DB::transaction(function () use ($application, $user, $request) {
+            // Record the forward action in history
+            $this->recordApprovalAction($application, $user, 'forwarded_to_branch_clerk', $request->remarks);
+
+            // Set application status back to branch subject clerk
+            $application->update([
+                'status' => 'pending_subject_clerk',
+                'remarks' => $request->remarks
+            ]);
+        });
+
+        return redirect()->back()->with('success', 'Application forwarded back to Branch Clerk for review.');
+    }
+
+    /**
      * Get pending applications for a specific user based on their role
      */
     private function getPendingApplicationsForUser($user)
@@ -338,6 +408,10 @@ class BusPassApprovalController extends Controller
         }
 
         if ($user->hasRole('Col Mov (DMOV)')) {
+            return 'pending_col_mov';
+        }
+
+        if ($user->hasRole('Director (DMOV)')) {
             return 'pending_col_mov';
         }
 
@@ -414,6 +488,10 @@ class BusPassApprovalController extends Controller
         if ($action === 'rejected') {
             $newStatus = 'rejected';
         } elseif ($action === 'not_recommended') {
+            $newStatus = 'pending_subject_clerk';
+        } elseif ($action === 'dmov_not_recommended') {
+            $newStatus = 'pending_staff_officer_branch';
+        } elseif ($action === 'forwarded_to_branch_clerk') {
             $newStatus = 'pending_subject_clerk';
         } elseif ($action === 'recommended' || $action === 'approved' || $action === 'forwarded') {
             $newStatus = $this->getNextApprovalStatus($application->status, $action);

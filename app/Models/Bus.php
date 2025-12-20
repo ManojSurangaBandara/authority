@@ -41,4 +41,14 @@ class Bus extends Model
     {
         return $this->hasMany(BusFillingStationAssignment::class, 'bus_id');
     }
+
+    public function routeAssignments()
+    {
+        return $this->hasMany(BusRouteAssignment::class, 'bus_id');
+    }
+
+    public function activeRouteAssignment()
+    {
+        return $this->hasOne(BusRouteAssignment::class, 'bus_id')->active();
+    }
 }

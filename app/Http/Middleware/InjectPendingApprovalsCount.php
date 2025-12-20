@@ -37,7 +37,7 @@ class InjectPendingApprovalsCount
                 $pendingCount = BusPassApplication::where('status', 'forwarded_to_movement')->count();
             } elseif ($user->hasRole('Staff Officer 2 (DMOV)')) {
                 $pendingCount = BusPassApplication::where('status', 'pending_staff_officer_2_mov')->count();
-            } elseif ($user->hasRole('Col Mov (DMOV)')) {
+            } elseif ($user->hasAnyRole(['Col Mov (DMOV)', 'Director (DMOV)'])) {
                 $pendingCount = BusPassApplication::where('status', 'pending_col_mov')->count();
             }
 

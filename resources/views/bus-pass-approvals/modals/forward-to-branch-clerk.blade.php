@@ -1,23 +1,26 @@
-<!-- Reject Application Modal -->
-<div class="modal fade" id="rejectModal{{ $application->id }}" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
+{{-- Forward to Branch Clerk Modal --}}
+<div class="modal fade" id="forwardToBranchClerkModal{{ $application->id }}" tabindex="-1" role="dialog"
+    aria-labelledby="forwardToBranchClerkModalLabel{{ $application->id }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <form method="POST" action="{{ route('bus-pass-approvals.reject', $application) }}">
+            <div class="modal-header bg-primary">
+                <h5 class="modal-title text-white" id="forwardToBranchClerkModalLabel{{ $application->id }}">
+                    <i class="fas fa-arrow-left"></i>
+                    Forward Application to Branch Clerk
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <form method="POST" action="{{ route('bus-pass-approvals.forward-to-branch-clerk', $application->id) }}">
                 @csrf
-                <div class="modal-header bg-danger">
-                    <h4 class="modal-title text-white">
-                        <i class="fas fa-times"></i>
-                        Reject Application #{{ $application->id }}
-                    </h4>
-                    <button type="button" class="close text-white" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
                 <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
-                    <div class="alert alert-danger">
-                        <h5><i class="fas fa-exclamation-triangle"></i> Rejection Confirmation</h5>
-                        You are about to reject the bus pass application for:
-                        <br><strong>{{ $application->person->name }}</strong> ({{ $application->person->regiment_no }})
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Returning to Branch Clerk:</strong>
+                        This application was not recommended by the DMOV Clerk and is being forwarded back to the Branch
+                        Clerk for review.
                     </div>
 
                     {{-- Route Statistics Section - Only for DMOV users --}}
@@ -145,34 +148,62 @@
                         </div>
                     @endif
 
+                    {{-- Previous DMOV Action --}}
+                    @if ($application->wasRecentlyDmovNotRecommended())
+                        @php
+                            $dmovAction = $application->getLatestDmovNotRecommendedAction();
+                        @endphp
+                        <div class="card mb-3">
+                            <div class="card-header bg-warning">
+                                <h6 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Previous DMOV Action</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <strong>Action:</strong> <span class="badge badge-warning">Not
+                                            Recommended</span><br>
+                                        <strong>By:</strong> {{ $dmovAction->user->name ?? 'N/A' }}<br>
+                                        <strong>Role:</strong> {{ $dmovAction->user->roles->first()->name ?? 'N/A' }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Date:</strong> {{ $dmovAction->created_at->format('d/m/Y H:i') }}<br>
+                                        <strong>Status:</strong>
+                                        {{ ucfirst(str_replace('_', ' ', $dmovAction->action)) }}
+                                    </div>
+                                </div>
+                                @if ($dmovAction->remarks)
+                                    <div class="mt-2">
+                                        <strong>DMOV Remarks:</strong>
+                                        <div class="bg-light p-2 rounded mt-1">{{ $dmovAction->remarks }}</div>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- Remarks Field --}}
                     <div class="form-group">
-                        <label for="reject_remarks{{ $application->id }}">
-                            <i class="fas fa-comment"></i> Rejection Reason <span class="text-danger">*</span>
+                        <label for="remarks{{ $application->id }}" class="font-weight-bold">
+                            <i class="fas fa-comment"></i> Remarks <span class="text-danger">*</span>
                         </label>
-                        <textarea class="form-control @error('remarks') is-invalid @enderror" id="reject_remarks{{ $application->id }}"
-                            name="remarks" rows="4" placeholder="Please provide a detailed reason for rejection..." required></textarea>
-                        <small class="form-text text-muted">
-                            Please provide a clear reason for rejection to help the applicant understand the decision.
-                        </small>
+                        <textarea class="form-control @error('remarks') is-invalid @enderror" id="remarks{{ $application->id }}" name="remarks"
+                            rows="4" placeholder="Enter your remarks for forwarding this application back to Branch Clerk..." required>{{ old('remarks') }}</textarea>
                         @error('remarks')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
-                    </div>
-
-                    <div class="alert alert-warning">
-                        <small>
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <strong>Important:</strong> This action will permanently reject the application.
-                            The applicant will need to submit a new application if required.
+                        <small class="form-text text-muted">
+                            Please provide detailed remarks explaining why the application is being returned to Branch
+                            Clerk.
                         </small>
                     </div>
                 </div>
+
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">
                         <i class="fas fa-times"></i> Cancel
                     </button>
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-times"></i> Confirm Rejection
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-arrow-left"></i> Forward to Branch Clerk
                     </button>
                 </div>
             </form>

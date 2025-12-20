@@ -181,6 +181,11 @@ class ReportController extends Controller
                 'has_duplicate' => in_array($routeName, $duplicateNames)
             ];
 
+            // Get seating capacity for this route
+            $routeTypeForCapacity = $routeType === 'bus_route' ? 'living_out' : 'living_in';
+            $capacityInfo = (new BusPassApplication())->getSeatingCapacityForRoute($routeName, $routeTypeForCapacity);
+            $counts['seating_capacity'] = $capacityInfo ? $capacityInfo['seats'] : null;
+
             // Initialize counts for each person type
             foreach ($personTypes as $personType) {
                 $counts[strtolower($personType->name)] = 0;
