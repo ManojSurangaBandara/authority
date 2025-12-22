@@ -1096,17 +1096,21 @@
                     busPassTypeSelect.append('<option value="living_in_only" ' + livingInSelected +
                         '>Living in Bus only</option>');
 
-                    // If approval for living out is "yes", also show "Unmarried Daily Travel"
+                    // If approval for living out is "yes", also show other options
                     if (approvalLivingOut === 'yes') {
                         var unmarriedSelected = (currentValue === 'unmarried_daily_travel') ? 'selected' : '';
                         busPassTypeSelect.append('<option value="unmarried_daily_travel" ' + unmarriedSelected +
                             '>Unmarried Daily Travel</option>');
+                        var weekendMonthlySelected = (currentValue === 'weekend_monthly_travel') ? 'selected' : '';
+                        busPassTypeSelect.append('<option value="weekend_monthly_travel" ' +
+                            weekendMonthlySelected +
+                            '>Weekend and Living in Bus</option>');
                     }
 
                     // If current selection is not valid for single, clear it
                     var validSingleTypes = ['living_in_only'];
                     if (approvalLivingOut === 'yes') {
-                        validSingleTypes.push('unmarried_daily_travel');
+                        validSingleTypes.push('unmarried_daily_travel', 'weekend_monthly_travel');
                     }
 
                     if (currentValue && !validSingleTypes.includes(currentValue)) {
@@ -1186,10 +1190,10 @@
 
             // Function to check and show/hide permission letter section in edit form
             function checkPermissionLetterVisibilityEdit() {
-                var busPassType = $('#bus_pass_type').val();
+                var approvalLivingOut = $('#approval_living_out').val();
 
-                // Show Permission Letter only for "Unmarried Daily Travel"
-                if (busPassType === 'unmarried_daily_travel') {
+                // Show Permission Letter only if approval for living out is "yes"
+                if (approvalLivingOut === 'yes') {
                     $('#permission_letter_section_edit').show();
                 } else {
                     $('#permission_letter_section_edit').hide();

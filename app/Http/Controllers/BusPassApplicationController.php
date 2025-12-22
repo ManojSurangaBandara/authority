@@ -143,7 +143,7 @@ class BusPassApplicationController extends Controller
                 'person_image' => 'required|file|mimes:jpg,jpeg,png|max:5120',
                 'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only,unmarried_daily_travel',
                 'marriage_part_ii_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only' && $request->bus_pass_type !== 'unmarried_daily_travel') ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'permission_letter' => ($request->bus_pass_type === 'unmarried_daily_travel') ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'permission_letter' => ($request->bus_pass_type === 'unmarried_daily_travel' || ($request->marital_status === 'single' && $request->bus_pass_type === 'weekend_monthly_travel')) ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
                 'declaration_1' => 'required|in:yes',
                 'declaration_2' => 'required|in:yes',
             ];
@@ -171,7 +171,7 @@ class BusPassApplicationController extends Controller
                 'person_image' => 'required|file|mimes:jpg,jpeg,png|max:5120',
                 'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only,unmarried_daily_travel',
                 'marriage_part_ii_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only' && $request->bus_pass_type !== 'unmarried_daily_travel') ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'permission_letter' => ($request->bus_pass_type === 'unmarried_daily_travel') ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'permission_letter' => ($request->bus_pass_type === 'unmarried_daily_travel' || ($request->marital_status === 'single' && $request->bus_pass_type === 'weekend_monthly_travel')) ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
                 'declaration_1' => 'required|in:yes',
                 'declaration_2' => 'required|in:yes',
             ];
@@ -234,15 +234,17 @@ class BusPassApplicationController extends Controller
 
         // Additional validation: Single personnel validation
         if ($request->marital_status === 'single') {
-            // Single personnel can select "Living in Bus only" or "Unmarried Daily Travel" (if approval for living out is yes)
+            // Single personnel can select "Living in Bus only" always
             $allowedTypes = ['living_in_only'];
+            // If approval for living out is "yes", they can also select "Unmarried Daily Travel" and "Weekend and Living in Bus"
             if ($request->approval_living_out === 'yes') {
                 $allowedTypes[] = 'unmarried_daily_travel';
+                $allowedTypes[] = 'weekend_monthly_travel';
             }
 
             if (!in_array($request->bus_pass_type, $allowedTypes)) {
                 $errorMessage = $request->approval_living_out === 'yes'
-                    ? 'Single personnel can only select "Living in Bus only" or "Unmarried Daily Travel" bus pass types.'
+                    ? 'Single personnel can only select "Living in Bus only", "Unmarried Daily Travel", or "Weekend and Living in Bus" bus pass types.'
                     : 'Single personnel can only select "Living in Bus only" bus pass type.';
 
                 return redirect()->back()
@@ -662,7 +664,7 @@ class BusPassApplicationController extends Controller
                 'person_image' => !$bus_pass_application->person_image ? 'required|file|mimes:jpg,jpeg,png|max:5120' : 'nullable|file|mimes:jpg,jpeg,png|max:5120',
                 'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only,unmarried_daily_travel',
                 'marriage_part_ii_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only' && $request->bus_pass_type !== 'unmarried_daily_travel') ? (!$bus_pass_application->marriage_part_ii_order ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240') : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'permission_letter' => ($request->bus_pass_type === 'unmarried_daily_travel') ? (!$bus_pass_application->permission_letter ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240') : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'permission_letter' => ($request->bus_pass_type === 'unmarried_daily_travel' || ($request->marital_status === 'single' && $request->bus_pass_type === 'weekend_monthly_travel')) ? (!$bus_pass_application->permission_letter ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240') : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
                 'declaration_1' => 'required|in:yes',
                 'declaration_2' => 'required|in:yes',
             ];
@@ -690,7 +692,7 @@ class BusPassApplicationController extends Controller
                 'person_image' => !$bus_pass_application->person_image ? 'required|file|mimes:jpg,jpeg,png|max:5120' : 'nullable|file|mimes:jpg,jpeg,png|max:5120',
                 'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only,unmarried_daily_travel',
                 'marriage_part_ii_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only' && $request->bus_pass_type !== 'unmarried_daily_travel') ? (!$bus_pass_application->marriage_part_ii_order ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240') : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'permission_letter' => ($request->bus_pass_type === 'unmarried_daily_travel') ? (!$bus_pass_application->permission_letter ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240') : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'permission_letter' => ($request->bus_pass_type === 'unmarried_daily_travel' || ($request->marital_status === 'single' && $request->bus_pass_type === 'weekend_monthly_travel')) ? (!$bus_pass_application->permission_letter ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240') : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
                 'declaration_1' => 'required|in:yes',
                 'declaration_2' => 'required|in:yes',
             ];
@@ -719,7 +721,7 @@ class BusPassApplicationController extends Controller
                 'person_image' => !$bus_pass_application->person_image ? 'required|file|mimes:jpg,jpeg,png|max:5120' : 'nullable|file|mimes:jpg,jpeg,png|max:5120',
                 'bus_pass_type' => 'required|in:daily_travel,weekend_monthly_travel,living_in_only,weekend_only,unmarried_daily_travel',
                 'marriage_part_ii_order' => ($request->marital_status === 'married' && $request->bus_pass_type !== 'living_in_only' && $request->bus_pass_type !== 'unmarried_daily_travel') ? (!$bus_pass_application->marriage_part_ii_order ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240') : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'permission_letter' => ($request->bus_pass_type === 'unmarried_daily_travel') ? (!$bus_pass_application->permission_letter ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240') : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+                'permission_letter' => ($request->bus_pass_type === 'unmarried_daily_travel' || ($request->marital_status === 'single' && $request->bus_pass_type === 'weekend_monthly_travel')) ? (!$bus_pass_application->permission_letter ? 'required|file|mimes:pdf,jpg,jpeg,png|max:10240' : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240') : 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
                 'declaration_1' => 'required|in:yes',
                 'declaration_2' => 'required|in:yes',
             ];
@@ -753,15 +755,17 @@ class BusPassApplicationController extends Controller
 
         // Additional validation: Single personnel validation
         if ($request->marital_status === 'single') {
-            // Single personnel can select "Living in Bus only" or "Unmarried Daily Travel" (if approval for living out is yes)
+            // Single personnel can select "Living in Bus only" always
             $allowedTypes = ['living_in_only'];
+            // If approval for living out is "yes", they can also select "Unmarried Daily Travel" and "Weekend and Living in Bus"
             if ($request->approval_living_out === 'yes') {
                 $allowedTypes[] = 'unmarried_daily_travel';
+                $allowedTypes[] = 'weekend_monthly_travel';
             }
 
             if (!in_array($request->bus_pass_type, $allowedTypes)) {
                 $errorMessage = $request->approval_living_out === 'yes'
-                    ? 'Single personnel can only select "Living in Bus only" or "Unmarried Daily Travel" bus pass types.'
+                    ? 'Single personnel can only select "Living in Bus only", "Unmarried Daily Travel", or "Weekend and Living in Bus" bus pass types.'
                     : 'Single personnel can only select "Living in Bus only" bus pass type.';
 
                 return redirect()->back()
