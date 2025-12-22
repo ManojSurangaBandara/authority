@@ -76,7 +76,6 @@
                                     <th>Weekend Bus</th>
                                     <th>Status</th>
                                     <th>Branch Card ID</th>
-                                    <th>Temp Card QR</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -335,7 +334,6 @@
                         <td>${app.weekend_bus_name || 'N/A'}</td>
                         <td><span class="status-badge ${statusClass}">${app.status.replace(/_/g, ' ')}</span></td>
                         <td>${app.branch_card_id || 'N/A'}</td>
-                        <td>${app.temp_card_qr || 'N/A'}</td>
                         <td>
                             <button class="btn btn-info btn-xs view-application" data-id="${app.id}" title="View Details">
                                 <i class="fas fa-eye"></i>
@@ -343,12 +341,12 @@
                             ${canIntegrate ?
                                 (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                                     `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                        <i class="fas fa-arrow-up"></i>
-                                                    </button>` :
+                                                            <i class="fas fa-arrow-up"></i>
+                                                        </button>` :
                                 (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                                     `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                        <i class="fas fa-arrow-down"></i>
-                                                    </button>` : ''
+                                                            <i class="fas fa-arrow-down"></i>
+                                                        </button>` : ''
                                 : ''}
                         </td>
                     </tr>
@@ -468,7 +466,6 @@
                         <p><strong>Application ID:</strong> ${app.id}</p>
                         <p><strong>Status:</strong> <span class="badge badge-info">${app.status}</span></p>
                         <p><strong>Branch Card ID:</strong> ${app.branch_card_id || 'N/A'}</p>
-                        <p><strong>Temp Card QR:</strong> ${app.temp_card_qr || 'N/A'}</p>
                         <p><strong>Requested Bus:</strong> ${app.requested_bus_name || 'N/A'}</p>
                         <p><strong>Weekend Bus:</strong> ${app.weekend_bus_name || 'N/A'}</p>
                     </div>
