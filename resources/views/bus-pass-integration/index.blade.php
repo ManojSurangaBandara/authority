@@ -9,6 +9,8 @@
         content="{{ auth()->user()->hasRole(['Col Mov (DMOV)', 'Director (DMOV)'])? 'integration_allowed': 'view_only' }}">
 @stop
 
+@section('plugins.Datatables', true)
+
 @section('content')
     <div class="container-fluid">
         <!-- Route Filter -->
@@ -49,8 +51,8 @@
                         <h3 class="card-title">Integration Status by Establishment</h3>
                     </div>
                     <div class="card-body">
-                        <div style="overflow-x: auto; overflow-y: hidden;">
-                            <canvas id="integrationChart" height="400"></canvas>
+                        <div style="overflow-x: auto; overflow-y: hidden; min-height: 400px;">
+                            <canvas id="integrationChart" style="height: 400px; width: 100%; max-width: 100%;"></canvas>
                         </div>
                     </div>
                 </div>
@@ -65,6 +67,19 @@
                         <h3 class="card-title" id="tableTitle">Click on chart bars to view applications</h3>
                     </div>
                     <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="applicationsTableSearch"
+                                        placeholder="Search applications...">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                                            <i class="fas fa-times"></i> Clear
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <table id="applicationsTable" class="table table-bordered table-striped" style="display: none;">
                             <thead>
                                 <tr>
@@ -79,8 +94,6 @@
                                     <th>Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="applicationsTableBody">
-                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -151,15 +164,18 @@
 @stop
 
 @section('js')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
         let chart = null;
         let currentRouteId = 'all';
         let currentRouteType = 'living_out';
+        let applicationsTable = null;
         const canIntegrate = $('meta[name="user-role"]').attr('content') === 'integration_allowed';
 
         $(document).ready(function() {
+            console.log('Document ready, initializing...');
+            console.log('Chart.js available:', typeof Chart);
+            initializeDataTable();
             loadChartData();
 
             // Route filter change
@@ -169,9 +185,65 @@
                 loadChartData();
                 hideApplicationsTable();
             });
+
+            // Search functionality
+            $('#applicationsTableSearch').on('keyup', function() {
+                if (applicationsTable) {
+                    applicationsTable.search($(this).val()).draw();
+                }
+            });
+
+            // Clear search
+            $('#clearSearch').on('click', function() {
+                $('#applicationsTableSearch').val('');
+                if (applicationsTable) {
+                    applicationsTable.search('').draw();
+                }
+            });
         });
 
+        function initializeDataTable() {
+            applicationsTable = $('#applicationsTable').DataTable({
+                paging: true,
+                lengthChange: true,
+                searching: true,
+                ordering: true,
+                info: true,
+                autoWidth: false,
+                responsive: true,
+                pageLength: 25,
+                language: {
+                    search: "",
+                    searchPlaceholder: "Search...",
+                    lengthMenu: "Show _MENU_ entries",
+                    info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                    infoEmpty: "No entries found",
+                    infoFiltered: "(filtered from _MAX_ total entries)",
+                    paginate: {
+                        first: "First",
+                        last: "Last",
+                        next: "Next",
+                        previous: "Previous"
+                    }
+                },
+                columnDefs: [{
+                        orderable: true,
+                        targets: [0, 1, 2, 3, 4, 5, 6, 7]
+                    },
+                    {
+                        orderable: false,
+                        targets: [8]
+                    } // Actions column not sortable
+                ],
+                dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rt<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>'
+            });
+
+            // Hide the default search input since we have our own
+            $('.dataTables_filter').hide();
+        }
+
         function loadChartData() {
+            console.log('Loading chart data...');
             $.ajax({
                 url: '{{ route('bus-pass-integration.chart-data') }}',
                 method: 'GET',
@@ -180,6 +252,7 @@
                     route_type: currentRouteType
                 },
                 success: function(data) {
+                    console.log('Chart data received:', data);
                     renderChart(data);
                 },
                 error: function(xhr, status, error) {
@@ -190,7 +263,20 @@
         }
 
         function renderChart(data) {
-            const ctx = document.getElementById('integrationChart').getContext('2d');
+            console.log('Rendering chart with data:', data);
+            const ctx = document.getElementById('integrationChart');
+
+            if (!ctx) {
+                console.error('Canvas element not found!');
+                alert('Canvas element not found!');
+                return;
+            }
+
+            if (!window.Chart) {
+                console.error('Chart.js not loaded!');
+                alert('Chart.js library not loaded!');
+                return;
+            }
 
             if (chart) {
                 chart.destroy();
@@ -200,14 +286,20 @@
             const pendingData = data.map(item => item.pending_integration);
             const integratedData = data.map(item => -item.integrated); // Negative for below axis
 
-            // Calculate dynamic width based on number of establishments
-            const minBarWidth = 60; // Minimum width per bar
-            const dynamicWidth = Math.max(600, labels.length * minBarWidth);
+            console.log('Labels:', labels);
+            console.log('Pending data:', pendingData);
+            console.log('Integrated data:', integratedData);
 
-            // Set canvas width
-            const canvas = document.getElementById('integrationChart');
-            canvas.style.width = dynamicWidth + 'px';
-            canvas.width = dynamicWidth;
+            // If no data, show a message
+            if (labels.length === 0) {
+                console.log('No data to display');
+                const context = ctx.getContext('2d');
+                context.font = '20px Arial';
+                context.fillStyle = 'gray';
+                context.textAlign = 'center';
+                context.fillText('No data available', ctx.width / 2, ctx.height / 2);
+                return;
+            }
 
             chart = new Chart(ctx, {
                 type: 'bar',
@@ -227,9 +319,8 @@
                         borderWidth: 1
                     }]
                 },
-                plugins: [ChartDataLabels],
                 options: {
-                    responsive: false,
+                    responsive: true,
                     maintainAspectRatio: false,
                     scales: {
                         y: {
@@ -250,31 +341,6 @@
                         legend: {
                             display: true,
                             position: 'top'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    label += Math.abs(context.parsed.y);
-                                    return label;
-                                }
-                            }
-                        },
-                        datalabels: {
-                            anchor: 'center',
-                            align: 'center',
-                            color: 'black',
-                            font: {
-                                weight: 'bold',
-                                size: 12
-                            },
-                            formatter: function(value, context) {
-                                const absoluteValue = Math.abs(value);
-                                return absoluteValue > 0 ? absoluteValue : '';
-                            }
                         }
                     },
                     onHover: function(event, elements) {
@@ -292,6 +358,8 @@
                     }
                 }
             });
+
+            console.log('Chart created successfully:', chart);
         }
 
         function loadApplications(establishmentId, type, establishmentName) {
@@ -319,40 +387,47 @@
                 `${establishmentName} - ${type === 'pending' ? 'Pending Integration' : 'Integrated'} Applications (${applications.length})`;
             $('#tableTitle').text(title);
 
-            const tbody = $('#applicationsTableBody');
-            tbody.empty();
+            // Clear existing data
+            if (applicationsTable) {
+                applicationsTable.clear();
+            }
 
+            // Add new data
             applications.forEach(function(app) {
                 const statusClass = `status-${app.status.replace(/_/g, '_')}`;
-                const row = `
-                    <tr>
-                        <td>${app.id}</td>
-                        <td>${app.person_name}</td>
-                        <td>${app.person_rank}</td>
-                        <td>${app.establishment}</td>
-                        <td>${app.requested_bus_name || 'N/A'}</td>
-                        <td>${app.weekend_bus_name || 'N/A'}</td>
-                        <td><span class="status-badge ${statusClass}">${app.status.replace(/_/g, ' ')}</span></td>
-                        <td>${app.branch_card_id || 'N/A'}</td>
-                        <td>
-                            <button class="btn btn-info btn-xs view-application" data-id="${app.id}" title="View Details">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            ${canIntegrate ?
-                                (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
-                                    `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                            <i class="fas fa-arrow-up"></i>
-                                                        </button>` :
-                                (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
-                                    `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                            <i class="fas fa-arrow-down"></i>
-                                                        </button>` : ''
-                                : ''}
-                        </td>
-                    </tr>
-                `;
-                tbody.append(row);
+                const statusText = app.status.replace(/_/g, ' ');
+                const actionsHtml = `
+                    <button class="btn btn-info btn-xs view-application" data-id="${app.id}" title="View Details">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    ${canIntegrate ?
+                        (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
+                            `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
+                                    <i class="fas fa-arrow-up"></i>
+                                </button>` :
+                        (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
+                            `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
+                                    <i class="fas fa-arrow-down"></i>
+                                </button>` : ''
+                        : ''}`;
+
+                applicationsTable.row.add([
+                    app.id,
+                    app.person_name,
+                    app.person_rank,
+                    app.establishment,
+                    app.requested_bus_name || 'N/A',
+                    app.weekend_bus_name || 'N/A',
+                    `<span class="status-badge ${statusClass}">${statusText}</span>`,
+                    app.branch_card_id || 'N/A',
+                    actionsHtml
+                ]);
             });
+
+            // Draw the table
+            if (applicationsTable) {
+                applicationsTable.draw();
+            }
 
             $('#applicationsTable').show();
         }
@@ -360,6 +435,11 @@
         function hideApplicationsTable() {
             $('#applicationsTable').hide();
             $('#tableTitle').text('Click on chart bars to view applications');
+            // Clear search when hiding table
+            $('#applicationsTableSearch').val('');
+            if (applicationsTable) {
+                applicationsTable.clear().draw();
+            }
         }
 
         // View application modal
