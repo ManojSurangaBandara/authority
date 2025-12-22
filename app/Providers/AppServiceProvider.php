@@ -65,6 +65,14 @@ class AppServiceProvider extends ServiceProvider
             ]);
         });
 
+        // Gate for QR Download - Branch Clerk and DMOV Clerk only
+        Gate::define('access_qr_download', function ($user) {
+            return $user->hasAnyRole([
+                'Bus Pass Subject Clerk (Branch)',
+                'Subject Clerk (DMOV)'
+            ]);
+        });
+
         // Individual role gates for more granular control if needed
         Gate::define('bus_pass_subject_clerk_branch', function ($user) {
             return $user->hasRole('Bus Pass Subject Clerk (Branch)');

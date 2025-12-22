@@ -520,6 +520,16 @@ return [
             'classes' => 'bus-pass-integration-menu',
         ],
 
+        [
+            'text' => 'QR Download',
+            'url' => 'qr-download',
+            'icon' => 'fas fa-fw fa-qrcode',
+            'can' => 'access_qr_download',
+            'active' => [
+                'qr-download*',
+            ],
+        ],
+
         // System Administration (System Administrator only)
         [
             'text' => 'System Administration',

@@ -18,6 +18,7 @@ use App\Http\Controllers\BusPassApplicationController;
 use App\Http\Controllers\BusPassStatusController;
 use App\Http\Controllers\BusPassApprovalController;
 use App\Http\Controllers\BusPassIntegrationController;
+use App\Http\Controllers\QrDownloadController;
 use App\Http\Controllers\EstablishmentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
@@ -84,6 +85,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('bus-pass-applications', BusPassApplicationController::class);
     Route::get('bus-pass-applications-api/get-details', [BusPassApplicationController::class, 'getPersonDetails'])->name('bus-pass-applications.get-details');
     Route::post('bus-pass-applications-api/verify-branch-card', [BusPassApplicationController::class, 'verifyBranchCard'])->name('bus-pass-applications.verify-branch-card');
+
+    // QR Download routes
+    Route::get('qr-download', [QrDownloadController::class, 'index'])->name('qr-download.index');
+    Route::get('qr-download/{id}/download', [QrDownloadController::class, 'download'])->name('qr-download.download');
 
     // Bus Pass Status routes (Master Data)
     Route::resource('bus-pass-statuses', BusPassStatusController::class);
