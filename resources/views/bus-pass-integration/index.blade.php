@@ -278,6 +278,9 @@
                             }
                         }
                     },
+                    onHover: function(event, elements) {
+                        event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                    },
                     onClick: function(event, elements) {
                         if (elements.length > 0) {
                             const elementIndex = elements[0].index;
@@ -340,12 +343,12 @@
                             ${canIntegrate ?
                                 (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                                     `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                    <i class="fas fa-arrow-up"></i>
-                                                </button>` :
+                                                        <i class="fas fa-arrow-up"></i>
+                                                    </button>` :
                                 (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                                     `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                    <i class="fas fa-arrow-down"></i>
-                                                </button>` : ''
+                                                        <i class="fas fa-arrow-down"></i>
+                                                    </button>` : ''
                                 : ''}
                         </td>
                     </tr>
@@ -366,7 +369,7 @@
             const applicationId = $(this).data('id');
 
             $.ajax({
-                url: '{{ url("bus-pass-integration") }}/' + applicationId,
+                url: '{{ url('bus-pass-integration') }}/' + applicationId,
                 method: 'GET',
                 success: function(response) {
                     displayApplicationModal(response);
@@ -384,7 +387,7 @@
 
             if (confirm('Are you sure you want to integrate this application?')) {
                 $.ajax({
-                    url: '{{ url("bus-pass-integration") }}/' + applicationId + '/integrate',
+                    url: '{{ url('bus-pass-integration') }}/' + applicationId + '/integrate',
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -412,7 +415,7 @@
 
             if (confirm('Are you sure you want to undo the integration for this application?')) {
                 $.ajax({
-                    url: '{{ url("bus-pass-integration") }}/' + applicationId + '/undo-integrate',
+                    url: '{{ url('bus-pass-integration') }}/' + applicationId + '/undo-integrate',
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
