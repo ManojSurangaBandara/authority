@@ -765,7 +765,7 @@ class EscortAuthController extends Controller
         try {
             // Validate request
             $validator = Validator::make($request->all(), [
-                'route_id' => 'required|integer',
+                'route_id' => 'required|string',
                 'route_type' => 'required|in:living_out,living_in',
             ]);
 
