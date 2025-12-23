@@ -7,6 +7,7 @@ use App\Http\Traits\ApiResponseTrait;
 use App\Models\BusPassApplication;
 use App\Models\BusRoute;
 use App\Models\Escort;
+use App\Models\Onboarding;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Crypt;
@@ -368,6 +369,7 @@ class EscortAuthController extends Controller
 
             return $this->successResponse([
                 'allowed' => $isAllowed,
+                'application_id' => $busPassApplication->id,
                 'branch_card_id' => $branchCardId,
                 'passenger_name' => $busPassApplication->person->name ?? 'Unknown',
                 'passenger_image_url' => $personImageUrl,
@@ -384,6 +386,153 @@ class EscortAuthController extends Controller
             ]);
 
             return $this->errorResponse('Validation failed', 500);
+        }
+    }
+
+    /**
+     * Record passenger onboarding after validation
+     */
+    public function onboardPassenger(Request $request): JsonResponse
+    {
+        try {
+            // Validate request
+            $validator = Validator::make($request->all(), [
+                'application_id' => 'required|integer|exists:bus_pass_applications,id',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // Get authenticated escort using JWT token (same as other methods)
+            $token = JWTAuth::parseToken();
+            $payload = $token->getPayload();
+
+            // Verify this is an escort token
+            if ($payload->get('type') !== 'escort') {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid token type'
+                ], 403);
+            }
+
+            $escortId = $payload->get('escort_id');
+            $escort = Escort::with(['escortAssignment.busRoute', 'escortAssignment.livingInBus'])->find($escortId);
+
+            if (!$escort) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Escort not authenticated'
+                ], 401);
+            }
+
+            // Load escort with active assignment
+            $activeAssignment = $escort->escortAssignment;
+
+            if (!$activeAssignment) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Escort has no active bus assignment'
+                ], 403);
+            }
+
+            // Find bus pass application - allow applications with valid cards regardless of status
+            $busPassApplication = BusPassApplication::where('id', $request->application_id)
+                ->where(function ($query) {
+                    $query->whereNotNull('branch_card_id')
+                        ->orWhereNotNull('temp_card_qr');
+                })
+                ->whereNotIn('status', ['rejected', 'deactivated'])
+                ->with(['person', 'establishment'])
+                ->first();
+
+            if (!$busPassApplication) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Bus pass application not found, has no valid card, or is inactive'
+                ], 400);
+            }
+
+            // Check for duplicate onboarding within 4 hours
+            $recentOnboarding = Onboarding::where('bus_pass_application_id', $busPassApplication->id)
+                ->where('onboarded_at', '>', now()->subHours(4))
+                ->first();
+
+            if ($recentOnboarding) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Passenger already onboarded within the last 4 hours'
+                ], 409);
+            }
+
+            // Validate route authorization
+            $isAuthorized = $this->isBranchCardAllowedForRoute($busPassApplication, $activeAssignment->busRoute) ||
+                $this->isBranchCardAllowedForLivingInRoute($busPassApplication, $activeAssignment->livingInBus);
+
+            if (!$isAuthorized) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Passenger not authorized for this route'
+                ], 403);
+            }
+
+            // Create onboarding record
+            $onboarding = Onboarding::create([
+                'bus_pass_application_id' => $busPassApplication->id,
+                'escort_id' => $escort->id,
+                'bus_route_id' => $activeAssignment->busRoute?->id,
+                'living_in_bus_id' => $activeAssignment->livingInBus?->id,
+                'route_type' => $activeAssignment->busRoute ? 'living_out' : 'living_in',
+                'branch_card_id' => $busPassApplication->branch_card_id ?: $busPassApplication->temp_card_qr,
+                'serial_number' => $busPassApplication->temp_card_qr,
+                'onboarded_at' => now(),
+                'boarding_data' => [
+                    'escort_name' => $escort->name,
+                    'escort_regiment_no' => $escort->regiment_no,
+                    'route_name' => $activeAssignment->busRoute?->name ?: $activeAssignment->livingInBus?->name,
+                    'passenger_name' => $busPassApplication->person?->name,
+                    'establishment_name' => $busPassApplication->establishment?->name,
+                ]
+            ]);
+
+            // Log the onboarding
+            Log::info("Passenger onboarded", [
+                'onboarding_id' => $onboarding->id,
+                'application_id' => $busPassApplication->id,
+                'escort_id' => $escort->id,
+                'route_type' => $onboarding->route_type,
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Passenger onboarded successfully',
+                'data' => [
+                    'onboarding_id' => $onboarding->id,
+                    'onboarded_at' => $onboarding->onboarded_at,
+                    'passenger_name' => $busPassApplication->person?->name,
+                    'route_name' => $activeAssignment->busRoute?->name ?: $activeAssignment->livingInBus?->name,
+                    'route_type' => $onboarding->route_type,
+                ]
+            ]);
+        } catch (JWTException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Token invalid or expired'
+            ], 401);
+        } catch (\Exception $e) {
+            Log::error('Onboarding failed', [
+                'application_id' => $request->application_id ?? null,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Onboarding failed: ' . $e->getMessage()
+            ], 500);
         }
     }
 
