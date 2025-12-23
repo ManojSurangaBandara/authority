@@ -49,21 +49,6 @@
                                 </div>
 
                                 <div class="mb-3">
-                                    <label for="eno">E Number:</label>
-                                    <input type="text" name="eno" id="eno" required class="form-control"
-                                        value="{{ $escort->eno }}" {{ $isUsed ?? false ? 'readonly' : '' }}>
-                                    @if ($isUsed ?? false)
-                                        <small class="form-text text-muted">
-                                            <i class="fas fa-lock"></i> E Number is locked because this escort has
-                                            active assignments.
-                                        </small>
-                                    @endif
-                                    @error('eno')
-                                        <div class="text-danger">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="mb-3">
                                     <label for="rank">Rank:</label>
                                     <input type="text" name="rank" id="rank" required class="form-control"
                                         value="{{ $escort->rank }}">
@@ -77,6 +62,21 @@
                                     <input type="text" name="name" id="name" required class="form-control"
                                         value="{{ $escort->name }}">
                                     @error('name')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="eno">E Number:</label>
+                                    <input type="text" name="eno" id="eno" required class="form-control"
+                                        value="{{ $escort->eno }}" {{ $isUsed ?? false ? 'readonly' : '' }}>
+                                    @if ($isUsed ?? false)
+                                        <small class="form-text text-muted">
+                                            <i class="fas fa-lock"></i> E Number is locked because this escort has
+                                            active assignments.
+                                        </small>
+                                    @endif
+                                    @error('eno')
                                         <div class="text-danger">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -129,7 +129,6 @@
                     success: function(response) {
                         if (response.success) {
                             // Fill form fields with returned data
-                            $('#eno').val(response.data.service_no);
                             $('#rank').val(response.data.rank);
                             $('#name').val(response.data.name);
                             // Keep the contact_no field as is, since it's not in the API response
