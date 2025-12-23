@@ -756,4 +756,113 @@ class EscortAuthController extends Controller
 
         return false;
     }
+
+    /**
+     * Get onboarded passengers for a specific route
+     */
+    public function getOnboardedPassengers(Request $request): JsonResponse
+    {
+        try {
+            // Validate request
+            $validator = Validator::make($request->all(), [
+                'route_id' => 'required|integer',
+                'route_type' => 'required|in:living_out,living_in',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // Get authenticated escort using JWT token
+            $token = JWTAuth::parseToken();
+            $payload = $token->getPayload();
+
+            // Verify this is an escort token
+            if ($payload->get('type') !== 'escort') {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid token type'
+                ], 403);
+            }
+
+            $escortId = $payload->get('escort_id');
+            $escort = Escort::find($escortId);
+
+            if (!$escort) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Escort not authenticated'
+                ], 401);
+            }
+
+            $routeId = $request->route_id;
+            $routeType = $request->route_type;
+
+            // Query onboardings based on route type
+            $query = Onboarding::where('escort_id', $escortId)
+                ->where('route_type', $routeType)
+                ->where('onboarded_at', '>=', now()->startOfDay()) // Today's onboardings only
+                ->with([
+                    'busPassApplication.person',
+                    'busPassApplication.establishment',
+                    'busRoute',
+                    'escort'
+                ]);
+
+            if ($routeType === 'living_out') {
+                $query->where('bus_route_id', $routeId);
+            } else {
+                $query->where('living_in_bus_id', $routeId);
+            }
+
+            $onboardings = $query->orderBy('onboarded_at', 'desc')->get();
+
+            // Format passenger details
+            $passengers = $onboardings->map(function ($onboarding) {
+                return [
+                    'onboarding_id' => $onboarding->id,
+                    'passenger_name' => $onboarding->busPassApplication->person?->name ?? 'N/A',
+                    'regiment_no' => $onboarding->busPassApplication->person->regiment_no,
+                    'establishment_name' => $onboarding->busPassApplication->establishment?->name ?? 'N/A',
+                    'bus_pass_type' => $onboarding->busPassApplication->bus_pass_type,
+                    'branch_card_id' => $onboarding->branch_card_id,
+                    'serial_number' => $onboarding->serial_number,
+                    'onboarded_at' => $onboarding->onboarded_at->format('Y-m-d H:i:s'),
+                    'route_name' => $onboarding->busRoute?->name ?? $onboarding->boarding_data['route_name'] ?? 'N/A',
+                ];
+            });
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Onboarded passengers retrieved successfully',
+                'data' => [
+                    'route_id' => $routeId,
+                    'route_type' => $routeType,
+                    'escort_name' => $escort->name,
+                    'total_passengers' => $passengers->count(),
+                    'passengers' => $passengers
+                ]
+            ]);
+        } catch (JWTException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Token is invalid or expired'
+            ], 401);
+        } catch (\Exception $e) {
+            Log::error('Error retrieving onboarded passengers', [
+                'error' => $e->getMessage(),
+                'route_id' => $request->route_id ?? null,
+                'route_type' => $request->route_type ?? null,
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to retrieve onboarded passengers'
+            ], 500);
+        }
+    }
 }

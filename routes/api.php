@@ -70,6 +70,7 @@ Route::middleware(['escort.auth'])->prefix('escort')->group(function () {
     Route::post('/validate-boarding', [EscortAuthController::class, 'validateBoarding']);
     Route::post('/validate-temp-card-boarding', [EscortAuthController::class, 'validateTempCardBoarding']);
     Route::post('/onboard-passenger', [EscortAuthController::class, 'onboardPassenger']);
+    Route::post('/onboarded-passengers', [EscortAuthController::class, 'getOnboardedPassengers']);
 
     // Future escort-specific endpoints can be added here
     // Route::post('/scan-qr', [EscortController::class, 'scanQr']);
