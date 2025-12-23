@@ -32,7 +32,7 @@ class BusRouteController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|max:100',
+            'name' => 'required|unique:bus_routes,name|max:100',
         ]);
 
         BusRoute::create($request->only(['name']));
