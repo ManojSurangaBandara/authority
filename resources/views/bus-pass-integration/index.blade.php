@@ -164,7 +164,7 @@
 @stop
 
 @section('js')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="{{ asset('js/chart.umd.min.js') }}"></script>
     <script>
         let chart = null;
         let currentRouteId = 'all';
@@ -403,12 +403,12 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                    <i class="fas fa-arrow-up"></i>
-                                </button>` :
+                                        <i class="fas fa-arrow-up"></i>
+                                    </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                    <i class="fas fa-arrow-down"></i>
-                                </button>` : ''
+                                        <i class="fas fa-arrow-down"></i>
+                                    </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
