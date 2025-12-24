@@ -28,7 +28,7 @@
 @stop
 
 @section('adminlte_js')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ asset('js/chart.umd.min.js') }}"></script>
 
     @if (Auth::user() && Auth::user()->hasRole('Subject Clerk (DMOV)'))
         <script>

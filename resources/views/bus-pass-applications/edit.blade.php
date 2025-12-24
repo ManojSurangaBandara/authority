@@ -928,9 +928,8 @@
 @endsection
 
 @section('css')
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@1.5.2/dist/select2-bootstrap4.min.css"
-        rel="stylesheet" />
+    <link href="{{ asset('css/select2.min.css') }}" rel="stylesheet" />
+    <link href="{{ asset('css/select2-bootstrap4.min.css') }}" rel="stylesheet" />
     <style>
         /* Select2 styling to match your form */
         .select2-container--bootstrap4 .select2-selection {
@@ -1003,7 +1002,7 @@
 @stop
 
 @section('js')
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="{{ asset('js/select2.min.js') }}"></script>
 @stop
 
 @push('js')
@@ -1476,7 +1475,7 @@
 
                 // API call to verify branch card
                 $.ajax({
-                    url: 'https://abc.com/def',
+                    url: 'https://branchcard.army.lk/bcims_api/person.php',
                     method: 'POST',
                     data: {
                         regiment_no: regimentNo,

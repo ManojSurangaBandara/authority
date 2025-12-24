@@ -204,7 +204,7 @@
 @stop
 
 @section('css')
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+    <link href="{{ asset('css/toastr.min.css') }}" rel="stylesheet">
     <style>
         /* Standard form control styling for consistency */
         #bus_route_id {
@@ -236,7 +236,7 @@
 @stop
 
 @section('js')
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="{{ asset('js/toastr.min.js') }}"></script>
     <script>
         $(document).ready(function() {
             // Toastr configuration
@@ -276,7 +276,7 @@
                             } else {
                                 $('#bus_no_display').html(
                                     '<span class="text-muted">Bus details not available</span>'
-                                    );
+                                );
                                 toastr.warning('Bus details not found for this route.');
                             }
                         },
@@ -284,7 +284,7 @@
                             console.log('AJAX Error:', xhr.responseText); // Debug log
                             $('#bus_no_display').html(
                                 '<span class="text-danger">Error loading bus details</span>'
-                                );
+                            );
 
                             let message = 'Error loading bus details.';
                             if (xhr.responseJSON && xhr.responseJSON.message) {
@@ -331,7 +331,7 @@
 
                             toastr.success(
                                 'Driver details loaded successfully! Please enter contact number manually.'
-                                );
+                            );
                         } else {
                             toastr.error(response.message || 'Driver not found.');
                         }
