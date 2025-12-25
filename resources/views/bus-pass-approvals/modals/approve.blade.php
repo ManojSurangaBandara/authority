@@ -76,6 +76,8 @@
                                         $dailyStats = $application->getRouteStatistics(
                                             $application->requested_bus_name,
                                             'living_out',
+                                            ['Col Mov (DMOV)', 'Director (DMOV)'],
+                                            'pending_col_mov',
                                         );
                                     @endphp
                                     <div class="row mb-2">
@@ -83,6 +85,14 @@
                                             <strong><i class="fas fa-bus"></i> Daily Travel Route:
                                                 {{ $application->requested_bus_name }}</strong>
                                             <div class="mt-1">
+                                                <span class="badge badge-primary">
+                                                    <i class="fas fa-list"></i> All:
+                                                    {{ $dailyStats['all_pending_count'] }}
+                                                </span>
+                                                <span class="badge badge-info">
+                                                    <i class="fas fa-id-card"></i> Integrated:
+                                                    {{ $dailyStats['integrated_count'] }}
+                                                </span>
                                                 <span class="badge badge-success">
                                                     <i class="fas fa-check"></i> Approved:
                                                     {{ $dailyStats['approved_count'] }}
@@ -112,6 +122,8 @@
                                         $livingInStats = $application->getRouteStatistics(
                                             $application->living_in_bus,
                                             'living_in',
+                                            ['Col Mov (DMOV)', 'Director (DMOV)'],
+                                            'pending_col_mov',
                                         );
                                     @endphp
                                     <div class="row mb-2">
@@ -119,6 +131,14 @@
                                             <strong><i class="fas fa-home"></i> Living In Route:
                                                 {{ $application->living_in_bus }}</strong>
                                             <div class="mt-1">
+                                                <span class="badge badge-primary">
+                                                    <i class="fas fa-list"></i> All:
+                                                    {{ $livingInStats['all_pending_count'] }}
+                                                </span>
+                                                <span class="badge badge-info">
+                                                    <i class="fas fa-id-card"></i> Integrated:
+                                                    {{ $livingInStats['integrated_count'] }}
+                                                </span>
                                                 <span class="badge badge-success">
                                                     <i class="fas fa-check"></i> Approved:
                                                     {{ $livingInStats['approved_count'] }}
@@ -148,6 +168,8 @@
                                         $weekendStats = $application->getRouteStatistics(
                                             $application->weekend_bus_name,
                                             'weekend',
+                                            ['Col Mov (DMOV)', 'Director (DMOV)'],
+                                            'pending_col_mov',
                                         );
                                     @endphp
                                     <div class="row mb-2">
@@ -155,6 +177,14 @@
                                             <strong><i class="fas fa-calendar-weekend"></i> Weekend Route:
                                                 {{ $application->weekend_bus_name }}</strong>
                                             <div class="mt-1">
+                                                <span class="badge badge-primary">
+                                                    <i class="fas fa-list"></i> All:
+                                                    {{ $weekendStats['all_pending_count'] }}
+                                                </span>
+                                                <span class="badge badge-info">
+                                                    <i class="fas fa-id-card"></i> Integrated:
+                                                    {{ $weekendStats['integrated_count'] }}
+                                                </span>
                                                 <span class="badge badge-success">
                                                     <i class="fas fa-check"></i> Approved:
                                                     {{ $weekendStats['approved_count'] }}

@@ -271,7 +271,37 @@ class BusPassApplication extends Model
             return 0;
         }
 
-        $query = self::where('status', 'approved');
+        $query = self::whereIn('status', ['approved', 'approved_for_integration', 'approved_for_temp_card']);
+
+        if ($routeType === 'living_out') {
+            $query->where('requested_bus_name', $routeName);
+        } elseif ($routeType === 'living_in') {
+            $query->where('living_in_bus', $routeName);
+        } elseif ($routeType === 'weekend') {
+            $query->where('weekend_bus_name', $routeName);
+        }
+
+        return $query->count();
+    }
+
+    /**
+     * Get approved count for route by specific roles
+     */
+    public function getApprovedCountByRolesForRoute($roles, $routeName, $routeType = 'living_out')
+    {
+        if (!$routeName) {
+            return 0;
+        }
+
+        $query = self::whereIn('status', ['approved', 'approved_for_integration', 'approved_for_temp_card'])
+            ->whereHas('approvalHistory', function ($q) use ($roles) {
+                $q->where('action', 'approved')
+                    ->whereHas('user', function ($uq) use ($roles) {
+                        $uq->whereHas('roles', function ($rq) use ($roles) {
+                            $rq->whereIn('name', $roles);
+                        });
+                    });
+            });
 
         if ($routeType === 'living_out') {
             $query->where('requested_bus_name', $routeName);
@@ -304,6 +334,50 @@ class BusPassApplication extends Model
             'not_recommended',
             'dmov_not_recommended'
         ]);
+
+        if ($routeType === 'living_out') {
+            $query->where('requested_bus_name', $routeName);
+        } elseif ($routeType === 'living_in') {
+            $query->where('living_in_bus', $routeName);
+        } elseif ($routeType === 'weekend') {
+            $query->where('weekend_bus_name', $routeName);
+        }
+
+        return $query->count();
+    }
+
+    /**
+     * Get pending bus pass count for a specific route by status
+     */
+    public function getPendingCountForRouteByStatus($status, $routeName, $routeType = 'living_out')
+    {
+        if (!$routeName) {
+            return 0;
+        }
+
+        $query = self::where('status', $status);
+
+        if ($routeType === 'living_out') {
+            $query->where('requested_bus_name', $routeName);
+        } elseif ($routeType === 'living_in') {
+            $query->where('living_in_bus', $routeName);
+        } elseif ($routeType === 'weekend') {
+            $query->where('weekend_bus_name', $routeName);
+        }
+
+        return $query->count();
+    }
+
+    /**
+     * Get integrated bus pass count for a specific route
+     */
+    public function getIntegratedCountForRoute($routeName, $routeType = 'living_out')
+    {
+        if (!$routeName) {
+            return 0;
+        }
+
+        $query = self::whereIn('status', ['integrated_to_branch_card', 'integrated_to_temp_card', 'temp_card_printed', 'temp_card_handed_over']);
 
         if ($routeType === 'living_out') {
             $query->where('requested_bus_name', $routeName);
@@ -363,11 +437,21 @@ class BusPassApplication extends Model
     /**
      * Get route statistics (approved count + pending count + seating capacity)
      */
-    public function getRouteStatistics($routeName, $routeType = 'living_out')
+    public function getRouteStatistics($routeName, $routeType = 'living_out', $approvedByRoles = null, $pendingStatus = null)
     {
+        $approvedCount = $approvedByRoles
+            ? $this->getApprovedCountByRolesForRoute($approvedByRoles, $routeName, $routeType)
+            : $this->getApprovedCountForRoute($routeName, $routeType);
+
+        $pendingCount = $pendingStatus
+            ? $this->getPendingCountForRouteByStatus($pendingStatus, $routeName, $routeType)
+            : $this->getPendingCountForRoute($routeName, $routeType);
+
         return [
-            'approved_count' => $this->getApprovedCountForRoute($routeName, $routeType),
-            'pending_count' => $this->getPendingCountForRoute($routeName, $routeType),
+            'all_pending_count' => $this->getPendingCountForRoute($routeName, $routeType),
+            'integrated_count' => $this->getIntegratedCountForRoute($routeName, $routeType),
+            'approved_count' => $approvedCount,
+            'pending_count' => $pendingCount,
             'capacity_info' => $this->getSeatingCapacityForRoute($routeName, $routeType)
         ];
     }
