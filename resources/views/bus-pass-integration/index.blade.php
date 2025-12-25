@@ -328,6 +328,12 @@
                             title: {
                                 display: true,
                                 text: 'Number of Applications'
+                            },
+                            ticks: {
+                                stepSize: 1,
+                                callback: function(value) {
+                                    return Math.abs(value); // Show positive values for negative integrated data
+                                }
                             }
                         },
                         x: {
@@ -403,12 +409,12 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                        <i class="fas fa-arrow-up"></i>
-                                    </button>` :
+                                            <i class="fas fa-arrow-up"></i>
+                                        </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                        <i class="fas fa-arrow-down"></i>
-                                    </button>` : ''
+                                            <i class="fas fa-arrow-down"></i>
+                                        </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
