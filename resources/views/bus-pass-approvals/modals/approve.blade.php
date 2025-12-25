@@ -80,9 +80,10 @@
                                             'pending_col_mov',
                                         );
                                     @endphp
-                                    <div class="row mb-2">
+                                    <div class="row mb-2" data-route-section="daily">
                                         <div class="col-md-12">
-                                            <strong><i class="fas fa-bus"></i> Daily Travel Route:
+                                            <strong data-route-name-display="daily"><i class="fas fa-bus"></i> Daily
+                                                Travel Route:
                                                 {{ $application->requested_bus_name }}</strong>
                                             <div class="mt-1">
                                                 <span class="badge badge-primary">
@@ -126,9 +127,10 @@
                                             'pending_col_mov',
                                         );
                                     @endphp
-                                    <div class="row mb-2">
+                                    <div class="row mb-2" data-route-section="living-in">
                                         <div class="col-md-12">
-                                            <strong><i class="fas fa-home"></i> Living In Route:
+                                            <strong data-route-name-display="living-in"><i class="fas fa-home"></i>
+                                                Living In Route:
                                                 {{ $application->living_in_bus }}</strong>
                                             <div class="mt-1">
                                                 <span class="badge badge-primary">
@@ -172,9 +174,10 @@
                                             'pending_col_mov',
                                         );
                                     @endphp
-                                    <div class="row mb-2">
+                                    <div class="row mb-2" data-route-section="weekend">
                                         <div class="col-md-12">
-                                            <strong><i class="fas fa-calendar-weekend"></i> Weekend Route:
+                                            <strong data-route-name-display="weekend"><i
+                                                    class="fas fa-calendar-weekend"></i> Weekend Route:
                                                 {{ $application->weekend_bus_name }}</strong>
                                             <div class="mt-1">
                                                 <span class="badge badge-primary">
@@ -534,6 +537,134 @@
                         option.selected = true;
                     }
                     select.appendChild(option);
+                });
+
+                // Add change event listener to update statistics
+                select.addEventListener('change', function() {
+                    updateRouteStatistics{{ $application->id }}();
+                });
+            }
+
+            // Function to update route statistics when route changes
+            function updateRouteStatistics{{ $application->id }}() {
+                // Get current selected routes
+                const requestedBus = document.getElementById('requested_bus_name{{ $application->id }}')?.value;
+                const livingInBus = document.getElementById('living_in_bus{{ $application->id }}')?.value;
+                const weekendBus = document.getElementById('weekend_bus_name{{ $application->id }}')?.value;
+
+                // Update daily travel statistics if route changed
+                @if (in_array($application->bus_pass_type, ['daily_travel', 'unmarried_daily_travel']))
+                    if (requestedBus && requestedBus !== '-- Keep Current:') {
+                        updateStatisticsSection('daily', requestedBus, 'living_out');
+                    }
+                @endif
+
+                // Update living in statistics if route changed
+                @if ($application->bus_pass_type === 'living_in_only')
+                    if (livingInBus && livingInBus !== '-- Keep Current:') {
+                        updateStatisticsSection('living-in', livingInBus, 'living_in');
+                    }
+                @endif
+
+                // Update weekend statistics if route changed
+                @if ($application->bus_pass_type === 'weekend_only')
+                    if (weekendBus && weekendBus !== '-- Keep Current:') {
+                        updateStatisticsSection('weekend', weekendBus, 'weekend');
+                    }
+                @endif
+
+                // Update living in and weekend statistics for weekend/monthly travel
+                @if ($application->bus_pass_type === 'weekend_monthly_travel')
+                    if (livingInBus && livingInBus !== '-- Keep Current:') {
+                        updateStatisticsSection('living-in', livingInBus, 'living_in');
+                    }
+                    if (weekendBus && weekendBus !== '-- Keep Current:') {
+                        updateStatisticsSection('weekend', weekendBus, 'weekend');
+                    }
+                @endif
+            }
+
+            function updateStatisticsSection(sectionType, routeName, routeType) {
+                $.ajax({
+                    url: '{{ route('route-statistics.api', ['application' => $application->id, 'routeName' => '__routeName__', 'routeType' => '__routeType__']) }}'
+                        .replace('__routeName__', encodeURIComponent(routeName))
+                        .replace('__routeType__', routeType),
+                    method: 'GET',
+                    success: function(response) {
+                        if (response.success) {
+                            updateStatisticsBadges(sectionType, response.data);
+                        } else {
+                            console.error('Failed to load route statistics');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Error loading route statistics:', xhr);
+                    }
+                });
+            }
+
+            function updateStatisticsBadges(sectionType, stats) {
+                // Find the statistics section for this route type
+                const sectionContainer = document.querySelector(
+                    `#approveModal{{ $application->id }} [data-route-section="${sectionType}"]`);
+
+                if (!sectionContainer) return;
+
+                // Update route name display
+                const routeNameDisplay = sectionContainer.querySelector(
+                    `[data-route-name-display="${sectionType}"]`);
+                if (routeNameDisplay) {
+                    // Get the current selected route from the dropdown
+                    let selectedRoute = '';
+                    if (sectionType === 'daily') {
+                        const select = document.getElementById('requested_bus_name{{ $application->id }}');
+                        selectedRoute = select ? select.value : '';
+                    } else if (sectionType === 'living-in') {
+                        const select = document.getElementById('living_in_bus{{ $application->id }}');
+                        selectedRoute = select ? select.value : '';
+                    } else if (sectionType === 'weekend') {
+                        const select = document.getElementById('weekend_bus_name{{ $application->id }}');
+                        selectedRoute = select ? select.value : '';
+                    }
+
+                    if (selectedRoute && selectedRoute !== '-- Keep Current:') {
+                        // Update the route name in the display
+                        const textNode = routeNameDisplay.lastChild;
+                        if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+                            textNode.textContent = selectedRoute;
+                        }
+                    }
+                }
+
+                // Update badge values within this section
+                const badgeMappings = [{
+                        key: 'all_pending_count',
+                        label: 'All:'
+                    },
+                    {
+                        key: 'integrated_count',
+                        label: 'Integrated:'
+                    },
+                    {
+                        key: 'approved_count',
+                        label: 'Approved:'
+                    },
+                    {
+                        key: 'pending_count',
+                        label: 'Pending:'
+                    }
+                ];
+
+                badgeMappings.forEach(function(mapping) {
+                    const badges = sectionContainer.querySelectorAll('.badge');
+                    badges.forEach(function(badge) {
+                        if (badge.textContent.includes(mapping.label)) {
+                            // Replace the number after the label
+                            const regex = new RegExp(mapping.label + '\\s*\\d+');
+                            badge.innerHTML = badge.innerHTML.replace(regex, mapping.label + ' ' + (
+                                stats[mapping.key] || 0));
+                        }
+                    });
                 });
             }
         });

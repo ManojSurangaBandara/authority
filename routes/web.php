@@ -49,6 +49,7 @@ Route::middleware('auth')->group(function () {
     Route::get('destination-locations-api/all', [App\Http\Controllers\DestinationLocationController::class, 'api'])->name('destination-locations.api');
     Route::get('bus-routes-api/all', [App\Http\Controllers\BusRouteController::class, 'api'])->name('bus-routes.api');
     Route::get('living-in-buses-api/all', [App\Http\Controllers\LivingInBusController::class, 'api'])->name('living-in-buses.api');
+    Route::get('route-statistics-api/{application}/{routeName}/{routeType}', [App\Http\Controllers\BusPassApprovalController::class, 'getRouteStatistics'])->name('route-statistics.api');
 
     // Add other protected routes here
     Route::resource('buses', BusController::class);

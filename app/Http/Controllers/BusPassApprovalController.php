@@ -511,4 +511,23 @@ class BusPassApprovalController extends Controller
             'action_date' => now()
         ]);
     }
+
+    /**
+     * Get route statistics for a specific application and route
+     */
+    public function getRouteStatistics(BusPassApplication $application, $routeName, $routeType)
+    {
+        // Get statistics with approved by Col Mov/Director Mov, pending at Col Mov level
+        $stats = $application->getRouteStatistics(
+            $routeName,
+            $routeType,
+            ['Col Mov (DMOV)', 'Director (DMOV)'],
+            'pending_col_mov'
+        );
+
+        return response()->json([
+            'success' => true,
+            'data' => $stats
+        ]);
+    }
 }
