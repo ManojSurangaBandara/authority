@@ -242,8 +242,8 @@
                         </div>
                     @endif
 
-                    {{-- Bus Name Editing Section for SO2 DMOV --}}
-                    @if (auth()->user()->hasRole('Staff Officer 2 (DMOV)'))
+                    {{-- Bus Name Editing Section for SO2 DMOV, Col Mov, and Director Mov --}}
+                    @if (auth()->user()->hasAnyRole(['Staff Officer 2 (DMOV)', 'Col Mov (DMOV)', 'Director (DMOV)']))
                         <div class="card mb-3">
                             <div class="card-header bg-primary text-white">
                                 <h6 class="mb-0"><i class="fas fa-bus"></i> Bus Name Modification (Optional)</h6>
@@ -425,7 +425,7 @@
 @endif
 
 {{-- JavaScript for SO2 DMOV Bus Name Editing --}}
-@if (auth()->user()->hasRole('Staff Officer 2 (DMOV)'))
+@if (auth()->user()->hasAnyRole(['Staff Officer 2 (DMOV)', 'Col Mov (DMOV)', 'Director (DMOV)']))
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Load bus names when modal is opened

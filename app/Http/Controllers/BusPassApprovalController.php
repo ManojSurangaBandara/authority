@@ -36,8 +36,8 @@ class BusPassApprovalController extends Controller
             $validationRules['obtain_sltb_season'] = 'required|in:yes,no';
         }
 
-        // Add bus name modification validation for SO2 DMOV
-        if (Auth::user()->hasRole('Staff Officer 2 (DMOV)')) {
+        // Add bus name modification validation for SO2 DMOV, Col Mov, and Director Mov
+        if (Auth::user()->hasAnyRole(['Staff Officer 2 (DMOV)', 'Col Mov (DMOV)', 'Director (DMOV)'])) {
             $validationRules['requested_bus_name'] = 'nullable|string|max:255';
             $validationRules['living_in_bus'] = 'nullable|string|max:255';
             $validationRules['weekend_bus_name'] = 'nullable|string|max:255';
@@ -88,8 +88,8 @@ class BusPassApprovalController extends Controller
                 }
             }
 
-            // Bus name modification updates for SO2 DMOV
-            if ($user->hasRole('Staff Officer 2 (DMOV)')) {
+            // Bus name modification updates for SO2 DMOV, Col Mov, and Director Mov
+            if ($user->hasAnyRole(['Staff Officer 2 (DMOV)', 'Col Mov (DMOV)', 'Director (DMOV)'])) {
                 $busFields = [
                     'requested_bus_name' => 'Requested Bus Name',
                     'living_in_bus' => 'Living In Bus',
@@ -140,8 +140,8 @@ class BusPassApprovalController extends Controller
                 }
             }
 
-            // Update bus names if provided by SO2 DMOV
-            if ($user->hasRole('Staff Officer 2 (DMOV)')) {
+            // Update bus names if provided by SO2 DMOV, Col Mov, or Director Mov
+            if ($user->hasAnyRole(['Staff Officer 2 (DMOV)', 'Col Mov (DMOV)', 'Director (DMOV)'])) {
                 $busFields = ['requested_bus_name', 'living_in_bus', 'weekend_bus_name'];
 
                 foreach ($busFields as $field) {
