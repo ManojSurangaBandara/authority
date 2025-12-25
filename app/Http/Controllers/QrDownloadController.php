@@ -3,11 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\QrDownloadDataTable;
-use App\Models\BusPassApplication;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use chillerlan\QRCode\QRCode;
-use chillerlan\QRCode\QROptions;
+use App\Models\Establishment;
+use Illuminate\Support\Facades\Auth;
 
 class QrDownloadController extends Controller
 {
@@ -16,7 +13,26 @@ class QrDownloadController extends Controller
      */
     public function index(QrDownloadDataTable $dataTable)
     {
-        return $dataTable->render('qr-download.index');
+        // Filter establishments for branch users, but not for DMOV users
+        $user = Auth::user();
+        $branchRoles = ['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)'];
+        $dmovRoles = [
+            'System Administrator (DMOV)',
+            'Subject Clerk (DMOV)',
+            'Staff Officer 2 (DMOV)',
+            'Staff Officer 1 (DMOV)',
+            'Col Mov (DMOV)',
+            'Director (DMOV)',
+            'Bus Escort (DMOV)'
+        ];
+
+        if ($user && $user->hasAnyRole($branchRoles) && $user->establishment_id && !$user->hasAnyRole($dmovRoles)) {
+            $establishments = Establishment::where('id', $user->establishment_id)->get();
+        } else {
+            $establishments = Establishment::all();
+        }
+
+        return $dataTable->render('qr-download.index', compact('establishments'));
     }
 
     /**

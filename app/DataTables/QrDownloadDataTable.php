@@ -43,8 +43,27 @@ class QrDownloadDataTable extends DataTable
                 return $viewBtn . $downloadQrBtn;
             })
             ->filter(function ($query) {
+                // Apply establishment filter if provided
                 if ($estId = request('establishment_id')) {
                     $query->where('establishment_id', $estId);
+                }
+
+                // Handle global search (server-side) for related fields
+                $searchValue = request('search')['value'] ?? null;
+                if ($searchValue) {
+                    $query->where(function ($q) use ($searchValue) {
+                        $q->whereHas('person', function ($p) use ($searchValue) {
+                            $p->where('regiment_no', 'like', "%{$searchValue}%")
+                                ->orWhere('name', 'like', "%{$searchValue}%");
+                        });
+
+                        $q->orWhereHas('establishment', function ($e) use ($searchValue) {
+                            $e->where('name', 'like', "%{$searchValue}%");
+                        });
+
+                        // also allow searching by application id as fallback
+                        $q->orWhere('bus_pass_applications.id', 'like', "%{$searchValue}%");
+                    });
                 }
             })
             ->rawColumns(['action', 'status_badge', 'type_label', 'applied_date', 'person_rank'])
@@ -60,10 +79,20 @@ class QrDownloadDataTable extends DataTable
     {
         $query = $model->newQuery()->with(['person', 'establishment'])->where('status', 'integrated_to_temp_card');
 
-        // Filter by establishment for branch users
+        // Filter by establishment for branch users, but not for DMOV users
         $user = Auth::user();
         $branchRoles = ['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)'];
-        if ($user && $user->hasAnyRole($branchRoles) && $user->establishment_id) {
+        $dmovRoles = [
+            'System Administrator (DMOV)',
+            'Subject Clerk (DMOV)',
+            'Staff Officer 2 (DMOV)',
+            'Staff Officer 1 (DMOV)',
+            'Col Mov (DMOV)',
+            'Director (DMOV)',
+            'Bus Escort (DMOV)'
+        ];
+
+        if ($user && $user->hasAnyRole($branchRoles) && $user->establishment_id && !$user->hasAnyRole($dmovRoles)) {
             $query->where('establishment_id', $user->establishment_id);
         }
 
@@ -78,17 +107,13 @@ class QrDownloadDataTable extends DataTable
         return $this->builder()
             ->setTableId('qr-download-table')
             ->columns($this->getColumns())
-            ->minifiedAjax()
-            ->selectStyleSingle()
-            ->buttons([
-                Button::make('excel'),
-                Button::make('csv'),
-                Button::make('pdf'),
-                Button::make('print'),
-            ])
             ->ajax([
+                'url' => route('qr-download.index'),
                 'data' => "function(d) {
-                    d.establishment_id = $('#establishment_id').val();
+                    var establishmentId = $('#establishment_id').val();
+                    if (establishmentId) {
+                        d.establishment_id = establishmentId;
+                    }
                 }"
             ]);
     }
@@ -102,10 +127,10 @@ class QrDownloadDataTable extends DataTable
             Column::make('DT_RowIndex')->title('#')->searchable(false)->orderable(false),
             Column::make('person.regiment_no')->title('Regiment No')->name('person.regiment_no'),
             Column::make('person.name')->title('Name')->name('person.name'),
-            Column::make('person_rank')->title('Rank')->searchable(false),
+            Column::make('person_rank')->title('Rank')->searchable(true),
             Column::make('establishment.name')->title('Establishment')->name('establishment.name'),
-            Column::make('type_label')->title('Pass Type')->searchable(false),
-            Column::make('status_badge')->title('Status')->searchable(false)->orderable(false),
+            Column::make('type_label')->title('Pass Type')->searchable(true),
+            Column::make('status_badge')->title('Status')->searchable(true)->orderable(false),
             Column::make('applied_date')->title('Applied Date')->searchable(false)->orderable(false),
             Column::computed('action')
                 ->exportable(false)
