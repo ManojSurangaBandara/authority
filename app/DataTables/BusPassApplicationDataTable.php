@@ -122,6 +122,23 @@ class BusPassApplicationDataTable extends DataTable
             }
         }
 
+        // Handle filters for DMOV users
+        if ($user) {
+            // Load user with roles for proper role checking
+            $userWithRoles = User::with('roles')->find($user->id);
+            if ($userWithRoles && $userWithRoles->isMovementUser()) {
+                // Filter by establishment if provided
+                if (request()->has('establishment_filter') && request('establishment_filter')) {
+                    $query->where('establishment_id', request('establishment_filter'));
+                }
+
+                // Filter by status if provided
+                if (request()->has('status_filter') && request('status_filter')) {
+                    $query->where('status', request('status_filter'));
+                }
+            }
+        }
+
         return $query->orderBy('bus_pass_applications.created_at', 'desc');
     }
 

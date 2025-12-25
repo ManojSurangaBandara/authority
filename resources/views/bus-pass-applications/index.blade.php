@@ -35,6 +35,61 @@
                         </div>
 
                         <div class="card-body">
+                            @if (auth()->user()->isMovementUser())
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <label for="establishment_filter">Filter by Establishment:</label>
+                                        <select id="establishment_filter" class="form-control form-control-sm">
+                                            <option value="">All Establishments</option>
+                                            @foreach (\App\Models\Establishment::where('is_active', true)->orderBy('name')->get() as $establishment)
+                                                <option value="{{ $establishment->id }}"
+                                                    {{ request('establishment_filter') == $establishment->id ? 'selected' : '' }}>
+                                                    {{ $establishment->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="status_filter">Filter by Status:</label>
+                                        <select id="status_filter" class="form-control form-control-sm">
+                                            <option value="">All Statuses</option>
+                                            @php
+                                                $statuses = [
+                                                    'pending_subject_clerk' => 'Pending - Subject Clerk Review',
+                                                    'pending_staff_officer_branch' =>
+                                                        'Pending - Staff Officer (Branch/Dte)',
+                                                    'forwarded_to_movement' => 'Forwarded to Movement',
+                                                    'pending_staff_officer_2_mov' =>
+                                                        'Pending - Staff Officer 2 (Movement)',
+                                                    'pending_col_mov' => 'Pending - Colonel Movement',
+                                                    'approved_for_integration' =>
+                                                        'Approved for Branch Card Integration',
+                                                    'approved_for_temp_card' => 'Approved for Temporary Card',
+                                                    'integrated_to_branch_card' => 'Integrated to Branch Card',
+                                                    'temp_card_printed' => 'Temporary Card Printed',
+                                                    'temp_card_handed_over' => 'Temporary Card Handed Over',
+                                                    'rejected' => 'Rejected',
+                                                    'deactivated' => 'Deactivated',
+                                                ];
+                                            @endphp
+                                            @foreach ($statuses as $key => $label)
+                                                <option value="{{ $key }}"
+                                                    {{ request('status_filter') == $key ? 'selected' : '' }}>
+                                                    {{ $label }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 d-flex align-items-end">
+                                        <button type="button" id="apply_filters" class="btn btn-primary btn-sm mr-2">
+                                            <i class="fas fa-filter"></i> Apply Filters
+                                        </button>
+                                        <button type="button" id="clear_filters" class="btn btn-secondary btn-sm">
+                                            <i class="fas fa-times"></i> Clear Filters
+                                        </button>
+                                    </div>
+                                </div>
+                            @endif
                             <div class="table-responsive">
                                 {{ $dataTable->table() }}
                             </div>
@@ -55,4 +110,40 @@
     <script src="{{ asset('vendor/datatables-plugins/buttons/js/buttons.print.min.js') }}"></script>
     <script src="{{ asset('vendor/datatables-plugins/buttons/js/buttons.colVis.min.js') }}"></script>
     {{ $dataTable->scripts() }}
+
+    @if (auth()->user()->isMovementUser())
+        <script>
+            $(document).ready(function() {
+                // Apply filters button click
+                $('#apply_filters').on('click', function() {
+                    var establishmentId = $('#establishment_filter').val();
+                    var statusValue = $('#status_filter').val();
+
+                    // Update URL with filter parameters
+                    var url = new URL(window.location);
+                    if (establishmentId) {
+                        url.searchParams.set('establishment_filter', establishmentId);
+                    } else {
+                        url.searchParams.delete('establishment_filter');
+                    }
+                    if (statusValue) {
+                        url.searchParams.set('status_filter', statusValue);
+                    } else {
+                        url.searchParams.delete('status_filter');
+                    }
+
+                    // Reload the page with new filters
+                    window.location.href = url.toString();
+                });
+
+                // Clear filters button click
+                $('#clear_filters').on('click', function() {
+                    var url = new URL(window.location);
+                    url.searchParams.delete('establishment_filter');
+                    url.searchParams.delete('status_filter');
+                    window.location.href = url.toString();
+                });
+            });
+        </script>
+    @endif
 @endpush
