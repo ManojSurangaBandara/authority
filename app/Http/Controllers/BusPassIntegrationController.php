@@ -130,6 +130,13 @@ class BusPassIntegrationController extends Controller
             }
         }
 
+        // Order by most recently updated first for integrated applications, created_at for pending
+        if ($type === 'integrated') {
+            $query->orderBy('updated_at', 'desc');
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
         $applications = $query->get();
 
         return response()->json([
