@@ -362,18 +362,20 @@
                         <!-- Permission Letter Document (Conditional) -->
                         @if ($bus_pass_application->bus_pass_type === 'unmarried_daily_travel')
                             <div class="row mt-3">
-                                <div class="col-md-12">
-                                    <strong>Letter of Permission from the Head of Establishment:</strong>
-                                    <span class="text-info">(For Unmarried Daily Travel only)</span><br>
-                                    @if ($bus_pass_application->permission_letter)
-                                        <a href="{{ asset('storage/' . $bus_pass_application->permission_letter) }}"
-                                            target="_blank" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-file-pdf"></i> View Document
-                                        </a>
-                                    @else
-                                        <span class="text-muted">Not uploaded</span>
-                                    @endif
-                                </div>
+                                @if ($bus_pass_application->marital_status !== 'married')
+                                    <div class="col-md-12">
+                                        <strong>Letter of Permission from the Head of Establishment:</strong>
+                                        <span class="text-info">(For Unmarried Daily Travel only)</span><br>
+                                        @if ($bus_pass_application->permission_letter)
+                                            <a href="{{ asset('storage/' . $bus_pass_application->permission_letter) }}"
+                                                target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-file-pdf"></i> View Document
+                                            </a>
+                                        @else
+                                            <span class="text-muted">Not uploaded</span>
+                                        @endif
+                                    </div>
+                                @endif
                             </div>
                         @endif
 

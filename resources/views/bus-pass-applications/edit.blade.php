@@ -1090,12 +1090,7 @@
                 busPassTypeSelect.find('option:not(:first)').remove();
 
                 if (maritalStatus === 'single') {
-                    // For single personnel, show "Living in Bus only" always
-                    var livingInSelected = (currentValue === 'living_in_only') ? 'selected' : '';
-                    busPassTypeSelect.append('<option value="living_in_only" ' + livingInSelected +
-                        '>Living in Bus only</option>');
-
-                    // If approval for living out is "yes", also show other options
+                    // If approval for living out is "yes", hide "Living in Bus only" and show other options
                     if (approvalLivingOut === 'yes') {
                         var unmarriedSelected = (currentValue === 'unmarried_daily_travel') ? 'selected' : '';
                         busPassTypeSelect.append('<option value="unmarried_daily_travel" ' + unmarriedSelected +
@@ -1104,12 +1099,19 @@
                         busPassTypeSelect.append('<option value="weekend_monthly_travel" ' +
                             weekendMonthlySelected +
                             '>Weekend and Living in Bus</option>');
+                    } else {
+                        // For single personnel without living out approval, show "Living in Bus only"
+                        var livingInSelected = (currentValue === 'living_in_only') ? 'selected' : '';
+                        busPassTypeSelect.append('<option value="living_in_only" ' + livingInSelected +
+                            '>Living in Bus only</option>');
                     }
 
                     // If current selection is not valid for single, clear it
-                    var validSingleTypes = ['living_in_only'];
+                    var validSingleTypes = [];
                     if (approvalLivingOut === 'yes') {
-                        validSingleTypes.push('unmarried_daily_travel', 'weekend_monthly_travel');
+                        validSingleTypes = ['unmarried_daily_travel', 'weekend_monthly_travel'];
+                    } else {
+                        validSingleTypes = ['living_in_only'];
                     }
 
                     if (currentValue && !validSingleTypes.includes(currentValue)) {
@@ -1190,9 +1192,14 @@
             // Function to check and show/hide permission letter section in edit form
             function checkPermissionLetterVisibilityEdit() {
                 var approvalLivingOut = $('#approval_living_out').val();
+                var maritalStatus = $('#marital_status').val();
 
-                // Show Permission Letter only if approval for living out is "yes"
-                if (approvalLivingOut === 'yes') {
+                // Hide Permission Letter for married persons
+                if (maritalStatus === 'married') {
+                    $('#permission_letter_section_edit').hide();
+                    $('#permission_letter').val('');
+                } else if (approvalLivingOut === 'yes') {
+                    // Show Permission Letter only if approval for living out is "yes" and person is not married
                     $('#permission_letter_section_edit').show();
                 } else {
                     $('#permission_letter_section_edit').hide();
@@ -1205,6 +1212,7 @@
             $('#marital_status').change(function() {
                 updateBusPassTypeOptionsEdit();
                 checkRentAllowanceVisibilityEdit();
+                checkPermissionLetterVisibilityEdit();
             });
 
             // Approval for living out change handler for edit form

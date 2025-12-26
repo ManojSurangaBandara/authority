@@ -959,19 +959,21 @@
                 busPassTypeSelect.find('option:not(:first)').remove();
 
                 if (maritalStatus === 'single') {
-                    // For single personnel, show "Living in Bus only" always
-                    busPassTypeSelect.append('<option value="living_in_only">Living in Bus only</option>');
-
-                    // If approval for living out is "yes", also show "Unmarried Daily Travel"
+                    // If approval for living out is "yes", hide "Living in Bus only" and show other options
                     if (approvalLivingOut === 'yes') {
                         busPassTypeSelect.append(
                             '<option value="unmarried_daily_travel">Unmarried Daily Travel</option>');
+                    } else {
+                        // For single personnel without living out approval, show "Living in Bus only"
+                        busPassTypeSelect.append('<option value="living_in_only">Living in Bus only</option>');
                     }
 
                     // If current selection is not valid for single, clear it
-                    var validSingleTypes = ['living_in_only'];
+                    var validSingleTypes = [];
                     if (approvalLivingOut === 'yes') {
-                        validSingleTypes.push('unmarried_daily_travel');
+                        validSingleTypes = ['unmarried_daily_travel'];
+                    } else {
+                        validSingleTypes = ['living_in_only'];
                     }
 
                     if (currentValue && !validSingleTypes.includes(currentValue)) {
@@ -1041,9 +1043,14 @@
             // Function to check and show/hide permission letter section
             function checkPermissionLetterVisibility() {
                 var busPassType = $('#bus_pass_type').val();
+                var maritalStatus = $('#marital_status').val();
 
-                // Show Permission Letter only for "Unmarried Daily Travel"
-                if (busPassType === 'unmarried_daily_travel') {
+                // Hide Permission Letter for married persons
+                if (maritalStatus === 'married') {
+                    $('#permission_letter_section').hide();
+                    $('#permission_letter').val('');
+                } else if (busPassType === 'unmarried_daily_travel') {
+                    // Show Permission Letter only for "Unmarried Daily Travel" and person is not married
                     $('#permission_letter_section').show();
                 } else {
                     $('#permission_letter_section').hide();
@@ -1056,6 +1063,7 @@
             $('#marital_status').change(function() {
                 updateBusPassTypeOptions();
                 checkRentAllowanceVisibility();
+                checkPermissionLetterVisibility();
             });
 
             // Approval for living out change handler
@@ -1324,7 +1332,7 @@
                                 branchCardVerified = false;
                                 alert(
                                     'Branch card is not active or approved. Please check with your unit.'
-                                    );
+                                );
                             }
                         } else {
                             // No person data found
@@ -1334,7 +1342,7 @@
                             branchCardVerified = false;
                             alert(
                                 'Branch card not found. Please check your Civil ID and Branch Card ID.'
-                                );
+                            );
                         }
                     },
                     error: function(xhr) {
