@@ -198,6 +198,52 @@ class BusPassApplication extends Model
         return $this->type_label;
     }
 
+    // Get rejection information
+    public function getRejectedByAttribute()
+    {
+        $rejectionHistory = $this->approvalHistory()
+            ->where('action', 'rejected')
+            ->with('user')
+            ->orderBy('action_date', 'desc')
+            ->first();
+
+        if ($rejectionHistory && $rejectionHistory->user) {
+            return $rejectionHistory->user->name;
+        }
+
+        return null;
+    }
+
+    // Get rejection reason
+    public function getRejectionReasonAttribute()
+    {
+        $rejectionHistory = $this->approvalHistory()
+            ->where('action', 'rejected')
+            ->orderBy('action_date', 'desc')
+            ->first();
+
+        if ($rejectionHistory) {
+            return $rejectionHistory->remarks;
+        }
+
+        return null;
+    }
+
+    // Get rejection date
+    public function getRejectedAtAttribute()
+    {
+        $rejectionHistory = $this->approvalHistory()
+            ->where('action', 'rejected')
+            ->orderBy('action_date', 'desc')
+            ->first();
+
+        if ($rejectionHistory) {
+            return $rejectionHistory->action_date;
+        }
+
+        return null;
+    }
+
     /**
      * Get the latest "not recommended" action for this application
      */

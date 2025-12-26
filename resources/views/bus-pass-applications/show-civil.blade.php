@@ -289,15 +289,28 @@
                             </div>
                         </div>
 
-                        @if ($bus_pass_application->rejection_reason)
+                        @if ($bus_pass_application->status === 'rejected')
                             <div class="row mt-3">
-                                <div class="col-md-12">
-                                    <strong>Rejection Reason:</strong><br>
-                                    <div class="alert alert-danger">
-                                        {{ $bus_pass_application->rejection_reason }}
-                                    </div>
+                                <div class="col-md-6">
+                                    <strong>Rejected By:</strong><br>
+                                    {{ $bus_pass_application->rejected_by ?? 'Unknown' }}
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Rejected Date:</strong><br>
+                                    {{ $bus_pass_application->rejected_at ? $bus_pass_application->rejected_at->format('d M Y, h:i A') : 'Unknown' }}
                                 </div>
                             </div>
+
+                            @if ($bus_pass_application->rejection_reason)
+                                <div class="row mt-3">
+                                    <div class="col-md-12">
+                                        <strong>Rejection Reason:</strong><br>
+                                        <div class="alert alert-danger">
+                                            {{ $bus_pass_application->rejection_reason }}
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
                         @endif
 
                     </div>
