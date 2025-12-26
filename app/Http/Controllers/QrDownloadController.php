@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\DataTables\QrDownloadDataTable;
 use App\Models\Establishment;
 use Illuminate\Support\Facades\Auth;
+use App\Models\BusPassApplication;
+use chillerlan\QRCode\QRCode;
+use chillerlan\QRCode\QROptions;
 
 class QrDownloadController extends Controller
 {
