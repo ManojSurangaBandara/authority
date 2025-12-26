@@ -286,9 +286,15 @@
             const pendingData = data.map(item => item.pending_integration);
             const integratedData = data.map(item => -item.integrated); // Negative for below axis
 
+            // Calculate total counts
+            const totalPending = pendingData.reduce((sum, value) => sum + value, 0);
+            const totalIntegrated = integratedData.reduce((sum, value) => sum + Math.abs(value), 0);
+
             console.log('Labels:', labels);
             console.log('Pending data:', pendingData);
             console.log('Integrated data:', integratedData);
+            console.log('Total Pending:', totalPending);
+            console.log('Total Integrated:', totalIntegrated);
 
             // If no data, show a message
             if (labels.length === 0) {
@@ -346,7 +352,24 @@
                     plugins: {
                         legend: {
                             display: true,
-                            position: 'top'
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                generateLabels: function(chart) {
+                                    const datasets = chart.data.datasets;
+                                    return datasets.map((dataset, i) => {
+                                        const count = i === 0 ? totalPending : totalIntegrated;
+                                        return {
+                                            text: `${dataset.label} (${count})`,
+                                            fillStyle: dataset.backgroundColor,
+                                            strokeStyle: dataset.borderColor,
+                                            lineWidth: dataset.borderWidth,
+                                            hidden: false,
+                                            index: i
+                                        };
+                                    });
+                                }
+                            }
                         }
                     },
                     onHover: function(event, elements) {
@@ -409,12 +432,12 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                            <i class="fas fa-arrow-up"></i>
-                                        </button>` :
+                                                <i class="fas fa-arrow-up"></i>
+                                            </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                            <i class="fas fa-arrow-down"></i>
-                                        </button>` : ''
+                                                <i class="fas fa-arrow-down"></i>
+                                            </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
