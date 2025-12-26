@@ -415,6 +415,28 @@ class BusPassApplication extends Model
     }
 
     /**
+     * Get pending bus pass count for a specific route by multiple statuses
+     */
+    public function getPendingCountForRouteByStatuses($statuses, $routeName, $routeType = 'living_out')
+    {
+        if (!$routeName || empty($statuses)) {
+            return 0;
+        }
+
+        $query = self::whereIn('status', $statuses);
+
+        if ($routeType === 'living_out') {
+            $query->where('requested_bus_name', $routeName);
+        } elseif ($routeType === 'living_in') {
+            $query->where('living_in_bus', $routeName);
+        } elseif ($routeType === 'weekend') {
+            $query->where('weekend_bus_name', $routeName);
+        }
+
+        return $query->count();
+    }
+
+    /**
      * Get integrated bus pass count for a specific route
      */
     public function getIntegratedCountForRoute($routeName, $routeType = 'living_out')

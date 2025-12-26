@@ -38,6 +38,9 @@
 
                     {{-- Route Statistics Section - Only for DMOV users --}}
                     @if (auth()->user()->hasAnyRole(['Subject Clerk (DMOV)', 'Staff Officer 2 (DMOV)', 'Col Mov (DMOV)', 'Director (DMOV)']))
+                        @php
+                            $dmovStatuses = ['forwarded_to_movement', 'pending_staff_officer_2_mov', 'pending_col_mov'];
+                        @endphp
                         <div class="card mb-3">
                             <div class="card-header bg-info text-white">
                                 <h6 class="mb-0"><i class="fas fa-chart-bar"></i> Route Statistics</h6>
@@ -46,6 +49,13 @@
                                 @if ($application->requested_bus_name)
                                     @php
                                         $dailyStats = $application->getRouteStatistics(
+                                            $application->requested_bus_name,
+                                            'living_out',
+                                        );
+                                        $dailyStats[
+                                            'dmov_pending_count'
+                                        ] = $application->getPendingCountForRouteByStatuses(
+                                            $dmovStatuses,
                                             $application->requested_bus_name,
                                             'living_out',
                                         );
@@ -60,8 +70,8 @@
                                                     {{ $dailyStats['approved_count'] }}
                                                 </span>
                                                 <span class="badge badge-warning">
-                                                    <i class="fas fa-clock"></i> Pending:
-                                                    {{ $dailyStats['pending_count'] }}
+                                                    <i class="fas fa-clock"></i> DMOV Pending:
+                                                    {{ $dailyStats['dmov_pending_count'] }}
                                                 </span>
                                                 @if ($dailyStats['capacity_info'])
                                                     <span class="badge badge-success">
@@ -85,6 +95,13 @@
                                             $application->living_in_bus,
                                             'living_in',
                                         );
+                                        $livingInStats[
+                                            'dmov_pending_count'
+                                        ] = $application->getPendingCountForRouteByStatuses(
+                                            $dmovStatuses,
+                                            $application->living_in_bus,
+                                            'living_in',
+                                        );
                                     @endphp
                                     <div class="row mb-2">
                                         <div class="col-md-12">
@@ -96,8 +113,8 @@
                                                     {{ $livingInStats['approved_count'] }}
                                                 </span>
                                                 <span class="badge badge-warning">
-                                                    <i class="fas fa-clock"></i> Pending:
-                                                    {{ $livingInStats['pending_count'] }}
+                                                    <i class="fas fa-clock"></i> DMOV Pending:
+                                                    {{ $livingInStats['dmov_pending_count'] }}
                                                 </span>
                                                 @if ($livingInStats['capacity_info'])
                                                     <span class="badge badge-success">
@@ -121,6 +138,13 @@
                                             $application->weekend_bus_name,
                                             'weekend',
                                         );
+                                        $weekendStats[
+                                            'dmov_pending_count'
+                                        ] = $application->getPendingCountForRouteByStatuses(
+                                            $dmovStatuses,
+                                            $application->weekend_bus_name,
+                                            'weekend',
+                                        );
                                     @endphp
                                     <div class="row mb-2">
                                         <div class="col-md-12">
@@ -132,8 +156,8 @@
                                                     {{ $weekendStats['approved_count'] }}
                                                 </span>
                                                 <span class="badge badge-warning">
-                                                    <i class="fas fa-clock"></i> Pending:
-                                                    {{ $weekendStats['pending_count'] }}
+                                                    <i class="fas fa-clock"></i> DMOV Pending:
+                                                    {{ $weekendStats['dmov_pending_count'] }}
                                                 </span>
                                                 @if ($weekendStats['capacity_info'])
                                                     <span class="badge badge-success">
