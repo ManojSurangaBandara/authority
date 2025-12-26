@@ -297,9 +297,6 @@
                                                 <option value="daily_travel"
                                                     {{ old('bus_pass_type') == 'daily_travel' ? 'selected' : '' }}>Daily
                                                     Travel (Living out)</option>
-                                                <option value="weekend_monthly_travel"
-                                                    {{ old('bus_pass_type') == 'weekend_monthly_travel' ? 'selected' : '' }}>
-                                                    Weekend and Living in Bus</option>
                                             </select>
                                             @error('bus_pass_type')
                                                 <span class="invalid-feedback">{{ $message }}</span>
@@ -988,16 +985,10 @@
                 } else if (maritalStatus === 'married') {
                     // Show all bus pass types for married personnel except unmarried daily travel
                     busPassTypeSelect.append('<option value="daily_travel">Daily Travel (Living out)</option>');
-                    busPassTypeSelect.append(
-                        '<option value="weekend_monthly_travel">Weekend and Living in Bus</option>');
-                    busPassTypeSelect.append('<option value="living_in_only">Living in Bus only</option>');
                     busPassTypeSelect.append('<option value="weekend_only">Weekend only</option>');
                 } else {
                     // No marital status selected, show all options
                     busPassTypeSelect.append('<option value="daily_travel">Daily Travel (Living out)</option>');
-                    busPassTypeSelect.append(
-                        '<option value="weekend_monthly_travel">Weekend and Living in Bus</option>');
-                    busPassTypeSelect.append('<option value="living_in_only">Living in Bus only</option>');
                     busPassTypeSelect.append('<option value="weekend_only">Weekend only</option>');
                 }
 
@@ -1072,11 +1063,9 @@
                 checkRentAllowanceVisibility();
             });
 
-            // Trigger on page load if old value exists
-            if ($('#marital_status').val()) {
-                updateBusPassTypeOptions();
-                checkRentAllowanceVisibility();
-            }
+            // Trigger on page load to initialize dropdown
+            updateBusPassTypeOptions();
+            checkRentAllowanceVisibility();
 
             // Bus pass type change handler
             $('#bus_pass_type').change(function() {
@@ -1091,8 +1080,6 @@
                     $('#daily_travel_section').show();
                 } else if (type === 'unmarried_daily_travel') {
                     $('#unmarried_daily_travel_section').show();
-                } else if (type === 'weekend_monthly_travel') {
-                    $('#weekend_monthly_section').show();
                 } else if (type === 'living_in_only') {
                     $('#living_in_only_section').show();
                     // Load destination locations from database
