@@ -204,11 +204,11 @@ class BusPassApprovalDataTable extends DataTable
     {
         return [
             Column::make('app_id')->title('App ID')->searchable(false)->orderable(false),
-            Column::make('person_details')->title('Person Details')->name('person_name')->orderable(false),
+            Column::make('person_details')->title('Person Details')->name('persons.name')->searchable(true)->orderable(false),
             Column::make('service_details')->title('Service Details')->searchable(false)->orderable(false),
             Column::make('bus_pass_type')->title('Bus Pass Type')->searchable(false)->orderable(false),
             Column::make('branch_directorate')->title('Branch/Directorate')->searchable(false)->orderable(false),
-            Column::make('submitted')->title('Submitted')->name('bus_pass_applications.created_at'),
+            Column::make('submitted')->title('Submitted')->name('bus_pass_applications.created_at')->searchable(true),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
