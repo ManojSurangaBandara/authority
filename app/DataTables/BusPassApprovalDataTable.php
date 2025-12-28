@@ -61,7 +61,25 @@ class BusPassApprovalDataTable extends DataTable
                 return $html ?: '<span class="text-muted">N/A</span>';
             })
             ->addColumn('bus_pass_type', function ($row) {
-                return $row->type_label ?? 'N/A';
+                // Generate type label and badge color from bus_pass_type field
+                $typeConfig = [
+                    'daily_travel' => ['label' => 'Daily Travel (Living out)', 'badge' => 'badge-primary'],
+                    'weekend_monthly_travel' => ['label' => 'Weekend and Living in Bus', 'badge' => 'badge-success'],
+                    'living_in_only' => ['label' => 'Living in Bus only', 'badge' => 'badge-warning'],
+                    'weekend_only' => ['label' => 'Weekend only', 'badge' => 'badge-info'],
+                    'unmarried_daily_travel' => ['label' => 'Unmarried Daily Travel', 'badge' => 'badge-secondary']
+                ];
+
+                $config = $typeConfig[$row->bus_pass_type] ?? ['label' => ucfirst(str_replace('_', ' ', $row->bus_pass_type ?? 'N/A')), 'badge' => 'badge-light'];
+
+                $html = '<span class="badge ' . $config['badge'] . '">' . e($config['label']) . '</span>';
+
+                // Add SLTB season badge if available
+                if ($row->obtain_sltb_season === 'yes') {
+                    $html .= ' <span class="badge badge-warning ml-1" title="SLTB Season Available"><i class="fas fa-bus"></i> SLTB</span>';
+                }
+
+                return $html;
             })
             ->addColumn('branch_directorate', function ($row) {
                 if ($row->establishment_name) {
