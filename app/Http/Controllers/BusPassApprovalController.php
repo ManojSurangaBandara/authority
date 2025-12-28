@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\DataTables\BusPassApprovalDataTable;
 use App\Models\BusPassApplication;
 use App\Models\BusPassApprovalHistory;
 use Illuminate\Http\Request;
@@ -14,12 +15,9 @@ class BusPassApprovalController extends Controller
     /**
      * Display pending applications for the current user's role
      */
-    public function index()
+    public function index(BusPassApprovalDataTable $dataTable)
     {
-        $user = Auth::user();
-        $pendingApplications = $this->getPendingApplicationsForUser($user);
-
-        return view('bus-pass-approvals.index', compact('pendingApplications'));
+        return $dataTable->render('bus-pass-approvals.index');
     }
 
     /**
@@ -513,21 +511,57 @@ class BusPassApprovalController extends Controller
     }
 
     /**
-     * Get route statistics for a specific application and route
+     * Load modal content for a specific application via AJAX
      */
-    public function getRouteStatistics(BusPassApplication $application, $routeName, $routeType)
+    public function loadModal(Request $request, BusPassApplication $application)
     {
-        // Get statistics with approved by Col Mov/Director Mov, pending at Col Mov level
-        $stats = $application->getRouteStatistics(
-            $routeName,
-            $routeType,
-            ['Col Mov (DMOV)', 'Director (DMOV)'],
-            'pending_col_mov'
-        );
+        // Check if user can view this application
+        $user = Auth::user();
+        if (!$this->canUserApprove($user, $application)) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Load the application with all necessary relationships
+        $application->load(['person.personType', 'establishment', 'approvalHistory.user']);
+
+        // Determine which modal to render
+        $personType = $application->person->personType;
+        $modalView = 'bus-pass-approvals.modals.view'; // default
+
+        if ($personType && $personType->name === 'Civil') {
+            $modalView = 'bus-pass-approvals.modals.view-civil';
+        } elseif ($personType && $personType->name === 'Navy') {
+            $modalView = 'bus-pass-approvals.modals.view-navy';
+        } elseif ($personType && $personType->name === 'Air Force') {
+            $modalView = 'bus-pass-approvals.modals.view-airforce';
+        }
+
+        // Render the modal content
+        $modalContent = view($modalView, compact('application'))->render();
+
+        // Also render action modals
+        $actionModals = '';
+        $actionModalViews = [
+            'bus-pass-approvals.modals.approve',
+            'bus-pass-approvals.modals.reject',
+            'bus-pass-approvals.modals.recommend',
+            'bus-pass-approvals.modals.not-recommend',
+            'bus-pass-approvals.modals.dmov-not-recommend',
+            'bus-pass-approvals.modals.forward-to-branch-clerk'
+        ];
+
+        foreach ($actionModalViews as $modalView) {
+            try {
+                $actionModals .= view($modalView, compact('application'))->render();
+            } catch (\Exception $e) {
+                // Skip modals that can't be rendered (e.g., due to missing permissions)
+                continue;
+            }
+        }
 
         return response()->json([
-            'success' => true,
-            'data' => $stats
+            'modal' => $modalContent,
+            'actionModals' => $actionModals
         ]);
     }
 }

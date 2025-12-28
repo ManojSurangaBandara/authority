@@ -21,157 +21,25 @@
                 <div class="card-header">
                     <h3 class="card-title">
                         <i class="fas fa-clipboard-check"></i>
-                        Pending Approvals ({{ $pendingApplications->count() }})
+                        Pending Approvals
                     </h3>
                 </div>
                 <div class="card-body">
-                    @if ($pendingApplications->count() > 0)
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-striped" id="approvals-table">
-                                <thead>
-                                    <tr>
-                                        <th>App ID</th>
-                                        <th>Person Details</th>
-                                        <th>Service Details</th>
-                                        <th>Bus Pass Type</th>
-                                        <th>Branch/Directorate</th>
-                                        {{-- <th>Status</th> --}}
-                                        <th>Submitted</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($pendingApplications as $application)
-                                        <tr
-                                            class="{{ $application->wasRecentlyNotRecommended() || $application->wasRecentlyDmovNotRecommended() ? 'table-warning' : '' }}">
-                                            <td>
-                                                <strong>#{{ $application->id }}</strong>
-                                                @if ($application->wasRecentlyNotRecommended())
-                                                    <br><span class="badge badge-warning"><i
-                                                            class="fas fa-exclamation-triangle"></i> Not Recommended</span>
-                                                @endif
-                                                @if ($application->wasRecentlyDmovNotRecommended())
-                                                    <br><span class="badge badge-danger"><i class="fas fa-arrow-left"></i>
-                                                        Returned from DMOV</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                <strong>{{ $application->person->name }}</strong><br>
-                                                <small class="text-muted">{{ $application->person->nic }}</small><br>
-                                                <small class="text-muted">{{ $application->person->telephone_no }}</small>
-                                            </td>
-                                            <td>
-                                                @if (is_null($application->person->regiment_no))
-                                                    <span class="badge badge-success">Civil</span><br>
-                                                    <small class="text-muted">Civil Application</small><br>
-                                                    <small class="text-muted">{{ $application->person->civil_id }}</small>
-                                                @else
-                                                    <strong>{{ $application->person->rank ?: 'Not specified' }}</strong><br>
-                                                    <small
-                                                        class="text-muted">{{ $application->person->regiment_no }}</small><br>
-                                                    <small class="text-muted">{{ $application->person->unit }}</small>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                <span
-                                                    class="badge badge-{{ $application->bus_pass_type === 'daily_travel' ? 'primary' : 'secondary' }}">
-                                                    {{ $application->type_label }}
-                                                </span>
-                                                @if ($application->obtain_sltb_season == 'yes')
-                                                    <br><span class="badge badge-warning mt-1">
-                                                        <i class="fas fa-bus"></i> SLTB Season Available
-                                                    </span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if ($application->establishment)
-                                                    <span
-                                                        class="badge badge-info">{{ $application->establishment->name }}</span>
-                                                    @if ($application->establishment->location)
-                                                        <br><small
-                                                            class="text-muted">{{ $application->establishment->location }}</small>
-                                                    @endif
-                                                @else
-                                                    <span class="text-muted">{{ $application->branch_directorate }}</span>
-                                                @endif
-                                            </td>
-                                            {{-- <td>{!! $application->status_badge !!}</td> --}}
-                                            <td>
-                                                {{ $application->created_at->format('d M Y') }}<br>
-                                                <small
-                                                    class="text-muted">{{ $application->created_at->diffForHumans() }}</small>
-                                            </td>
-                                            <td>
-                                                <div class="btn-group" role="group">
-                                                    @php
-                                                        $personType = $application->person->personType;
-                                                        $modalTarget = '#viewModal' . $application->id; // Default
-
-                                                        if ($personType && $personType->name === 'Civil') {
-                                                            $modalTarget = '#viewCivilModal' . $application->id;
-                                                        } elseif ($personType && $personType->name === 'Navy') {
-                                                            $modalTarget = '#viewNavyModal' . $application->id;
-                                                        } elseif ($personType && $personType->name === 'Air Force') {
-                                                            $modalTarget = '#viewAirforceModal' . $application->id;
-                                                        }
-                                                    @endphp
-
-                                                    <button type="button" class="btn btn-sm btn-info" data-toggle="modal"
-                                                        data-target="{{ $modalTarget }}">
-                                                        <i class="fas fa-eye"></i> View
-                                                    </button>
-
-                                                    @if (auth()->user()->hasRole('Bus Pass Subject Clerk (Branch)'))
-                                                        <a href="{{ route('bus-pass-applications.edit', $application->id) }}"
-                                                            class="btn btn-sm btn-warning">
-                                                            <i class="fas fa-edit"></i> Edit
-                                                        </a>
-                                                    @endif
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    @else
-                        <div class="text-center py-4">
-                            <i class="fas fa-clipboard-check fa-3x text-muted mb-3"></i>
-                            <h4 class="text-muted">No Pending Approvals</h4>
-                            <p class="text-muted">There are no bus pass applications pending your approval at this time.</p>
-                        </div>
-                    @endif
+                    <div class="table-responsive">
+                        {{ $dataTable->table() }}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Modals for each application -->
-    @foreach ($pendingApplications as $application)
-        @php
-            $personType = $application->person->personType;
-        @endphp
-
-        @if ($personType && $personType->name === 'Civil')
-            @include('bus-pass-approvals.modals.view-civil', ['application' => $application])
-        @elseif ($personType && $personType->name === 'Navy')
-            @include('bus-pass-approvals.modals.view-navy', ['application' => $application])
-        @elseif ($personType && $personType->name === 'Air Force')
-            @include('bus-pass-approvals.modals.view-airforce', ['application' => $application])
-        @else
-            @include('bus-pass-approvals.modals.view', ['application' => $application])
-        @endif
-
-        @include('bus-pass-approvals.modals.approve', ['application' => $application])
-        @include('bus-pass-approvals.modals.reject', ['application' => $application])
-        @include('bus-pass-approvals.modals.recommend', ['application' => $application])
-        @include('bus-pass-approvals.modals.not-recommend', ['application' => $application])
-        @include('bus-pass-approvals.modals.dmov-not-recommend', ['application' => $application])
-        @include('bus-pass-approvals.modals.forward-to-branch-clerk', ['application' => $application])
-    @endforeach
 @stop
 
+<!-- Modal container for dynamically loaded modals -->
+<div id="modal-container"></div>
+
 @section('css')
+    <link rel="stylesheet" href="{{ asset('vendor/datatables/css/dataTables.bootstrap4.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('vendor/datatables-plugins/buttons/css/buttons.bootstrap4.min.css') }}">
     <style>
         .table th {
             white-space: nowrap;
@@ -217,23 +85,79 @@
     </style>
 @stop
 
-@section('js')
+@push('js')
+    <script src="{{ asset('vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('vendor/datatables/js/dataTables.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('vendor/datatables-plugins/buttons/js/dataTables.buttons.min.js') }}"></script>
+    <script src="{{ asset('vendor/datatables-plugins/buttons/js/buttons.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('vendor/datatables-plugins/buttons/js/buttons.html5.min.js') }}"></script>
+    <script src="{{ asset('vendor/datatables-plugins/buttons/js/buttons.print.min.js') }}"></script>
+    <script src="{{ asset('vendor/datatables-plugins/buttons/js/buttons.colVis.min.js') }}"></script>
+    {{ $dataTable->scripts() }}
+
     <script>
         $(document).ready(function() {
-            $('#approvals-table').DataTable({
-                "responsive": true,
-                "lengthChange": false,
-                "autoWidth": false,
-                "pageLength": 25,
-                "order": [
-                    [6, "desc"]
-                ], // Sort by submitted date
-                "columnDefs": [{
-                        "orderable": false,
-                        "targets": 7
-                    } // Disable sorting on actions column
-                ]
+            // Handle view button clicks - load modal via AJAX
+            $(document).on('click', '.btn-info[data-toggle="modal"]', function(e) {
+                e.preventDefault();
+
+                var button = $(this);
+                var appId = button.closest('tr').attr('id'); // Get application ID from row ID
+
+                if (!appId || button.prop('disabled')) return;
+
+                // Show loading state
+                button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+                // Load modal content via AJAX
+                $.ajax({
+                    url: '{{ url('bus-pass-approvals') }}/' + appId + '/modal',
+                    method: 'GET',
+                    success: function(response) {
+                        // Clean up any existing modals and backdrops
+                        $('.modal').modal('hide');
+                        $('.modal-backdrop').remove();
+                        $('body').removeClass('modal-open');
+
+                        // Clear modal container
+                        $('#modal-container').empty();
+
+                        // Add new modals
+                        $('#modal-container').html(response.modal + response.actionModals);
+
+                        // Show the view modal
+                        $('#viewModal' + appId).modal('show');
+
+                        // Re-enable button
+                        button.prop('disabled', false).html('<i class="fas fa-eye"></i>');
+                    },
+                    error: function(xhr) {
+                        console.error('Error loading modal:', xhr);
+                        alert('Error loading application details. Please try again.');
+
+                        // Re-enable button
+                        button.prop('disabled', false).html('<i class="fas fa-eye"></i>');
+                    }
+                });
+            });
+
+            // Handle modal close events to clean up properly
+            $(document).on('hidden.bs.modal', '.modal', function() {
+                // Clean up modal backdrops and body classes
+                if ($('.modal:visible').length === 0) {
+                    $('.modal-backdrop').remove();
+                    $('body').removeClass('modal-open');
+                }
+
+                // Remove the modal from DOM after it's hidden
+                $(this).remove();
+            });
+
+            // Handle modal show events
+            $(document).on('show.bs.modal', '.modal', function() {
+                // Ensure body has modal-open class
+                $('body').addClass('modal-open');
             });
         });
     </script>
-@stop
+@endpush
