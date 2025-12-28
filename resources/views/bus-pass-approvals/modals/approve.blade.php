@@ -432,7 +432,8 @@ $weekendStats[
     !auth()->user()->hasRole(['Bus Pass Subject Clerk (Branch)', 'Subject Clerk (DMOV)']) &&
         $application->obtain_sltb_season == 'yes')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        // Initialize SLTB confirmation checkbox handler immediately
+        (function() {
             const checkbox = document.getElementById('sltb_season_confirmation{{ $application->id }}');
             const approveBtn = document.getElementById('approveBtn{{ $application->id }}');
 
@@ -447,14 +448,15 @@ $weekendStats[
                     }
                 });
             }
-        });
+        })();
     </script>
 @endif
 
 {{-- JavaScript for SO2 DMOV Bus Name Editing --}}
 @if (auth()->user()->hasAnyRole(['Staff Officer 2 (DMOV)', 'Col Mov (DMOV)', 'Director (DMOV)']))
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        // Initialize bus name editing functionality immediately
+        (function() {
             // Load bus names when modal is opened
             $('#approveModal{{ $application->id }}').on('shown.bs.modal', function() {
                 loadBusNames{{ $application->id }}();
@@ -691,6 +693,6 @@ $weekendStats[
                     });
                 });
             }
-        });
+        })();
     </script>
 @endif
