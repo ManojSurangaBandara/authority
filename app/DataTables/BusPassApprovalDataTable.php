@@ -189,6 +189,7 @@ class BusPassApprovalDataTable extends DataTable
             ->pageLength(25)
             ->lengthMenu([10, 25, 50, 100])
             ->orderBy(5, 'asc') // Order by submitted date
+            ->autoWidth(false)
             ->buttons([
                 Button::make('excel'),
                 Button::make('csv'),
@@ -208,7 +209,7 @@ class BusPassApprovalDataTable extends DataTable
             Column::make('service_details')->title('Service Details')->searchable(false)->orderable(false),
             Column::make('bus_pass_type')->title('Bus Pass Type')->searchable(false)->orderable(false),
             Column::make('branch_directorate')->title('Branch/Directorate')->searchable(false)->orderable(false),
-            Column::make('submitted')->title('Submitted')->name('bus_pass_applications.created_at')->searchable(true),
+            Column::make('submitted')->title('Submitted')->name('bus_pass_applications.created_at')->searchable(true)->hidden(),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)

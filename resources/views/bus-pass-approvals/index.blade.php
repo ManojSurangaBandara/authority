@@ -25,9 +25,7 @@
                     </h3>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        {{ $dataTable->table() }}
-                    </div>
+                    {{ $dataTable->table() }}
                 </div>
             </div>
         </div>
@@ -81,6 +79,16 @@
         .sltb-confirmation-alert .form-check-input:checked {
             background-color: #28a745;
             border-color: #28a745;
+        }
+
+        /* Prevent horizontal scrolling */
+        .card-body {
+            overflow-x: hidden !important;
+        }
+
+        table.dataTable {
+            width: 100% !important;
+            max-width: 100% !important;
         }
     </style>
 @stop
