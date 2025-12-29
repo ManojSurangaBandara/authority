@@ -1076,6 +1076,20 @@
                 $('#living_in_only_section').hide();
                 $('#weekend_only_section').hide();
 
+                // Clear all dependent fields when bus pass type changes
+                $('#requested_bus_name').val('');
+                $('#destination_from_ahq').val('');
+                $('#requested_bus_name_unmarried').val('');
+                $('#destination_from_ahq_unmarried').val('');
+                $('#living_in_bus').val('');
+                $('#destination_location_ahq').val('');
+                $('#weekend_bus_name').val('');
+                $('#weekend_destination').val('');
+                $('#living_in_bus_only').val('');
+                $('#destination_location_living_in').val('');
+                $('#weekend_bus_name_only').val('');
+                $('#weekend_destination_only').val('');
+
                 if (type === 'daily_travel') {
                     $('#daily_travel_section').show();
                 } else if (type === 'unmarried_daily_travel') {
