@@ -561,33 +561,11 @@
                                                 <select class="form-control" id="destination_location_ahq"
                                                     name="destination_location_ahq">
                                                     <option value="">Select Destination Location</option>
-                                                    <option value="Panagoda"
-                                                        {{ old('destination_location_ahq', $bus_pass_application->destination_location_ahq) == 'Panagoda' ? 'selected' : '' }}>
-                                                        Panagoda</option>
-                                                    <option value="Kandalanda"
-                                                        {{ old('destination_location_ahq', $bus_pass_application->destination_location_ahq) == 'Kandalanda' ? 'selected' : '' }}>
-                                                        Kandalanda</option>
-                                                    <option value="Maharagama"
-                                                        {{ old('destination_location_ahq', $bus_pass_application->destination_location_ahq) == 'Maharagama' ? 'selected' : '' }}>
-                                                        Maharagama</option>
-                                                    <option value="Kinnadeniya"
-                                                        {{ old('destination_location_ahq', $bus_pass_application->destination_location_ahq) == 'Kinnadeniya' ? 'selected' : '' }}>
-                                                        Kinnadeniya</option>
-                                                    <option value="Pamankada"
-                                                        {{ old('destination_location_ahq', $bus_pass_application->destination_location_ahq) == 'Pamankada' ? 'selected' : '' }}>
-                                                        Pamankada</option>
-                                                    <option value="Mathegoda"
-                                                        {{ old('destination_location_ahq', $bus_pass_application->destination_location_ahq) == 'Mathegoda' ? 'selected' : '' }}>
-                                                        Mathegoda</option>
-                                                    <option value="SLEME Workshop"
-                                                        {{ old('destination_location_ahq', $bus_pass_application->destination_location_ahq) == 'SLEME Workshop' ? 'selected' : '' }}>
-                                                        SLEME Workshop</option>
-                                                    <option value="Rathmalaana"
-                                                        {{ old('destination_location_ahq', $bus_pass_application->destination_location_ahq) == 'Rathmalaana' ? 'selected' : '' }}>
-                                                        Rathmalaana</option>
-                                                    <option value="Other"
-                                                        {{ old('destination_location_ahq', $bus_pass_application->destination_location_ahq) == 'Other' ? 'selected' : '' }}>
-                                                        Other</option>
+                                                    @foreach ($destinationLocations as $location)
+                                                        <option value="{{ $location->destination_location }}"
+                                                            {{ old('destination_location_ahq', $bus_pass_application->destination_location_ahq) == $location->destination_location ? 'selected' : '' }}>
+                                                            {{ $location->destination_location }}</option>
+                                                    @endforeach
                                                 </select>
                                             </div>
                                         </div>
