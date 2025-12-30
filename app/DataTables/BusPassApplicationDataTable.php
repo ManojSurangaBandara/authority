@@ -169,7 +169,7 @@ class BusPassApplicationDataTable extends DataTable
     {
         return [
             Column::make('DT_RowIndex')->title('#')->searchable(false)->orderable(false),
-            Column::make('regiment_no_display')->title('Regiment No')->name('person.regiment_no')->searchable(false)->orderable(false),
+            Column::make('regiment_no_display')->title('Regiment No')->name('person.regiment_no')->searchable(true)->orderable(false),
             Column::make('person.name')->title('Name')->name('person.name'),
             Column::make('person_rank')->title('Rank')->searchable(false)->orderable(false),
             Column::make('establishment_name')->title('Branch/Directorate')->searchable(false)->orderable(false),
