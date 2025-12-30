@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use App\Models\LivingInBuses;
 
 class BusPassApplicationController extends Controller
 {
@@ -41,8 +42,9 @@ class BusPassApplicationController extends Controller
         $districts = District::orderBy('name')->get();
         $gsDivisions = GsDivision::orderBy('name')->get();
         $policeStations = PoliceStation::orderBy('name')->get();
+        $livingInBuses = LivingInBuses::orderBy('name')->get();
 
-        return view('bus-pass-applications.create', compact('busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations'));
+        return view('bus-pass-applications.create', compact('busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations', 'livingInBuses'));
     }
 
     /**
@@ -56,8 +58,9 @@ class BusPassApplicationController extends Controller
         $districts = District::orderBy('name')->get();
         $gsDivisions = GsDivision::orderBy('name')->get();
         $policeStations = PoliceStation::orderBy('name')->get();
+        $livingInBuses = LivingInBuses::orderBy('name')->get();
 
-        return view('bus-pass-applications.create-civil', compact('busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations'));
+        return view('bus-pass-applications.create-civil', compact('busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations', 'livingInBuses'));
     }
 
     /**
@@ -71,8 +74,9 @@ class BusPassApplicationController extends Controller
         $districts = District::orderBy('name')->get();
         $gsDivisions = GsDivision::orderBy('name')->get();
         $policeStations = PoliceStation::orderBy('name')->get();
+        $livingInBuses = LivingInBuses::orderBy('name')->get();
 
-        return view('bus-pass-applications.create-navy', compact('busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations'));
+        return view('bus-pass-applications.create-navy', compact('busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations', 'livingInBuses'));
     }
 
     /**
@@ -86,8 +90,9 @@ class BusPassApplicationController extends Controller
         $districts = District::orderBy('name')->get();
         $gsDivisions = GsDivision::orderBy('name')->get();
         $policeStations = PoliceStation::orderBy('name')->get();
+        $livingInBuses = LivingInBuses::orderBy('name')->get();
 
-        return view('bus-pass-applications.create-airforce', compact('busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations'));
+        return view('bus-pass-applications.create-airforce', compact('busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations', 'livingInBuses'));
     }
 
     /**
@@ -582,6 +587,7 @@ class BusPassApplicationController extends Controller
         $districts = District::orderBy('name')->get();
         $gsDivisions = GsDivision::orderBy('name')->get();
         $policeStations = PoliceStation::orderBy('name')->get();
+        $livingInBuses = LivingInBuses::orderBy('name')->get();
 
         // Load the destination location relationship if needed
         $bus_pass_application->load('destinationLocation');
@@ -590,15 +596,15 @@ class BusPassApplicationController extends Controller
         $personType = $bus_pass_application->person->personType;
 
         if ($personType && $personType->name === 'Civil') {
-            return view('bus-pass-applications.edit-civil', compact('bus_pass_application', 'busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations'));
+            return view('bus-pass-applications.edit-civil', compact('bus_pass_application', 'busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations', 'livingInBuses'));
         } elseif ($personType && $personType->name === 'Navy') {
-            return view('bus-pass-applications.edit-navy', compact('bus_pass_application', 'busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations'));
+            return view('bus-pass-applications.edit-navy', compact('bus_pass_application', 'busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations', 'livingInBuses'));
         } elseif ($personType && $personType->name === 'Air Force') {
-            return view('bus-pass-applications.edit-airforce', compact('bus_pass_application', 'busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations'));
+            return view('bus-pass-applications.edit-airforce', compact('bus_pass_application', 'busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations', 'livingInBuses'));
         }
 
         // Default to army
-        return view('bus-pass-applications.edit', compact('bus_pass_application', 'busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations'));
+        return view('bus-pass-applications.edit', compact('bus_pass_application', 'busRoutes', 'establishment', 'provinces', 'districts', 'gsDivisions', 'policeStations', 'livingInBuses'));
     }
 
     /**

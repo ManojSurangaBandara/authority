@@ -518,42 +518,13 @@
                                                 <label for="living_in_bus">Living in bus</label>
                                                 <select class="form-control" id="living_in_bus" name="living_in_bus">
                                                     <option value="">Select Living in bus</option>
-                                                    <option value="Kinnadeniya 1"
-                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Kinnadeniya 1' ? 'selected' : '' }}>
-                                                        Kinnadeniya 1</option>
-                                                    <option value="Kinnadeniya 2"
-                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Kinnadeniya 2' ? 'selected' : '' }}>
-                                                        Kinnadeniya 2</option>
-                                                    <option value="Kinnadeniya 3"
-                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Kinnadeniya 3' ? 'selected' : '' }}>
-                                                        Kinnadeniya 3</option>
-                                                    <option value="Panagoda - Officers"
-                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Panagoda - Officers' ? 'selected' : '' }}>
-                                                        Panagoda - Officers</option>
-                                                    <option value="Panagoda - Other Ranks"
-                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Panagoda - Other Ranks' ? 'selected' : '' }}>
-                                                        Panagoda - Other Ranks</option>
-                                                    <option value="Kandalanda"
-                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Kandalanda' ? 'selected' : '' }}>
-                                                        Kandalanda</option>
-                                                    <option value="Pamankada"
-                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Pamankada' ? 'selected' : '' }}>
-                                                        Pamankada</option>
-                                                    <option value="Maharagama"
-                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Maharagama' ? 'selected' : '' }}>
-                                                        Maharagama</option>
-                                                    <option value="Mathegoda"
-                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Mathegoda' ? 'selected' : '' }}>
-                                                        Mathegoda</option>
-                                                    <option value="SLEME - Kompanyaweediya"
-                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'SLEME - Kompanyaweediya' ? 'selected' : '' }}>
-                                                        SLEME - Kompanyaweediya</option>
-                                                    <option value="Rathmalaana"
-                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Rathmalaana' ? 'selected' : '' }}>
-                                                        Rathmalaana</option>
-                                                    <option value="Other"
-                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Other' ? 'selected' : '' }}>
-                                                        Other</option>
+                                                    @if (isset($livingInBuses))
+                                                        @foreach ($livingInBuses as $bus)
+                                                            <option value="{{ $bus->name }}"
+                                                                {{ old('living_in_bus', $bus_pass_application->living_in_bus) == $bus->name ? 'selected' : '' }}>
+                                                                {{ $bus->name }}</option>
+                                                        @endforeach
+                                                    @endif
                                                 </select>
                                             </div>
                                         </div>
@@ -635,42 +606,13 @@
                                                 <select class="form-control" id="living_in_bus_only"
                                                     name="living_in_bus">
                                                     <option value="">Select Living in bus</option>
-                                                    <option value="Kinnadeniya 1"
-                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Kinnadeniya 1' ? 'selected' : '' }}>
-                                                        Kinnadeniya 1</option>
-                                                    <option value="Kinnadeniya 2"
-                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Kinnadeniya 2' ? 'selected' : '' }}>
-                                                        Kinnadeniya 2</option>
-                                                    <option value="Kinnadeniya 3"
-                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Kinnadeniya 3' ? 'selected' : '' }}>
-                                                        Kinnadeniya 3</option>
-                                                    <option value="Panagoda - Officers"
-                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Panagoda - Officers' ? 'selected' : '' }}>
-                                                        Panagoda - Officers</option>
-                                                    <option value="Panagoda - Other Ranks"
-                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Panagoda - Other Ranks' ? 'selected' : '' }}>
-                                                        Panagoda - Other Ranks</option>
-                                                    <option value="Kandalanda"
-                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Kandalanda' ? 'selected' : '' }}>
-                                                        Kandalanda</option>
-                                                    <option value="Pamankada"
-                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Pamankada' ? 'selected' : '' }}>
-                                                        Pamankada</option>
-                                                    <option value="Maharagama"
-                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Maharagama' ? 'selected' : '' }}>
-                                                        Maharagama</option>
-                                                    <option value="Mathegoda"
-                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Mathegoda' ? 'selected' : '' }}>
-                                                        Mathegoda</option>
-                                                    <option value="SLEME - Kompanyaweediya"
-                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'SLEME - Kompanyaweediya' ? 'selected' : '' }}>
-                                                        SLEME - Kompanyaweediya</option>
-                                                    <option value="Rathmalaana"
-                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Rathmalaana' ? 'selected' : '' }}>
-                                                        Rathmalaana</option>
-                                                    <option value="Other"
-                                                        {{ old('living_in_bus', $bus_pass_application->living_in_bus) == 'Other' ? 'selected' : '' }}>
-                                                        Other</option>
+                                                    @if (isset($livingInBuses))
+                                                        @foreach ($livingInBuses as $bus)
+                                                            <option value="{{ $bus->name }}"
+                                                                {{ old('living_in_bus', $bus_pass_application->living_in_bus) == $bus->name ? 'selected' : '' }}>
+                                                                {{ $bus->name }}</option>
+                                                        @endforeach
+                                                    @endif
                                                 </select>
                                             </div>
                                         </div>
