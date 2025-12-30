@@ -209,6 +209,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('establishment-wise-applications', [ReportController::class, 'establishmentWiseApplications'])->name('establishment-wise-applications.index');
 
+    Route::get('route-establishment-report', [ReportController::class, 'routeEstablishmentReport'])->name('route-establishment-report.index');
+
     // Profile routes (All authenticated users)
     Route::get('profile', [ProfileController::class, 'show'])->name('profile.show');
 

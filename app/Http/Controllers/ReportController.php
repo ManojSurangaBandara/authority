@@ -233,6 +233,125 @@ class ReportController extends Controller
     }
 
     /**
+     * Display route establishment report
+     */
+    public function routeEstablishmentReport(Request $request)
+    {
+        // Get all bus routes and living in buses for dropdown
+        $busRoutes = BusRoute::orderBy('name')->get();
+        $livingInBuses = LivingInBuses::orderBy('name')->get();
+
+        // Get selected route
+        $selectedRoute = $request->get('route_name');
+
+        // Get all establishments
+        $establishments = Establishment::orderBy('name')->get();
+
+        $reportData = collect();
+
+        if ($selectedRoute) {
+            foreach ($establishments as $establishment) {
+                // Build base query for this establishment
+                $baseQuery = BusPassApplication::where('establishment_id', $establishment->id);
+
+                // Apply route filter if not "all"
+                if ($selectedRoute !== 'all') {
+                    $baseQuery->where(function ($query) use ($selectedRoute) {
+                        $query->where('requested_bus_name', $selectedRoute)
+                            ->orWhere('weekend_bus_name', $selectedRoute)
+                            ->orWhere('living_in_bus', $selectedRoute);
+                    });
+                }
+
+                // Count all applications for this establishment and route
+                $allCount = (clone $baseQuery)->count();
+
+                // Count pending applications (not yet approved by Col Mov)
+                $pendingCount = (clone $baseQuery)
+                    ->whereNotIn('status', ['approved_for_integration', 'integrated_to_branch_card', 'temp_card_handed_over'])
+                    ->count();
+
+                // Count approved applications (approved by Col Mov)
+                $approvedCount = (clone $baseQuery)
+                    ->whereIn('status', ['approved_for_integration'])
+                    ->count();
+
+                // Count integrated applications
+                $integratedCount = (clone $baseQuery)
+                    ->whereIn('status', ['integrated_to_branch_card', 'temp_card_handed_over'])
+                    ->count();
+
+                $reportData->push([
+                    'establishment' => $establishment->name,
+                    'all' => $allCount,
+                    'pending' => $pendingCount,
+                    'approved' => $approvedCount,
+                    'integrated' => $integratedCount
+                ]);
+            }
+        }
+
+        // Handle Excel export
+        if ($request->get('export') === 'excel' && $selectedRoute) {
+            return $this->exportRouteEstablishmentReport($reportData, $selectedRoute);
+        }
+
+        return view('reports.route-establishment-report', compact('busRoutes', 'livingInBuses', 'selectedRoute', 'reportData'));
+    }
+
+    /**
+     * Export route establishment report to Excel (CSV format)
+     */
+    private function exportRouteEstablishmentReport($reportData, $routeName)
+    {
+        $displayName = $routeName === 'all' ? 'All_Routes' : str_replace(' ', '_', $routeName);
+        $filename = 'route_establishment_report_' . $displayName . '_' . date('Y-m-d_H-i-s') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function () use ($reportData, $routeName) {
+            $file = fopen('php://output', 'w');
+
+            // Add BOM for Excel UTF-8 recognition
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            // Write header
+            $reportTitle = $routeName === 'all' ? 'All Routes' : $routeName;
+            fputcsv($file, ['Route Establishment Report - ' . $reportTitle]);
+            fputcsv($file, []); // Empty row
+            fputcsv($file, ['Establishment', 'All', 'Pending', 'Approved', 'Integrated']);
+
+            // Write data
+            foreach ($reportData as $row) {
+                fputcsv($file, [
+                    $row['establishment'],
+                    $row['all'],
+                    $row['pending'],
+                    $row['approved'],
+                    $row['integrated']
+                ]);
+            }
+
+            // Write totals
+            fputcsv($file, []); // Empty row
+            fputcsv($file, [
+                'Total',
+                $reportData->sum('all'),
+                $reportData->sum('pending'),
+                $reportData->sum('approved'),
+                $reportData->sum('integrated')
+            ]);
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
      * Display establishment wise applications report
      */
     public function establishmentWiseApplications(Request $request)

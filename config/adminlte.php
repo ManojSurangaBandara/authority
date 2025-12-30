@@ -626,6 +626,15 @@ return [
                         'establishment-wise-applications*',
                     ],
                 ],
+                [
+                    'text' => 'Route Establishment Report',
+                    'url' => 'route-establishment-report',
+                    'icon' => 'fas fa-fw fa-route',
+                    // 'can' => 'manage_user_accounts',
+                    'active' => [
+                        'route-establishment-report*',
+                    ],
+                ],
 
             ],
 
