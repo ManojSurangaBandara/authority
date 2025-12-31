@@ -11,6 +11,7 @@ use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\Html\Editor\Editor;
 use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
+use App\Models\BusPassApplication;
 
 class BusRouteDataTable extends DataTable
 {
@@ -32,7 +33,12 @@ class BusRouteDataTable extends DataTable
                 // Check if bus is assigned to this route
                 $hasBusAssigned = !is_null($row->bus_id);
 
-                $isUsed = $driverAssignmentsCount > 0 || $escortAssignmentsCount > 0 || $slcmpInchargeAssignmentsCount > 0 || $hasBusAssigned;
+                // Check if route is being used in bus pass applications
+                $busPassApplicationsCount = BusPassApplication::where('requested_bus_name', $row->name)
+                    ->orWhere('weekend_bus_name', $row->name)
+                    ->count();
+
+                $isUsed = $driverAssignmentsCount > 0 || $escortAssignmentsCount > 0 || $slcmpInchargeAssignmentsCount > 0 || $hasBusAssigned || $busPassApplicationsCount > 0;
 
                 // Build usage reasons array
                 $usageReasons = [];
@@ -47,6 +53,9 @@ class BusRouteDataTable extends DataTable
                 }
                 if ($slcmpInchargeAssignmentsCount > 0) {
                     $usageReasons[] = "Has {$slcmpInchargeAssignmentsCount} active SLCMP incharge assignment(s)";
+                }
+                if ($busPassApplicationsCount > 0) {
+                    $usageReasons[] = "Used in {$busPassApplicationsCount} bus pass application(s)";
                 }
 
                 $reasonText = implode(', ', $usageReasons);

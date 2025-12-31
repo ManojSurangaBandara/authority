@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\DataTables\BusRouteDataTable;
 use App\Models\BusRoute;
 use App\Models\Bus;
+use App\Models\BusPassApplication;
 
 class BusRouteController extends Controller
 {
@@ -56,6 +57,17 @@ class BusRouteController extends Controller
     public function edit(string $id)
     {
         $busRoute = BusRoute::findOrFail($id);
+
+        // Check if this bus route is being used in any applications
+        $isUsed = BusPassApplication::where('requested_bus_name', $busRoute->name)
+            ->orWhere('weekend_bus_name', $busRoute->name)
+            ->exists();
+
+        if ($isUsed) {
+            return redirect()->route('bus-routes.index')
+                ->with('error', 'Cannot edit this bus route as it is currently being used in bus pass applications.');
+        }
+
         return view('bus-routes.edit', compact('busRoute'));
     }
 
@@ -82,6 +94,17 @@ class BusRouteController extends Controller
     public function destroy(string $id)
     {
         $busRoute = BusRoute::findOrFail($id);
+
+        // Check if this bus route is being used in any applications
+        $isUsed = BusPassApplication::where('requested_bus_name', $busRoute->name)
+            ->orWhere('weekend_bus_name', $busRoute->name)
+            ->exists();
+
+        if ($isUsed) {
+            return redirect()->route('bus-routes.index')
+                ->with('error', 'Cannot delete this bus route as it is currently being used in bus pass applications.');
+        }
+
         $busRoute->delete();
 
         return redirect()->route('bus-routes.index')

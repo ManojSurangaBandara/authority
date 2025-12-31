@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\DestinationLocation;
 use App\DataTables\DestinationLocationDataTable;
+use App\Models\BusPassApplication;
 
 class DestinationLocationController extends Controller
 {
@@ -55,6 +56,15 @@ class DestinationLocationController extends Controller
     public function edit(string $id)
     {
         $destinationLocation = DestinationLocation::findOrFail($id);
+
+        // Check if this destination location is being used in any applications
+        $isUsed = BusPassApplication::where('destination_location_ahq', $destinationLocation->destination_location)->exists();
+
+        if ($isUsed) {
+            return redirect()->route('destination-locations.index')
+                ->with('error', 'Cannot edit this destination location as it is currently being used in bus pass applications.');
+        }
+
         return view('destination-locations.edit', compact('destinationLocation'));
     }
 
@@ -80,6 +90,15 @@ class DestinationLocationController extends Controller
     public function destroy(string $id)
     {
         $destinationLocation = DestinationLocation::findOrFail($id);
+
+        // Check if this destination location is being used in any applications
+        $isUsed = BusPassApplication::where('destination_location_ahq', $destinationLocation->destination_location)->exists();
+
+        if ($isUsed) {
+            return redirect()->route('destination-locations.index')
+                ->with('error', 'Cannot delete this destination location as it is currently being used in bus pass applications.');
+        }
+
         $destinationLocation->delete();
 
         return redirect()->route('destination-locations.index')

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\LivingInBuses;
 use App\DataTables\LivingInBusesDataTable;
+use App\Models\BusPassApplication;
 
 class LivingInBusController extends Controller
 {
@@ -55,6 +56,15 @@ class LivingInBusController extends Controller
     public function edit(string $id)
     {
         $livingInBus = LivingInBuses::findOrFail($id);
+
+        // Check if this living in bus is being used in any applications
+        $isUsed = BusPassApplication::where('living_in_bus', $livingInBus->name)->exists();
+
+        if ($isUsed) {
+            return redirect()->route('living-in-buses.index')
+                ->with('error', 'Cannot edit this living in bus as it is currently being used in bus pass applications.');
+        }
+
         return view('living-in-buses.edit', compact('livingInBus'));
     }
 
@@ -83,6 +93,15 @@ class LivingInBusController extends Controller
     public function destroy(string $id)
     {
         $livingInBus = LivingInBuses::findOrFail($id);
+
+        // Check if this living in bus is being used in any applications
+        $isUsed = BusPassApplication::where('living_in_bus', $livingInBus->name)->exists();
+
+        if ($isUsed) {
+            return redirect()->route('living-in-buses.index')
+                ->with('error', 'Cannot delete this living in bus as it is currently being used in bus pass applications.');
+        }
+
         $livingInBus->delete();
 
         return redirect()->route('living-in-buses.index')

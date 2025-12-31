@@ -11,6 +11,7 @@ use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\Html\Editor\Editor;
 use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
+use App\Models\BusPassApplication;
 
 class LivingInBusesDataTable extends DataTable
 {
@@ -27,84 +28,82 @@ class LivingInBusesDataTable extends DataTable
                 // View button (always available)
                 $viewBtn = '<a href="' . route('living-in-buses.show', $row->id) . '" class="btn btn-xs btn-info" title="View"><i class="fas fa-eye"></i></a>';
 
-                // Edit button (always enabled)
-                $editBtn = '<a href="' . route('living-in-buses.edit', $row->id) . '" class="btn btn-xs btn-primary mx-1" title="Edit"><i class="fas fa-edit"></i></a>';
+                // Check if this living in bus is being used in any applications
+                $isUsed = BusPassApplication::where('living_in_bus', $row->name)->exists();
 
-                // Delete button (always enabled)
-                $deleteBtn = '<form action="' . route('living-in-buses.destroy', $row->id) . '" method="POST" style="display:inline">
-                    ' . csrf_field() . '
-                    ' . method_field("DELETE") . '
-                    <button type="submit" class="btn btn-xs btn-danger" onclick="return confirm(\'Are you sure you want to delete this entry?\')" title="Delete">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </form>';
+                if ($isUsed) {
+                    // If used, show disabled edit and delete buttons
+                    $editBtn = '<button class="btn btn-xs btn-secondary mx-1" disabled title="Cannot edit - in use"><i class="fas fa-edit"></i></button>';
+                    $deleteBtn = '<button class="btn btn-xs btn-secondary" disabled title="Cannot delete - in use"><i class="fas fa-trash"></i></button>';
+                } else {
+                    // If not used, show enabled buttons
+                    $editBtn = '<a href="' . route('living-in-buses.edit', $row->id) . '" class="btn btn-xs btn-primary mx-1" title="Edit"><i class="fas fa-edit"></i></a>';
+                    $deleteBtn = '<form action="' . route('living-in-buses.destroy', $row->id) . '" method="POST" style="display:inline">
+                        ' . csrf_field() . '
+                        ' . method_field("DELETE") . '
+                        <button type="submit" class="btn btn-xs btn-danger" onclick="return confirm(\'Are you sure you want to delete this entry?\')" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>';
+                }
 
                 return $viewBtn . $editBtn . $deleteBtn;
             })
             ->rawColumns(['action'])
             ->setRowId('id');
-
-
     }
 
-        /**
-         * Get the query sorce of dataTable.
-         */
-        public function query(LivingInBuses $model): QueryBuilder
-        {
-            return $model->newQuery();
-        }
+    /**
+     * Get the query sorce of dataTable.
+     */
+    public function query(LivingInBuses $model): QueryBuilder
+    {
+        return $model->newQuery();
+    }
 
-        /**
-         * Optional method if you want to use the html builder.
-         */
-        public function html(): HtmlBuilder
-        {
-            return $this->builder()
-                        ->setTableId('living-in-buses-table')
-                        ->columns($this->getColumns())
-                        ->minifiedAjax()
-                        ->orderBy(1)
-                        ->selectStyleSingle()
-                        ->buttons([
-                            Button::make('excel'),
-                            Button::make('csv'),
-                            Button::make('pdf'),
-                            Button::make('print'),
-                            Button::make('reset'),
-                            Button::make('reload')
-                        ]);
-        }
+    /**
+     * Optional method if you want to use the html builder.
+     */
+    public function html(): HtmlBuilder
+    {
+        return $this->builder()
+            ->setTableId('living-in-buses-table')
+            ->columns($this->getColumns())
+            ->minifiedAjax()
+            ->orderBy(1)
+            ->selectStyleSingle()
+            ->buttons([
+                Button::make('excel'),
+                Button::make('csv'),
+                Button::make('pdf'),
+                Button::make('print'),
+                Button::make('reset'),
+                Button::make('reload')
+            ]);
+    }
 
-        /**
-         * Get the columns.
-         */
-        public function getColumns(): array
-        {
-            return [
-                Column::make('DT_RowIndex')->title('#')->searchable(false)->orderable(false),
-                Column::make('name')->title('Bus Name'),
-                Column::computed('action')
-                      ->exportable(false)
-                      ->printable(false)
-                      ->width(100)
-                      ->addClass('text-center')
-                      ->title('Actions'),
-            ];
-        }
+    /**
+     * Get the columns.
+     */
+    public function getColumns(): array
+    {
+        return [
+            Column::make('DT_RowIndex')->title('#')->searchable(false)->orderable(false),
+            Column::make('name')->title('Bus Name'),
+            Column::computed('action')
+                ->exportable(false)
+                ->printable(false)
+                ->width(100)
+                ->addClass('text-center')
+                ->title('Actions'),
+        ];
+    }
 
-        /**
-         * Get the filename for export.
-         */
-        protected function filename(): string
-        {
-            return 'LivingInBuses_' . date('YmdHis');
-        }
-
+    /**
+     * Get the filename for export.
+     */
+    protected function filename(): string
+    {
+        return 'LivingInBuses_' . date('YmdHis');
+    }
 }
-
-
-
-
-
-
