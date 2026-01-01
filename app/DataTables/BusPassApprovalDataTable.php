@@ -96,6 +96,13 @@ class BusPassApprovalDataTable extends DataTable
 
                 $html = '<div class="btn-group" role="group">';
                 $html .= '<button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="' . $modalTarget . '" title="View"><i class="fas fa-eye"></i></button>';
+
+                // Add edit button for branch clerk on returned DMOV applications
+                $user = Auth::user();
+                if ($user && $user->hasRole('Bus Pass Subject Clerk (Branch)') && method_exists($row, 'wasRecentlyDmovNotRecommended') && $row->wasRecentlyDmovNotRecommended()) {
+                    $html .= '<a href="' . route('bus-pass-applications.edit', $row->id) . '" class="btn btn-sm btn-warning" title="Edit Application"><i class="fas fa-edit"></i></a>';
+                }
+
                 $html .= '</div>';
 
                 return $html;

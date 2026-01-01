@@ -325,23 +325,28 @@
                             data-target="#dmovNotRecommendModal{{ $application->id }}">
                             <i class="fas fa-thumbs-down"></i> Not Recommend
                         </button>
+                    @elseif (auth()->user()->hasRole('Bus Pass Subject Clerk (Branch)'))
+                        {{-- Bus Pass Subject Clerk (Branch): Edit for returned applications, Forward --}}
+                        @if ($application->wasRecentlyDmovNotRecommended())
+                            <a href="{{ route('bus-pass-applications.edit', $application) }}" class="btn btn-warning">
+                                <i class="fas fa-edit"></i> Edit Application
+                            </a>
+                        @endif
+                        <button type="button" class="btn btn-success" data-dismiss="modal" data-toggle="modal"
+                            data-target="#approveModal{{ $application->id }}">
+                            <i class="fas fa-arrow-right"></i> Forward
+                        </button>
                     @else
                         {{-- All other roles: Approve/Reject or Forward --}}
                         <button type="button" class="btn btn-success" data-dismiss="modal" data-toggle="modal"
                             data-target="#approveModal{{ $application->id }}">
-                            @if (auth()->user()->hasRole('Bus Pass Subject Clerk (Branch)'))
-                                <i class="fas fa-arrow-right"></i> Forward
-                            @else
-                                <i class="fas fa-check"></i> Approve
-                            @endif
+                            <i class="fas fa-check"></i> Approve
                         </button>
 
-                        @unless (auth()->user()->hasRole('Bus Pass Subject Clerk (Branch)'))
-                            <button type="button" class="btn btn-danger" data-dismiss="modal" data-toggle="modal"
-                                data-target="#rejectModal{{ $application->id }}">
-                                <i class="fas fa-times"></i> Reject
-                            </button>
-                        @endunless
+                        <button type="button" class="btn btn-danger" data-dismiss="modal" data-toggle="modal"
+                            data-target="#rejectModal{{ $application->id }}">
+                            <i class="fas fa-times"></i> Reject
+                        </button>
                     @endif
                 @endcan
             </div>
