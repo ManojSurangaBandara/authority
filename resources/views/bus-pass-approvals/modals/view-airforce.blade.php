@@ -636,6 +636,14 @@
                         var applicationId = $(formSelector + ' input[name="application_id"]').val();
                         var csrfToken = $('meta[name="csrf-token"]').attr('content');
 
+                        // Add current route filter information if on integration page
+                        var currentRouteId = window.currentRouteId || 'all';
+                        var currentRouteType = window.currentRouteType || 'living_out';
+                        if (currentRouteId !== 'all') {
+                            formData += '&current_route_id=' + encodeURIComponent(currentRouteId) +
+                                '&current_route_type=' + encodeURIComponent(currentRouteType);
+                        }
+
                         console.log('=== Route Update Debug ===');
                         console.log('CSRF token:', csrfToken);
                         console.log('Form data:', formData);
@@ -653,6 +661,12 @@
                                     if (response.changed) {
                                         // Route was actually changed
                                         toastr.success(response.message || 'Route updated successfully!');
+
+                                        // Check if application should be removed from current view
+                                        if (response.should_remove_from_view && window
+                                            .removeApplicationFromView) {
+                                            window.removeApplicationFromView(applicationId);
+                                        }
                                     } else {
                                         // No changes were made
                                         toastr.info(response.message ||

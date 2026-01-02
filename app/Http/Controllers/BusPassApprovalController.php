@@ -669,11 +669,34 @@ class BusPassApprovalController extends Controller
                 "Route Update:\n" . implode("\n", $changeMessages)
             );
 
+            // Check if application should be removed from current integration view
+            $shouldRemoveFromView = false;
+            if ($request->has('current_route_id') && $request->get('current_route_id') !== 'all') {
+                $currentRouteId = $request->get('current_route_id');
+                $currentRouteType = $request->get('current_route_type', 'living_out');
+
+                if ($currentRouteType === 'living_out') {
+                    $route = \App\Models\BusRoute::find($currentRouteId);
+                    if ($route) {
+                        // Check if application still matches the route filter
+                        $matchesRoute = ($application->requested_bus_name === $route->name) ||
+                            ($application->weekend_bus_name === $route->name);
+                        $shouldRemoveFromView = !$matchesRoute;
+                    }
+                } elseif ($currentRouteType === 'living_in') {
+                    $livingInBus = \App\Models\LivingInBuses::find($currentRouteId);
+                    if ($livingInBus) {
+                        $shouldRemoveFromView = ($application->living_in_bus !== $livingInBus->name);
+                    }
+                }
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Route updated successfully! ' . implode(', ', $changeMessages),
                 'changed' => true,
-                'changes' => $changeMessages
+                'changes' => $changeMessages,
+                'should_remove_from_view' => $shouldRemoveFromView
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([

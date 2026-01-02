@@ -175,6 +175,10 @@
         let applicationsTable = null;
         const canIntegrate = $('meta[name="user-role"]').attr('content') === 'integration_allowed';
 
+        // Make current route info available globally for modal
+        window.currentRouteId = currentRouteId;
+        window.currentRouteType = currentRouteType;
+
         $(document).ready(function() {
             console.log('Document ready, initializing...');
             console.log('Chart.js available:', typeof Chart);
@@ -185,6 +189,11 @@
             $('#routeFilter').on('change', function() {
                 currentRouteId = $(this).val();
                 currentRouteType = $(this).find('option:selected').data('route-type') || 'living_out';
+
+                // Update global variables for modal
+                window.currentRouteId = currentRouteId;
+                window.currentRouteType = currentRouteType;
+
                 loadChartData();
                 hideApplicationsTable();
             });
@@ -436,12 +445,12 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                            <i class="fas fa-arrow-up"></i>
-                                                        </button>` :
+                                                                <i class="fas fa-arrow-up"></i>
+                                                            </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                            <i class="fas fa-arrow-down"></i>
-                                                        </button>` : ''
+                                                                <i class="fas fa-arrow-down"></i>
+                                                            </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
@@ -592,5 +601,36 @@
                 });
             }
         });
+
+        // Function to remove application from current view (called from modal)
+        window.removeApplicationFromView = function(applicationId) {
+            if (applicationsTable) {
+                // Find and remove the row from DataTable
+                applicationsTable.rows().every(function() {
+                    var data = this.data();
+                    if (data[0] == applicationId) { // Application ID is in first column
+                        this.remove();
+                        return false; // Break out of loop
+                    }
+                });
+
+                // Redraw the table
+                applicationsTable.draw();
+
+                // Update the table title to reflect new count
+                var info = applicationsTable.page.info();
+                var currentTitle = $('#tableTitle').text();
+                var newTitle = currentTitle.replace(/\(\d+\)$/, '(' + info.recordsTotal + ')');
+                $('#tableTitle').text(newTitle);
+
+                // If no applications left, hide the table
+                if (info.recordsTotal === 0) {
+                    hideApplicationsTable();
+                }
+
+                // Reload chart data to update counts
+                loadChartData();
+            }
+        };
     </script>
 @stop
