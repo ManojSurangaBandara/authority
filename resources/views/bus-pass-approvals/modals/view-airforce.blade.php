@@ -435,7 +435,15 @@
                         </button>
                     @elseif (auth()->user()->hasRole('Bus Pass Subject Clerk (Branch)'))
                         {{-- Bus Pass Subject Clerk (Branch): Edit for returned applications, Forward --}}
-                        @if ($application->wasRecentlyDmovNotRecommended())
+                        @php
+                            $hasDmovReturned =
+                                method_exists($application, 'wasRecentlyDmovNotRecommended') &&
+                                $application->wasRecentlyDmovNotRecommended();
+                            $hasBranchReturned =
+                                method_exists($application, 'wasRecentlyNotRecommended') &&
+                                $application->wasRecentlyNotRecommended();
+                        @endphp
+                        @if ($hasDmovReturned || $hasBranchReturned)
                             <a href="{{ route('bus-pass-applications.edit', $application) }}" class="btn btn-warning">
                                 <i class="fas fa-edit"></i> Edit Application
                             </a>
