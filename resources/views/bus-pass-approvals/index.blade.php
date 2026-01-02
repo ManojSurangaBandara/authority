@@ -38,6 +38,7 @@
 @section('css')
     <link rel="stylesheet" href="{{ asset('vendor/datatables/css/dataTables.bootstrap4.min.css') }}">
     <link rel="stylesheet" href="{{ asset('vendor/datatables-plugins/buttons/css/buttons.bootstrap4.min.css') }}">
+    <link href="{{ asset('css/toastr.min.css') }}" rel="stylesheet">
     <style>
         .table th {
             white-space: nowrap;
@@ -103,7 +104,28 @@
     <script src="{{ asset('vendor/datatables-plugins/buttons/js/buttons.colVis.min.js') }}"></script>
     {{ $dataTable->scripts() }}
 
+    <script src="{{ asset('js/toastr.min.js') }}"></script>
+
     <script>
+        // Toastr configuration
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        };
+
         $(document).ready(function() {
             // Handle view button clicks - load modal via AJAX
             $(document).on('click', '.btn-info[data-toggle="modal"]', function(e) {

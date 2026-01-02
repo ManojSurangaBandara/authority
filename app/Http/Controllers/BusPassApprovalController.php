@@ -571,8 +571,14 @@ class BusPassApprovalController extends Controller
         // Check if this is a view-only request (from integrations page)
         $isViewOnly = $request->query('view_only') === 'true';
 
+        // Check if user can edit routes (for integration page)
+        $canEditRoute = true; // Temporarily set to true for testing
+
+        // Get bus routes for editing
+        $busRoutes = \App\Models\BusRoute::all();
+
         // Render the modal content
-        $modalContent = view($modalView, compact('application', 'isViewOnly'))->render();
+        $modalContent = view($modalView, compact('application', 'isViewOnly', 'canEditRoute', 'busRoutes'))->render();
 
         // Only render action modals if not view-only
         $actionModals = '';
@@ -600,5 +606,92 @@ class BusPassApprovalController extends Controller
             'modal' => $modalContent,
             'actionModals' => $actionModals
         ]);
+    }
+    public function updateRoute(Request $request, BusPassApplication $application)
+    {
+        // Check if user can update routes
+        $user = Auth::user();
+        if (!$this->canUserApprove($user, $application) && !$this->canUserViewForIntegration($user, $application)) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        try {
+            // Validate the request
+            $validated = $request->validate([
+                'requested_bus_name' => 'nullable|string|max:255',
+                'weekend_bus_name' => 'nullable|string|max:255',
+            ]);
+
+            // Check if any values actually changed
+            $changesMade = false;
+            $changeMessages = [];
+
+            foreach ($validated as $field => $newValue) {
+                $oldValue = $application->$field;
+
+                // Handle null/empty string comparison
+                $oldValueNormalized = $oldValue ?? '';
+                $newValueNormalized = $newValue ?? '';
+
+                if ($oldValueNormalized !== $newValueNormalized) {
+                    $changesMade = true;
+
+                    // Create readable field names
+                    $fieldLabels = [
+                        'requested_bus_name' => 'Requested Bus Name',
+                        'weekend_bus_name' => 'Weekend Bus Name'
+                    ];
+
+                    $fieldLabel = $fieldLabels[$field] ?? ucfirst(str_replace('_', ' ', $field));
+                    $oldDisplay = $oldValue ?: 'Not Set';
+                    $newDisplay = $newValue ?: 'Not Set';
+
+                    $changeMessages[] = "{$fieldLabel} changed from '{$oldDisplay}' to '{$newDisplay}'";
+                }
+            }
+
+            if (!$changesMade) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'No changes were made - the selected route is already set.',
+                    'changed' => false
+                ]);
+            }
+
+            // Update the application
+            $application->update($validated);
+
+            // Record the route update in approval history
+            $this->recordApprovalAction(
+                $application,
+                $user,
+                'route_updated',
+                "Route Update:\n" . implode("\n", $changeMessages)
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Route updated successfully! ' . implode(', ', $changeMessages),
+                'changed' => true,
+                'changes' => $changeMessages
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed: ' . implode(', ', $e->errors()['weekend_bus_name'] ?? $e->errors()['requested_bus_name'] ?? ['Invalid data provided']),
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Route update failed', [
+                'application_id' => $application->id,
+                'user_id' => $user->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update route. Please try again.'
+            ], 500);
+        }
     }
 }

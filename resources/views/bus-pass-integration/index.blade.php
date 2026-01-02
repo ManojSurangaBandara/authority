@@ -107,6 +107,7 @@
 @stop
 
 @section('css')
+    <link href="{{ asset('css/toastr.min.css') }}" rel="stylesheet">
     <style>
         .chart-container {
             position: relative;
@@ -147,7 +148,27 @@
 
 @section('js')
     <script src="{{ asset('js/chart.umd.min.js') }}"></script>
+    <script src="{{ asset('js/toastr.min.js') }}"></script>
     <script>
+        // Toastr configuration
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        };
+
         let chart = null;
         let currentRouteId = 'all';
         let currentRouteType = 'living_out';
@@ -415,12 +436,12 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                        <i class="fas fa-arrow-up"></i>
-                                                    </button>` :
+                                                            <i class="fas fa-arrow-up"></i>
+                                                        </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                        <i class="fas fa-arrow-down"></i>
-                                                    </button>` : ''
+                                                            <i class="fas fa-arrow-down"></i>
+                                                        </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
