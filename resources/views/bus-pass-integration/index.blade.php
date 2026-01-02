@@ -101,26 +101,8 @@
         </div>
     </div>
 
-    <!-- Application View Modal -->
-    <div class="modal fade" id="viewApplicationModal" tabindex="-1" role="dialog"
-        aria-labelledby="viewApplicationModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="viewApplicationModalLabel">Application Details</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body" id="applicationModalBody">
-                    <!-- Application details will be loaded here -->
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Modal container for dynamically loaded modals -->
+    <div id="modal-container"></div>
 
 @stop
 
@@ -433,12 +415,12 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                    <i class="fas fa-arrow-up"></i>
-                                                </button>` :
+                                                        <i class="fas fa-arrow-up"></i>
+                                                    </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                    <i class="fas fa-arrow-down"></i>
-                                                </button>` : ''
+                                                        <i class="fas fa-arrow-down"></i>
+                                                    </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
@@ -473,20 +455,65 @@
         }
 
         // View application modal
-        $(document).on('click', '.view-application', function() {
-            const applicationId = $(this).data('id');
+        $(document).on('click', '.view-application', function(e) {
+            e.preventDefault();
 
+            var button = $(this);
+            var appId = button.data('id');
+
+            if (!appId || button.prop('disabled')) return;
+
+            // Show loading state
+            button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+            // Load modal content via AJAX
             $.ajax({
-                url: '{{ url('bus-pass-integration') }}/' + applicationId,
+                url: '{{ url('bus-pass-approvals') }}/' + appId + '/modal?view_only=true',
                 method: 'GET',
                 success: function(response) {
-                    displayApplicationModal(response);
+                    // Clean up any existing modals and backdrops
+                    $('.modal').modal('hide');
+                    $('.modal-backdrop').remove();
+                    $('body').removeClass('modal-open');
+
+                    // Clear modal container
+                    $('#modal-container').empty();
+
+                    // Add new modals
+                    $('#modal-container').html(response.modal + response.actionModals);
+
+                    // Show the view modal
+                    $('#viewModal' + appId).modal('show');
+
+                    // Re-enable button
+                    button.prop('disabled', false).html('<i class="fas fa-eye"></i>');
                 },
-                error: function(xhr, status, error) {
-                    console.error('Error loading application details:', error);
-                    alert('Error loading application details');
+                error: function(xhr) {
+                    console.error('Error loading modal:', xhr);
+                    alert('Error loading application details. Please try again.');
+
+                    // Re-enable button
+                    button.prop('disabled', false).html('<i class="fas fa-eye"></i>');
                 }
             });
+        });
+
+        // Handle modal close events to clean up properly
+        $(document).on('hidden.bs.modal', '.modal', function() {
+            // Clean up modal backdrops and body classes
+            if ($('.modal:visible').length === 0) {
+                $('.modal-backdrop').remove();
+                $('body').removeClass('modal-open');
+            }
+
+            // Remove the modal from DOM after it's hidden
+            $(this).remove();
+        });
+
+        // Handle modal show events
+        $(document).on('show.bs.modal', '.modal', function() {
+            // Ensure body has modal-open class
+            $('body').addClass('modal-open');
         });
 
         // Integration action
@@ -544,55 +571,5 @@
                 });
             }
         });
-
-        function displayApplicationModal(data) {
-            const app = data.application;
-            const person = data.person;
-            const personTypeName = data.person_type_name;
-            const establishment = data.establishment;
-
-            // Determine service ID label and value based on person type
-            let serviceIdLabel = 'Service ID';
-            let serviceIdValue = 'N/A';
-
-            if (personTypeName === 'Army') {
-                serviceIdLabel = 'Army ID';
-                serviceIdValue = person?.army_id || 'N/A';
-            } else if (personTypeName === 'Navy') {
-                serviceIdLabel = 'Navy ID';
-                serviceIdValue = person?.navy_id || 'N/A';
-            } else if (personTypeName === 'Air Force') {
-                serviceIdLabel = 'Airforce ID';
-                serviceIdValue = person?.airforce_id || 'N/A';
-            } else {
-                // Default fallback - try to find any service ID
-                serviceIdValue = person?.army_id || person?.navy_id || person?.airforce_id || 'N/A';
-            }
-
-            const modalContent = `
-                <div class="row">
-                    <div class="col-md-6">
-                        <h5>Application Information</h5>
-                        <p><strong>Application ID:</strong> ${app.id}</p>
-                        <p><strong>Status:</strong> <span class="badge badge-info">${app.status}</span></p>
-                        <p><strong>Branch Card ID:</strong> ${app.branch_card_id || 'N/A'}</p>
-                        <p><strong>Requested Bus:</strong> ${app.requested_bus_name || 'N/A'}</p>
-                        <p><strong>Weekend Bus:</strong> ${app.weekend_bus_name || 'N/A'}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <h5>Person Information</h5>
-                        <p><strong>Name:</strong> ${person?.name || 'N/A'}</p>
-                        <p><strong>Rank:</strong> ${person?.rank || 'N/A'}</p>
-                        <p><strong>${serviceIdLabel}:</strong> ${serviceIdValue}</p>
-                        <p><strong>NIC:</strong> ${person?.nic || 'N/A'}</p>
-                        <p><strong>Unit:</strong> ${person?.unit || 'N/A'}</p>
-                        <p><strong>Establishment:</strong> ${establishment?.name || 'N/A'}</p>
-                    </div>
-                </div>
-            `;
-
-            $('#applicationModalBody').html(modalContent);
-            $('#viewApplicationModal').modal('show');
-        }
     </script>
 @stop

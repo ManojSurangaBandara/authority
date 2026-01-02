@@ -438,6 +438,38 @@ class BusPassApprovalController extends Controller
     }
 
     /**
+     * Check if user can view a specific application for integration purposes
+     */
+    private function canUserViewForIntegration($user, $application)
+    {
+        // Allow viewing for users who can access integrations page
+        // This includes Col Mov (DMOV), Director (DMOV), and other roles that might have view access
+        $integrationViewStatuses = [
+            'approved_for_integration',
+            'approved_for_temp_card',
+            'integrated_to_branch_card',
+            'integrated_to_temp_card'
+        ];
+
+        // Check if application is in integration-related status
+        if (!in_array($application->status, $integrationViewStatuses)) {
+            return false;
+        }
+
+        // Allow viewing for users with integration access roles
+        if ($user->hasAnyRole(['Col Mov (DMOV)', 'Director (DMOV)'])) {
+            return true;
+        }
+
+        // For other users, check if they have access to the establishment (similar to branch users)
+        if ($user->isBranchUser()) {
+            return $user->establishment_id === $application->establishment_id;
+        }
+
+        return false;
+    }
+
+    /**
      * Get the next status in the approval workflow
      */
     private function getNextApprovalStatus($currentStatus, $action, $application = null)
@@ -517,7 +549,7 @@ class BusPassApprovalController extends Controller
     {
         // Check if user can view this application
         $user = Auth::user();
-        if (!$this->canUserApprove($user, $application)) {
+        if (!$this->canUserApprove($user, $application) && !$this->canUserViewForIntegration($user, $application)) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -536,26 +568,31 @@ class BusPassApprovalController extends Controller
             $modalView = 'bus-pass-approvals.modals.view-airforce';
         }
 
+        // Check if this is a view-only request (from integrations page)
+        $isViewOnly = $request->query('view_only') === 'true';
+
         // Render the modal content
-        $modalContent = view($modalView, compact('application'))->render();
+        $modalContent = view($modalView, compact('application', 'isViewOnly'))->render();
 
-        // Also render action modals
+        // Only render action modals if not view-only
         $actionModals = '';
-        $actionModalViews = [
-            'bus-pass-approvals.modals.approve',
-            'bus-pass-approvals.modals.reject',
-            'bus-pass-approvals.modals.recommend',
-            'bus-pass-approvals.modals.not-recommend',
-            'bus-pass-approvals.modals.dmov-not-recommend',
-            'bus-pass-approvals.modals.forward-to-branch-clerk'
-        ];
+        if (!$isViewOnly) {
+            $actionModalViews = [
+                'bus-pass-approvals.modals.approve',
+                'bus-pass-approvals.modals.reject',
+                'bus-pass-approvals.modals.recommend',
+                'bus-pass-approvals.modals.not-recommend',
+                'bus-pass-approvals.modals.dmov-not-recommend',
+                'bus-pass-approvals.modals.forward-to-branch-clerk'
+            ];
 
-        foreach ($actionModalViews as $modalView) {
-            try {
-                $actionModals .= view($modalView, compact('application'))->render();
-            } catch (\Exception $e) {
-                // Skip modals that can't be rendered (e.g., due to missing permissions)
-                continue;
+            foreach ($actionModalViews as $modalView) {
+                try {
+                    $actionModals .= view($modalView, compact('application'))->render();
+                } catch (\Exception $e) {
+                    // Skip modals that can't be rendered (e.g., due to missing permissions)
+                    continue;
+                }
             }
         }
 
