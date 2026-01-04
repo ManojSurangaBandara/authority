@@ -470,8 +470,12 @@ class EscortAuthController extends Controller
             }
 
             // Validate route authorization
-            $isAuthorized = $this->isBranchCardAllowedForRoute($busPassApplication, $activeAssignment->busRoute) ||
-                $this->isBranchCardAllowedForLivingInRoute($busPassApplication, $activeAssignment->livingInBus);
+            $isAuthorized = false;
+            if ($activeAssignment->route_type === 'living_out' && $activeAssignment->busRoute) {
+                $isAuthorized = $this->isBranchCardAllowedForRoute($busPassApplication, $activeAssignment->busRoute);
+            } elseif ($activeAssignment->route_type === 'living_in' && $activeAssignment->livingInBus) {
+                $isAuthorized = $this->isBranchCardAllowedForLivingInRoute($busPassApplication, $activeAssignment->livingInBus);
+            }
 
             if (!$isAuthorized) {
                 return response()->json([
