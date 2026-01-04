@@ -635,6 +635,15 @@ return [
                         'route-establishment-report*',
                     ],
                 ],
+                [
+                    'text' => 'Onboarded Passengers',
+                    'url' => 'onboarded-passengers',
+                    'icon' => 'fas fa-fw fa-users',
+                    // 'can' => 'manage_user_accounts',
+                    'active' => [
+                        'onboarded-passengers*',
+                    ],
+                ],
 
             ],
 

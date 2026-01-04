@@ -6,6 +6,7 @@ use App\DataTables\HandedOverBusPassApplicationDataTable;
 use App\DataTables\IntegratedBusPassApplicationDataTable;
 use App\DataTables\IntegratedToBuildCardDataTable;
 use App\DataTables\NotyetHandedOverBussPassApplicationDataTable;
+use App\DataTables\OnboardedPassengersDataTable;
 use App\DataTables\PendingBusPassApplicationDataTable;
 use App\DataTables\RejectedBusPassApplicationDataTable;
 use App\DataTables\TemporaryCardPrintedDataTable;
@@ -97,6 +98,21 @@ class ReportController extends Controller
         }
 
         return $dataTable->render('reports.integrated-applications', compact('establishments'));
+    }
+
+    public function onboarded_passengers(OnboardedPassengersDataTable $dataTable)
+    {
+        $busRoutes = \App\Models\BusRoute::all()->map(function ($r) {
+            return ['id' => 'route_' . $r->id, 'name' => $r->name . ' (Living Out)'];
+        });
+        $livingInRoutes = \App\Models\LivingInBuses::all()->map(function ($l) {
+            return ['id' => 'living_' . $l->id, 'name' => $l->name . ' (Living In)'];
+        });
+        $routes = $busRoutes->merge($livingInRoutes);
+
+        $types = ['morning' => 'Morning', 'evening' => 'Evening'];
+
+        return $dataTable->render('reports.onboarded-passengers', compact('routes', 'types'));
     }
 
     public function pending(PendingBusPassApplicationDataTable $dataTable)
