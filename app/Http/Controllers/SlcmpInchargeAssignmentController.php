@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\DataTables\SlcmpInchargeAssignmentDataTable;
 use App\Models\SlcmpInchargeAssignment;
 use App\Models\BusRoute;
+use App\Models\LivingInBuses;
+use App\Models\BusRouteAssignment;
 use App\Models\SlcmpIncharge;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -18,8 +20,22 @@ class SlcmpInchargeAssignmentController extends Controller
      */
     public function index()
     {
-        // Get all routes with their assigned SLCMP in-charges
-        $routes = BusRoute::with(['bus', 'slcmpInchargeAssignment.slcmpIncharge'])->get();
+        // Get all routes (both living_out and living_in) with their assigned SLCMP in-charges
+        $livingOutRoutes = BusRoute::with(['bus', 'slcmpInchargeAssignment.slcmpIncharge'])->get();
+        $livingInRoutes = LivingInBuses::with(['slcmpInchargeAssignment.slcmpIncharge'])->get();
+
+        // Combine routes with type indicators
+        $routes = collect();
+        foreach ($livingOutRoutes as $route) {
+            $route->route_type = 'living_out';
+            $route->display_name = $route->name . ' (Living Out)' . ($route->bus ? ' - ' . $route->bus->name . ' (' . $route->bus->no . ')' : '');
+            $routes->push($route);
+        }
+        foreach ($livingInRoutes as $route) {
+            $route->route_type = 'living_in';
+            $route->display_name = $route->name . ' (Living In)';
+            $routes->push($route);
+        }
 
         // Get available SLCMP in-charges (not currently assigned to active routes)
         $assignedSlcmpIds = SlcmpInchargeAssignment::where('status', 'active')
@@ -29,11 +45,29 @@ class SlcmpInchargeAssignmentController extends Controller
         $availableSlcmpIncharges = SlcmpIncharge::whereNotIn('id', $assignedSlcmpIds)->get();
 
         // Get routes without active SLCMP in-charge assignments
-        $unassignedRoutes = BusRoute::with('bus')
+        $unassignedLivingOutRoutes = BusRoute::with('bus')
             ->whereDoesntHave('slcmpInchargeAssignment', function ($query) {
                 $query->where('status', 'active');
             })
             ->get();
+
+        $unassignedLivingInRoutes = LivingInBuses::whereDoesntHave('slcmpInchargeAssignment', function ($query) {
+            $query->where('status', 'active');
+        })
+            ->get();
+
+        // Combine unassigned routes
+        $unassignedRoutes = collect();
+        foreach ($unassignedLivingOutRoutes as $route) {
+            $route->route_type = 'living_out';
+            $route->display_name = $route->name . ' (Living Out)' . ($route->bus ? ' - ' . $route->bus->name . ' (' . $route->bus->no . ')' : '');
+            $unassignedRoutes->push($route);
+        }
+        foreach ($unassignedLivingInRoutes as $route) {
+            $route->route_type = 'living_in';
+            $route->display_name = $route->name . ' (Living In)';
+            $unassignedRoutes->push($route);
+        }
 
         return view('slcmp-incharge-assignments.index', compact('routes', 'availableSlcmpIncharges', 'unassignedRoutes'));
     }
@@ -44,7 +78,8 @@ class SlcmpInchargeAssignmentController extends Controller
     public function create()
     {
         $busRoutes = BusRoute::with('bus.type')->get();
-        return view('slcmp-incharge-assignments.create', compact('busRoutes'));
+        $livingInRoutes = LivingInBuses::with('bus.type')->get();
+        return view('slcmp-incharge-assignments.create', compact('busRoutes', 'livingInRoutes'));
     }
 
     /**
@@ -53,7 +88,8 @@ class SlcmpInchargeAssignmentController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'bus_route_id' => 'required|exists:bus_routes,id',
+            'route_type' => 'required|in:living_out,living_in',
+            'route_id' => 'required|integer',
             'slcmp_regiment_no' => 'required|string|max:50',
             'slcmp_rank' => 'required|string|max:100',
             'slcmp_name' => 'required|string|max:200',
@@ -63,14 +99,22 @@ class SlcmpInchargeAssignmentController extends Controller
             'status' => 'required|in:active,inactive',
         ]);
 
+        // Validate route exists based on type
+        if ($validatedData['route_type'] === 'living_out') {
+            $route = BusRoute::findOrFail($validatedData['route_id']);
+        } else {
+            $route = LivingInBuses::findOrFail($validatedData['route_id']);
+        }
+
         // Check if there's already an active assignment for this route
         if ($validatedData['status'] === 'active') {
-            $existingAssignment = SlcmpInchargeAssignment::where('bus_route_id', $validatedData['bus_route_id'])
+            $existingAssignment = SlcmpInchargeAssignment::where('route_id', $validatedData['route_id'])
+                ->where('route_type', $validatedData['route_type'])
                 ->where('status', 'active')
                 ->first();
 
             if ($existingAssignment) {
-                return back()->withErrors(['bus_route_id' => 'This bus route already has an active SLCMP assignment.'])
+                return back()->withErrors(['route_id' => 'This route already has an active SLCMP assignment.'])
                     ->withInput();
             }
         }
@@ -95,15 +139,22 @@ class SlcmpInchargeAssignmentController extends Controller
             ]);
         }
 
-        // Create assignment with slcmp_incharge_id instead of individual fields
+        // Create assignment with new route fields
         $assignmentData = [
-            'bus_route_id' => $validatedData['bus_route_id'],
+            'route_id' => $validatedData['route_id'],
+            'route_type' => $validatedData['route_type'],
+            'living_in_bus_id' => $validatedData['route_type'] === 'living_in' ? $validatedData['route_id'] : null,
             'slcmp_incharge_id' => $slcmpIncharge->id,
             'assigned_date' => $validatedData['assigned_date'],
             'end_date' => $validatedData['end_date'],
             'status' => $validatedData['status'],
             'created_by' => Auth::user()->name ?? 'System'
         ];
+
+        // Set the appropriate foreign key based on route type
+        if ($validatedData['route_type'] === 'living_out') {
+            $assignmentData['bus_route_id'] = $validatedData['route_id'];
+        }
 
         SlcmpInchargeAssignment::create($assignmentData);
 
@@ -116,7 +167,7 @@ class SlcmpInchargeAssignmentController extends Controller
      */
     public function show(SlcmpInchargeAssignment $slcmp_incharge_assignment)
     {
-        $slcmp_incharge_assignment->load(['busRoute.bus.type']);
+        $slcmp_incharge_assignment->load(['route.bus.type', 'livingInBus.bus.type']);
         $slcmpInchargeAssignment = $slcmp_incharge_assignment;
         return view('slcmp-incharge-assignments.show', compact('slcmpInchargeAssignment'));
     }
@@ -127,9 +178,10 @@ class SlcmpInchargeAssignmentController extends Controller
     public function edit(SlcmpInchargeAssignment $slcmp_incharge_assignment)
     {
         $busRoutes = BusRoute::with('bus.type')->get();
-        $slcmp_incharge_assignment->load(['busRoute.bus.type']);
+        $livingInRoutes = LivingInBuses::with('bus.type')->get();
+        $slcmp_incharge_assignment->load(['route.bus.type', 'livingInBus.bus.type']);
         $slcmpInchargeAssignment = $slcmp_incharge_assignment;
-        return view('slcmp-incharge-assignments.edit', compact('slcmpInchargeAssignment', 'busRoutes'));
+        return view('slcmp-incharge-assignments.edit', compact('slcmpInchargeAssignment', 'busRoutes', 'livingInRoutes'));
     }
 
     /**
@@ -138,7 +190,8 @@ class SlcmpInchargeAssignmentController extends Controller
     public function update(Request $request, SlcmpInchargeAssignment $slcmp_incharge_assignment)
     {
         $validatedData = $request->validate([
-            'bus_route_id' => 'required|exists:bus_routes,id',
+            'route_type' => 'required|in:living_out,living_in',
+            'route_id' => 'required|integer',
             'slcmp_regiment_no' => 'required|string|max:50',
             'slcmp_rank' => 'required|string|max:100',
             'slcmp_name' => 'required|string|max:200',
@@ -148,15 +201,23 @@ class SlcmpInchargeAssignmentController extends Controller
             'status' => 'required|in:active,inactive',
         ]);
 
+        // Validate route exists based on type
+        if ($validatedData['route_type'] === 'living_out') {
+            $route = BusRoute::findOrFail($validatedData['route_id']);
+        } else {
+            $route = LivingInBuses::findOrFail($validatedData['route_id']);
+        }
+
         // Check if there's already an active assignment for this route (excluding current assignment)
         if ($validatedData['status'] === 'active') {
-            $existingAssignment = SlcmpInchargeAssignment::where('bus_route_id', $validatedData['bus_route_id'])
+            $existingAssignment = SlcmpInchargeAssignment::where('route_id', $validatedData['route_id'])
+                ->where('route_type', $validatedData['route_type'])
                 ->where('status', 'active')
                 ->where('id', '!=', $slcmp_incharge_assignment->id)
                 ->first();
 
             if ($existingAssignment) {
-                return back()->withErrors(['bus_route_id' => 'This bus route already has an active SLCMP assignment.'])
+                return back()->withErrors(['route_id' => 'This route already has an active SLCMP assignment.'])
                     ->withInput();
             }
         }
@@ -181,14 +242,21 @@ class SlcmpInchargeAssignmentController extends Controller
             ]);
         }
 
-        // Update assignment with slcmp_incharge_id instead of individual fields
+        // Update assignment with new route fields
         $assignmentData = [
-            'bus_route_id' => $validatedData['bus_route_id'],
+            'route_id' => $validatedData['route_id'],
+            'route_type' => $validatedData['route_type'],
+            'living_in_bus_id' => $validatedData['route_type'] === 'living_in' ? $validatedData['route_id'] : null,
             'slcmp_incharge_id' => $slcmpIncharge->id,
             'assigned_date' => $validatedData['assigned_date'],
             'end_date' => $validatedData['end_date'],
             'status' => $validatedData['status']
         ];
+
+        // Set the appropriate foreign key based on route type
+        if ($validatedData['route_type'] === 'living_out') {
+            $assignmentData['bus_route_id'] = $validatedData['route_id'];
+        }
 
         $slcmp_incharge_assignment->update($assignmentData);
 
@@ -214,20 +282,27 @@ class SlcmpInchargeAssignmentController extends Controller
     {
         $request->validate([
             'slcmp_incharge_id' => 'required|exists:slcmp_incharges,id',
-            'route_id' => 'required|exists:bus_routes,id',
+            'route_type' => 'required|in:living_out,living_in',
+            'route_id' => 'required|integer',
             'assigned_date' => 'required|date',
             'end_date' => 'nullable|date|after:assigned_date',
         ]);
 
+        // Validate route exists based on type
+        if ($request->route_type === 'living_out') {
+            $route = BusRoute::findOrFail($request->route_id);
+        } else {
+            $route = LivingInBuses::findOrFail($request->route_id);
+        }
+
         $slcmpIncharge = SlcmpIncharge::findOrFail($request->slcmp_incharge_id);
-        $route = BusRoute::findOrFail($request->route_id);
 
         // Check if SLCMP in-charge is already assigned to an active route
         $existingSlcmpAssignment = SlcmpInchargeAssignment::where('slcmp_incharge_id', $request->slcmp_incharge_id)
             ->where('status', 'active')
             ->first();
         if ($existingSlcmpAssignment) {
-            $existingRoute = BusRoute::find($existingSlcmpAssignment->bus_route_id);
+            $existingRoute = $existingSlcmpAssignment->route;
             $slcmpName = ($slcmpIncharge->rank ?? 'N/A') . ' ' . ($slcmpIncharge->name ?? 'Unknown');
             $routeName = $existingRoute ? $existingRoute->name : 'Unknown Route';
             return response()->json([
@@ -237,7 +312,8 @@ class SlcmpInchargeAssignmentController extends Controller
         }
 
         // Check if route already has an active SLCMP in-charge
-        $existingRouteAssignment = SlcmpInchargeAssignment::where('bus_route_id', $request->route_id)
+        $existingRouteAssignment = SlcmpInchargeAssignment::where('route_id', $request->route_id)
+            ->where('route_type', $request->route_type)
             ->where('status', 'active')
             ->first();
         if ($existingRouteAssignment) {
@@ -250,14 +326,23 @@ class SlcmpInchargeAssignmentController extends Controller
         }
 
         // Create the assignment
-        SlcmpInchargeAssignment::create([
-            'bus_route_id' => $request->route_id,
+        $assignmentData = [
+            'route_id' => $request->route_id,
+            'route_type' => $request->route_type,
+            'living_in_bus_id' => $request->route_type === 'living_in' ? $request->route_id : null,
             'slcmp_incharge_id' => $request->slcmp_incharge_id,
             'assigned_date' => $request->assigned_date,
             'end_date' => $request->end_date,
             'status' => 'active',
             'created_by' => Auth::user()->name ?? 'System'
-        ]);
+        ];
+
+        // Set the appropriate foreign key based on route type
+        if ($request->route_type === 'living_out') {
+            $assignmentData['bus_route_id'] = $request->route_id;
+        }
+
+        SlcmpInchargeAssignment::create($assignmentData);
 
         $slcmpName = ($slcmpIncharge->rank ?? 'N/A') . ' ' . ($slcmpIncharge->name ?? 'Unknown');
         return response()->json([
@@ -275,7 +360,7 @@ class SlcmpInchargeAssignmentController extends Controller
             'assignment_id' => 'required|exists:slcmp_incharge_assignments,id',
         ]);
 
-        $assignment = SlcmpInchargeAssignment::with(['slcmpIncharge', 'busRoute'])->findOrFail($request->assignment_id);
+        $assignment = SlcmpInchargeAssignment::with(['slcmpIncharge', 'route', 'livingInBus'])->findOrFail($request->assignment_id);
 
         if ($assignment->status !== 'active') {
             return response()->json([
@@ -286,10 +371,11 @@ class SlcmpInchargeAssignmentController extends Controller
 
         // Get SLCMP in-charge and route info before updating (in case relationships become null)
         $slcmpName = $assignment->slcmpIncharge ? ($assignment->slcmpIncharge->rank ?? 'N/A') . ' ' . ($assignment->slcmpIncharge->name ?? 'Unknown') : 'Unknown SLCMP In-charge';
-        $routeName = $assignment->busRoute ? $assignment->busRoute->name : 'Unknown Route';
+        $routeName = $assignment->route ? $assignment->route->name : 'Unknown Route';
 
         // Check if there's already an inactive assignment for this route
-        $existingInactive = SlcmpInchargeAssignment::where('bus_route_id', $assignment->bus_route_id)
+        $existingInactive = SlcmpInchargeAssignment::where('route_id', $assignment->route_id)
+            ->where('route_type', $assignment->route_type)
             ->where('status', 'inactive')
             ->where('id', '!=', $assignment->id)
             ->first();
@@ -316,7 +402,21 @@ class SlcmpInchargeAssignmentController extends Controller
      */
     public function getAssignmentData()
     {
-        $routes = BusRoute::with(['bus', 'slcmpInchargeAssignment.slcmpIncharge'])->get();
+        // Get all routes (both living_out and living_in) with their assigned SLCMP in-charges
+        $livingOutRoutes = BusRoute::with(['bus', 'slcmpInchargeAssignment.slcmpIncharge'])->get();
+        $livingInRoutes = LivingInBuses::with(['slcmpInchargeAssignment.slcmpIncharge'])->get();
+
+        // Combine routes with type indicators
+        $routes = collect();
+        foreach ($livingOutRoutes as $route) {
+            $route->route_type = 'living_out';
+            $routes->push($route);
+        }
+        foreach ($livingInRoutes as $route) {
+            $route->route_type = 'living_in';
+            $routes->push($route);
+        }
+
         $availableSlcmpIncharges = SlcmpIncharge::whereDoesntHave('slcmpInchargeAssignments', function ($query) {
             $query->where('status', 'active')->whereNotNull('slcmp_incharge_id');
         })->get();
@@ -387,20 +487,40 @@ class SlcmpInchargeAssignmentController extends Controller
     public function getBusDetails(Request $request)
     {
         $request->validate([
-            'bus_route_id' => 'required|exists:bus_routes,id'
+            'route_type' => 'required|in:living_out,living_in',
+            'route_id' => 'required|integer'
         ]);
 
-        $busRoute = BusRoute::with('bus.type')->find($request->bus_route_id);
+        if ($request->route_type === 'living_out') {
+            $route = BusRoute::with('bus.type')->find($request->route_id);
+            if ($route && $route->bus) {
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'bus_no' => $route->bus->no,
+                        'bus_name' => $route->bus->name,
+                        'bus_type' => $route->bus->type->name ?? 'N/A'
+                    ]
+                ]);
+            }
+        } else {
+            // For living in routes, get bus details from BusRouteAssignment
+            $assignment = BusRouteAssignment::with('bus.type')
+                ->where('route_id', $request->route_id)
+                ->where('route_type', 'living_in')
+                ->where('status', 'active')
+                ->first();
 
-        if ($busRoute && $busRoute->bus) {
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'bus_no' => $busRoute->bus->no,
-                    'bus_name' => $busRoute->bus->name,
-                    'bus_type' => $busRoute->bus->type->name ?? 'N/A'
-                ]
-            ]);
+            if ($assignment && $assignment->bus) {
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'bus_no' => $assignment->bus->no,
+                        'bus_name' => $assignment->bus->name,
+                        'bus_type' => $assignment->bus->type->name ?? 'N/A'
+                    ]
+                ]);
+            }
         }
 
         return response()->json([

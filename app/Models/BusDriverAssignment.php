@@ -9,6 +9,9 @@ class BusDriverAssignment extends Model
 {
     protected $fillable = [
         'bus_route_id',
+        'route_id',
+        'route_type',
+        'living_in_bus_id',
         'driver_id',
         'assigned_date',
         'end_date',
@@ -27,6 +30,36 @@ class BusDriverAssignment extends Model
     public function busRoute()
     {
         return $this->belongsTo(BusRoute::class, 'bus_route_id');
+    }
+
+    /**
+     * Relationship with LivingInBuses
+     */
+    public function livingInBus()
+    {
+        return $this->belongsTo(LivingInBuses::class, 'living_in_bus_id');
+    }
+
+    /**
+     * Get the route (either BusRoute or LivingInBuses)
+     */
+    public function getRouteAttribute()
+    {
+        if ($this->route_type === 'living_in' && $this->livingInBus) {
+            return $this->livingInBus;
+        } elseif ($this->route_type === 'living_out' && $this->busRoute) {
+            return $this->busRoute;
+        }
+        return null;
+    }
+
+    /**
+     * Get route name
+     */
+    public function getRouteNameAttribute()
+    {
+        $route = $this->getRouteAttribute();
+        return $route ? $route->name : null;
     }
 
     /**

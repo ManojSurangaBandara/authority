@@ -20,13 +20,15 @@ class BusRoute extends Model
 
     public function driverAssignment()
     {
-        return $this->hasOne(BusDriverAssignment::class, 'bus_route_id')
+        return $this->hasOne(BusDriverAssignment::class, 'route_id')
+            ->where('route_type', 'living_out')
             ->where('status', 'active');
     }
 
     public function driverAssignments()
     {
-        return $this->hasMany(BusDriverAssignment::class, 'bus_route_id');
+        return $this->hasMany(BusDriverAssignment::class, 'route_id')
+            ->where('route_type', 'living_out');
     }
 
     public function escortAssignment()
@@ -42,13 +44,15 @@ class BusRoute extends Model
 
     public function slcmpInchargeAssignment()
     {
-        return $this->hasOne(SlcmpInchargeAssignment::class, 'bus_route_id')
+        return $this->hasOne(SlcmpInchargeAssignment::class, 'route_id')
+            ->where('route_type', 'living_out')
             ->where('status', 'active');
     }
 
     public function slcmpInchargeAssignments()
     {
-        return $this->hasMany(SlcmpInchargeAssignment::class, 'bus_route_id');
+        return $this->hasMany(SlcmpInchargeAssignment::class, 'route_id')
+            ->where('route_type', 'living_out');
     }
 
     public function routeAssignments()

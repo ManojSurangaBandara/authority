@@ -38,11 +38,8 @@
                                 <select id="route_select" name="route_id" class="form-control">
                                     <option value="">Choose a route...</option>
                                     @foreach ($unassignedRoutes as $route)
-                                        <option value="{{ $route->id }}">
-                                            {{ $route->name }}
-                                            @if ($route->bus)
-                                                - {{ $route->bus->name }} ({{ $route->bus->no }})
-                                            @endif
+                                        <option value="{{ $route->id }}" data-type="{{ $route->route_type }}">
+                                            {{ $route->display_name ?? $route->name }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -95,7 +92,7 @@
                                 <tbody>
                                     @forelse($routes->filter(function($route) { return $route->slcmpInchargeAssignment && $route->slcmpInchargeAssignment->slcmpIncharge; }) as $route)
                                         <tr id="assignment-{{ $route->slcmpInchargeAssignment->id }}">
-                                            <td>{{ $route->name }}</td>
+                                            <td>{{ $route->display_name ?? $route->name }}</td>
                                             <td>
                                                 @if ($route->bus)
                                                     {{ $route->bus->name }}<br>
@@ -127,7 +124,7 @@
                                                 @if ($route->slcmpInchargeAssignment && $route->slcmpInchargeAssignment->slcmpIncharge)
                                                     <button type="button" class="btn btn-sm btn-warning unassign-btn"
                                                         data-assignment-id="{{ $route->slcmpInchargeAssignment->id }}"
-                                                        data-route-name="{{ $route->name }}"
+                                                        data-route-name="{{ $route->display_name ?? $route->name }}"
                                                         data-slcmp-name="{{ $route->slcmpInchargeAssignment->slcmpIncharge->rank ?? 'N/A' }} {{ $route->slcmpInchargeAssignment->slcmpIncharge->name ?? 'Unknown' }}">
                                                         <i class="fas fa-user-times"></i> Unassign
                                                     </button>
@@ -240,6 +237,7 @@
 
                 let slcmpId = $('#slcmp_select').val();
                 let routeId = $('#route_select').val();
+                let routeType = $('#route_select option:selected').data('type');
                 let assignedDate = $('#assigned_date').val();
                 let endDate = $('#end_date').val();
 
@@ -255,6 +253,7 @@
                         _token: $('meta[name="csrf-token"]').attr('content'),
                         slcmp_incharge_id: slcmpId,
                         route_id: routeId,
+                        route_type: routeType,
                         assigned_date: assignedDate,
                         end_date: endDate
                     },
@@ -279,7 +278,7 @@
                         $('#assignmentForm button[type="submit"]').prop('disabled', false)
                             .html(
                                 '<i class="fas fa-user-plus"></i> Assign SLCMP In-charge to Route'
-                                );
+                            );
                     }
                 });
             });
@@ -292,7 +291,7 @@
 
                 if (confirm(
                         `Are you sure you want to unassign SLCMP in-charge "${slcmpName}" from route "${routeName}"?`
-                        )) {
+                    )) {
                     $.ajax({
                         url: '{{ route('slcmp-incharge-assignments.unassign') }}',
                         method: 'POST',

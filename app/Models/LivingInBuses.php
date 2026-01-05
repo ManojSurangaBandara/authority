@@ -37,4 +37,18 @@ class LivingInBuses extends Model
         )->where('bus_route_assignments.route_type', 'living_in')
             ->where('bus_route_assignments.status', 'active');
     }
+
+    public function driverAssignment()
+    {
+        return $this->hasOne(BusDriverAssignment::class, 'route_id')
+            ->where('route_type', 'living_in')
+            ->where('status', 'active');
+    }
+
+    public function slcmpInchargeAssignment()
+    {
+        return $this->hasOne(SlcmpInchargeAssignment::class, 'route_id')
+            ->where('route_type', 'living_in')
+            ->where('status', 'active');
+    }
 }

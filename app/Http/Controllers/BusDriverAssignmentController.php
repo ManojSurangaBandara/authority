@@ -7,6 +7,7 @@ use App\DataTables\BusDriverAssignmentDataTable;
 use App\Models\BusDriverAssignment;
 use App\Models\BusRoute;
 use App\Models\Driver;
+use App\Models\LivingInBuses;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
@@ -18,8 +19,22 @@ class BusDriverAssignmentController extends Controller
      */
     public function index()
     {
-        // Get all routes with their assigned drivers
-        $routes = BusRoute::with(['bus', 'driverAssignment.driver'])->get();
+        // Get all routes (both living_out and living_in) with their assigned drivers
+        $livingOutRoutes = BusRoute::with(['bus', 'driverAssignment.driver'])->get();
+        $livingInRoutes = LivingInBuses::with(['driverAssignment.driver'])->get();
+
+        // Combine routes with type indicators
+        $routes = collect();
+        foreach ($livingOutRoutes as $route) {
+            $route->route_type = 'living_out';
+            $route->display_name = $route->name . ' (Living Out)' . ($route->bus ? ' - ' . $route->bus->name . ' (' . $route->bus->no . ')' : '');
+            $routes->push($route);
+        }
+        foreach ($livingInRoutes as $route) {
+            $route->route_type = 'living_in';
+            $route->display_name = $route->name . ' (Living In)';
+            $routes->push($route);
+        }
 
         // Get available drivers (not currently assigned to active routes)
         $assignedDriverIds = BusDriverAssignment::where('status', 'active')
@@ -29,11 +44,43 @@ class BusDriverAssignmentController extends Controller
         $availableDrivers = Driver::whereNotIn('id', $assignedDriverIds)->get();
 
         // Get routes without active driver assignments
-        $unassignedRoutes = BusRoute::with('bus')
-            ->whereDoesntHave('driverAssignment', function ($query) {
-                $query->where('status', 'active');
-            })
+        $unassignedRoutes = collect();
+
+        // Get living out routes that are not assigned
+        $assignedLivingOutRouteIds = BusDriverAssignment::active()
+            ->where('route_type', 'living_out')
+            ->pluck('route_id');
+        $unassignedLivingOutRoutes = BusRoute::with('bus')
+            ->whereNotIn('id', $assignedLivingOutRouteIds)
             ->get();
+
+        // Get living in routes that are not assigned
+        $assignedLivingInRouteIds = BusDriverAssignment::active()
+            ->where('route_type', 'living_in')
+            ->pluck('route_id');
+        $unassignedLivingInRoutes = LivingInBuses::whereNotIn('id', $assignedLivingInRouteIds)->get();
+
+        // Add living out routes to dropdown
+        foreach ($unassignedLivingOutRoutes as $route) {
+            $unassignedRoutes->push((object) [
+                'id' => $route->id,
+                'name' => $route->name,
+                'type' => 'living_out',
+                'bus' => $route->bus,
+                'display_name' => $route->name . ' (Living Out)' . ($route->bus ? ' - ' . $route->bus->name . ' (' . $route->bus->no . ')' : '')
+            ]);
+        }
+
+        // Add living in routes to dropdown
+        foreach ($unassignedLivingInRoutes as $route) {
+            $unassignedRoutes->push((object) [
+                'id' => $route->id,
+                'name' => $route->name,
+                'type' => 'living_in',
+                'bus' => null,
+                'display_name' => $route->name . ' (Living In)'
+            ]);
+        }
 
         return view('bus-driver-assignments.index', compact('routes', 'availableDrivers', 'unassignedRoutes'));
     }
@@ -211,30 +258,38 @@ class BusDriverAssignmentController extends Controller
     {
         $request->validate([
             'driver_id' => 'required|exists:drivers,id',
-            'route_id' => 'required|exists:bus_routes,id',
+            'route_id' => 'required',
+            'route_type' => 'required|in:living_out,living_in',
             'assigned_date' => 'required|date',
             'end_date' => 'nullable|date|after:assigned_date',
         ]);
 
         $driver = Driver::findOrFail($request->driver_id);
-        $route = BusRoute::findOrFail($request->route_id);
+
+        // Validate route exists based on type
+        if ($request->route_type === 'living_out') {
+            $route = BusRoute::findOrFail($request->route_id);
+            $routeName = $route->name;
+        } else {
+            $route = LivingInBuses::findOrFail($request->route_id);
+            $routeName = $route->name;
+        }
 
         // Check if driver is already assigned to an active route
         $existingDriverAssignment = BusDriverAssignment::where('driver_id', $request->driver_id)
             ->where('status', 'active')
             ->first();
         if ($existingDriverAssignment) {
-            $existingRoute = BusRoute::find($existingDriverAssignment->bus_route_id);
             $driverName = ($driver->rank ?? 'N/A') . ' ' . ($driver->name ?? 'Unknown');
-            $routeName = $existingRoute ? $existingRoute->name : 'Unknown Route';
             return response()->json([
                 'success' => false,
-                'message' => "Driver {$driverName} is already assigned to route {$routeName}."
+                'message' => "Driver {$driverName} is already assigned to another route."
             ]);
         }
 
         // Check if route already has an active driver
-        $existingRouteAssignment = BusDriverAssignment::where('bus_route_id', $request->route_id)
+        $existingRouteAssignment = BusDriverAssignment::where('route_id', $request->route_id)
+            ->where('route_type', $request->route_type)
             ->where('status', 'active')
             ->first();
         if ($existingRouteAssignment) {
@@ -242,19 +297,29 @@ class BusDriverAssignmentController extends Controller
             $existingDriverName = $existingDriver ? (($existingDriver->rank ?? 'N/A') . ' ' . ($existingDriver->name ?? 'Unknown')) : 'Unknown Driver';
             return response()->json([
                 'success' => false,
-                'message' => "Route {$route->name} already has driver {$existingDriverName} assigned."
+                'message' => "Route {$routeName} already has driver {$existingDriverName} assigned."
             ]);
         }
 
         // Create the assignment
-        BusDriverAssignment::create([
-            'bus_route_id' => $request->route_id,
+        $assignmentData = [
             'driver_id' => $request->driver_id,
+            'route_id' => $request->route_id,
+            'route_type' => $request->route_type,
             'assigned_date' => $request->assigned_date,
             'end_date' => $request->end_date,
             'status' => 'active',
             'created_by' => Auth::user()->name ?? 'System'
-        ]);
+        ];
+
+        // Set the appropriate foreign key based on route type
+        if ($request->route_type === 'living_out') {
+            $assignmentData['bus_route_id'] = $request->route_id;
+        } else {
+            $assignmentData['living_in_bus_id'] = $request->route_id;
+        }
+
+        BusDriverAssignment::create($assignmentData);
 
         $driverName = ($driver->rank ?? 'N/A') . ' ' . ($driver->name ?? 'Unknown');
         return response()->json([
@@ -313,7 +378,23 @@ class BusDriverAssignmentController extends Controller
      */
     public function getAssignmentData()
     {
-        $routes = BusRoute::with(['bus', 'driverAssignment.driver'])->get();
+        // Get all routes (both living_out and living_in) with their assigned drivers
+        $livingOutRoutes = BusRoute::with(['bus', 'driverAssignment.driver'])->get();
+        $livingInRoutes = LivingInBuses::with(['driverAssignment.driver'])->get();
+
+        // Combine routes with type indicators
+        $routes = collect();
+        foreach ($livingOutRoutes as $route) {
+            $route->route_type = 'living_out';
+            $route->display_name = $route->name . ' (Living Out)' . ($route->bus ? ' - ' . $route->bus->name . ' (' . $route->bus->no . ')' : '');
+            $routes->push($route);
+        }
+        foreach ($livingInRoutes as $route) {
+            $route->route_type = 'living_in';
+            $route->display_name = $route->name . ' (Living In)';
+            $routes->push($route);
+        }
+
         $availableDrivers = Driver::whereDoesntHave('driverAssignments', function ($query) {
             $query->where('status', 'active')->whereNotNull('driver_id');
         })->get();
