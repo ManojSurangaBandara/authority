@@ -47,9 +47,11 @@ class BusDataTable extends DataTable
                 // View button (always available)
                 $viewBtn = '<a href="' . route('buses.show', $row->id) . '" class="btn btn-xs btn-info" title="View"><i class="fas fa-eye"></i></a>';
 
-                // Edit button (always enabled, but with warning tooltip if bus is in use)
-                if ($isUsed) {
-                    $editBtn = '<a href="' . route('buses.edit', $row->id) . '" class="btn btn-xs btn-primary mx-1" title="Edit (Note: Bus number cannot be changed - ' . $reasonText . ')" data-toggle="tooltip"><i class="fas fa-edit"></i></a>';
+                // Edit button (disabled if bus is assigned to routes)
+                if ($routesCount > 0) {
+                    $editBtn = '<span class="btn btn-xs btn-secondary disabled mx-1" title="Cannot edit: Assigned to ' . $routesCount . ' route(s)" data-toggle="tooltip">
+                        <i class="fas fa-edit"></i>
+                    </span>';
                 } else {
                     $editBtn = '<a href="' . route('buses.edit', $row->id) . '" class="btn btn-xs btn-primary mx-1" title="Edit"><i class="fas fa-edit"></i></a>';
                 }
