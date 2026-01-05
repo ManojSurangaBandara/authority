@@ -571,8 +571,8 @@ class BusPassApprovalController extends Controller
         // Check if this is a view-only request (from integrations page)
         $isViewOnly = $request->query('view_only') === 'true';
 
-        // Check if user can edit routes (for integration page)
-        $canEditRoute = true; // Temporarily set to true for testing
+        // Check if user can edit routes (only for integration page)
+        $canEditRoute = $isViewOnly;
 
         // Get bus routes for editing
         $busRoutes = \App\Models\BusRoute::all();
