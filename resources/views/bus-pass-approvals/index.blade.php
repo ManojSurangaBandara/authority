@@ -82,14 +82,15 @@
             border-color: #28a745;
         }
 
-        /* Prevent horizontal scrolling */
+        /* Enable horizontal scrolling for wide tables */
         .card-body {
-            overflow-x: hidden !important;
+            overflow-x: auto !important;
         }
 
         table.dataTable {
             width: 100% !important;
             max-width: 100% !important;
+            
         }
     </style>
 @stop
