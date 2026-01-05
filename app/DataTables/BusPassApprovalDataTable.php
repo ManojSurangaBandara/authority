@@ -36,16 +36,11 @@ class BusPassApprovalDataTable extends DataTable
 
                 return $html;
             })
+            ->addColumn('regiment_no', function ($row) {
+                return $row->regiment_no ?: '<span class="badge badge-success">Civil</span>';
+            })
             ->addColumn('person_details', function ($row) {
-                $html = '<strong>' . e($row->person_name) . '</strong><br>';
-
-                if ($row->regiment_no) {
-                    $html .= '<small class="text-muted">Reg No: ' . e($row->regiment_no) . '</small>';
-                } else {
-                    $html .= '<small class="badge badge-success">Civil</small>';
-                }
-
-                return $html;
+                return '<strong>' . e($row->person_name) . '</strong>';
             })
             ->addColumn('service_details', function ($row) {
                 $html = '';
@@ -111,7 +106,7 @@ class BusPassApprovalDataTable extends DataTable
 
                 return $html;
             })
-            ->rawColumns(['app_id', 'person_details', 'service_details', 'bus_pass_type', 'branch_directorate', 'submitted', 'action'])
+            ->rawColumns(['app_id', 'regiment_no', 'person_details', 'service_details', 'bus_pass_type', 'branch_directorate', 'submitted', 'action'])
             ->setRowId('id')
             ->setRowClass(function ($row) {
                 $hasNotRecommended = method_exists($row, 'wasRecentlyNotRecommended') && $row->wasRecentlyNotRecommended();
@@ -215,8 +210,9 @@ class BusPassApprovalDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('app_id')->title('App ID')->searchable(false)->orderable(false),
-            Column::make('person_details')->title('Person Details')->name('persons.name')->searchable(true)->orderable(false),
+            Column::make('app_id')->title('App ID')->name('bus_pass_applications.id')->searchable(true)->orderable(false),
+            Column::make('regiment_no')->title('Regiment No')->name('persons.regiment_no')->searchable(true)->orderable(false),
+            Column::make('person_details')->title('Person Name')->name('persons.name')->searchable(true)->orderable(false),
             Column::make('service_details')->title('Service Details')->searchable(false)->orderable(false),
             Column::make('bus_pass_type')->title('Bus Pass Type')->searchable(false)->orderable(false),
             Column::make('branch_directorate')->title('Branch/Directorate')->searchable(false)->orderable(false),
