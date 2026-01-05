@@ -181,6 +181,12 @@ class BusPassApplicationDataTable extends DataTable
                 ->printable(false)
                 ->width(120)
                 ->addClass('text-center'),
+            Column::make('requested_bus_name')->title('Daily Travel Bus')->searchable(true)->orderable(false),
+            Column::make('destination_from_ahq')->title('Daily Travel Destination')->searchable(true)->orderable(false),
+            Column::make('weekend_bus_name')->title('Weekend Bus')->searchable(true)->orderable(false),
+            Column::make('weekend_destination')->title('Weekend Destination')->searchable(true)->orderable(false),
+            Column::make('living_in_bus')->title('Living In Bus')->searchable(true)->orderable(false),
+            Column::make('destination_location_ahq')->title('Living In Destination')->searchable(true)->orderable(false),
         ];
     }
 
