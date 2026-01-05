@@ -172,19 +172,6 @@
                                             <td>{{ $application->destination_from_ahq }}</td>
                                         </tr>
                                     @endif
-                                    <tr>
-                                        <td><strong>Marriage Part II Order:</strong></td>
-                                        <td>
-                                            @if ($application->marriage_part_ii_order)
-                                                <a href="{{ asset('storage/' . $application->marriage_part_ii_order) }}"
-                                                    target="_blank" class="btn btn-xs btn-outline-primary">
-                                                    <i class="fas fa-file-pdf"></i> View Document
-                                                </a>
-                                            @else
-                                                <span class="text-muted">Not uploaded</span>
-                                            @endif
-                                        </td>
-                                    </tr>
                                 </table>
                             @endif
                         </div>
@@ -432,6 +419,23 @@
                                     @endif
                                 </td>
                             </tr>
+                            @if ($application->bus_pass_type === 'daily_travel' && $application->approval_living_out === 'yes')
+                                <tr>
+                                    <td><strong>Marriage Part II Order:</strong></td>
+                                    <td>
+                                        @if ($application->marriage_part_ii_order)
+                                            <a href="{{ asset('storage/' . $application->marriage_part_ii_order) }}"
+                                                target="_blank" class="btn btn-xs btn-outline-primary">
+                                                <i class="fas fa-file-pdf"></i> View Document
+                                            </a>
+                                            <small class="text-success ml-2"><i class="fas fa-check-circle"></i>
+                                                Uploaded</small>
+                                        @else
+                                            <span class="text-muted">Not uploaded</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
                         </table>
                     </div>
                 </div>
