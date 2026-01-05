@@ -84,11 +84,17 @@
                             <thead>
                                 <tr>
                                     <th>Application ID</th>
+                                    <th>Regiment No</th>
                                     <th>Person Name</th>
                                     <th>Rank</th>
                                     <th>Establishment</th>
-                                    <th>Requested Bus</th>
+                                    <th>Bus Pass Type</th>
+                                    <th>Daily Travel Bus</th>
+                                    <th>Daily Travel Destination</th>
                                     <th>Weekend Bus</th>
+                                    <th>Weekend Destination</th>
+                                    <th>Living In Bus</th>
+                                    <th>Living In Destination</th>
                                     <th>Status</th>
                                     <th>Branch Card ID</th>
                                     <th>Actions</th>
@@ -241,11 +247,11 @@
                 },
                 columnDefs: [{
                         orderable: true,
-                        targets: [0, 1, 2, 3, 4, 5, 6, 7]
+                        targets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
                     },
                     {
                         orderable: false,
-                        targets: [8]
+                        targets: [14]
                     } // Actions column not sortable
                 ],
                 dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rt<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>'
@@ -438,6 +444,31 @@
             applications.forEach(function(app) {
                 const statusClass = `status-${app.status.replace(/_/g, '_')}`;
                 const statusText = app.status.replace(/_/g, ' ');
+
+                // Determine badge class for bus pass type
+                let busPassTypeBadgeClass = 'badge-secondary'; // default
+                if (app.bus_pass_type) {
+                    switch (app.bus_pass_type) {
+                        case 'daily_travel':
+                            busPassTypeBadgeClass = 'badge-primary';
+                            break;
+                        case 'unmarried_daily_travel':
+                            busPassTypeBadgeClass = 'badge-info';
+                            break;
+                        case 'weekend_monthly_travel':
+                            busPassTypeBadgeClass = 'badge-success';
+                            break;
+                        case 'living_in_only':
+                            busPassTypeBadgeClass = 'badge-warning';
+                            break;
+                        case 'weekend_only':
+                            busPassTypeBadgeClass = 'badge-dark';
+                            break;
+                        default:
+                            busPassTypeBadgeClass = 'badge-secondary';
+                    }
+                }
+
                 const actionsHtml = `
                     <button class="btn btn-info btn-xs view-application" data-id="${app.id}" title="View Details">
                         <i class="fas fa-eye"></i>
@@ -445,21 +476,29 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                                <i class="fas fa-arrow-up"></i>
-                                                            </button>` :
+                                                                    <i class="fas fa-arrow-up"></i>
+                                                                </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                                <i class="fas fa-arrow-down"></i>
-                                                            </button>` : ''
+                                                                    <i class="fas fa-arrow-down"></i>
+                                                                </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
                     app.id,
+                    app.person_regiment_no,
                     app.person_name,
                     app.person_rank,
                     app.establishment,
+                    app.bus_pass_type ?
+                    `<span class="badge ${busPassTypeBadgeClass}">${app.bus_pass_type.replace(/_/g, ' ')}</span>` :
+                    'N/A',
                     app.requested_bus_name || 'N/A',
+                    app.destination_from_ahq || 'N/A',
                     app.weekend_bus_name || 'N/A',
+                    app.weekend_destination || 'N/A',
+                    app.living_in_bus || 'N/A',
+                    app.destination_location_ahq || 'N/A',
                     `<span class="status-badge ${statusClass}">${statusText}</span>`,
                     app.branch_card_id || 'N/A',
                     actionsHtml
