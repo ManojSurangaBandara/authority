@@ -89,15 +89,13 @@
                                     <th>Rank</th>
                                     <th>Establishment</th>
                                     <th>Bus Pass Type</th>
+                                    <th>Actions</th>
                                     <th>Daily Travel Bus</th>
                                     <th>Daily Travel Destination</th>
                                     <th>Weekend Bus</th>
                                     <th>Weekend Destination</th>
                                     <th>Living In Bus</th>
                                     <th>Living In Destination</th>
-                                    <th>Status</th>
-                                    <th>Branch Card ID</th>
-                                    <th>Actions</th>
                                 </tr>
                             </thead>
                         </table>
@@ -247,11 +245,11 @@
                 },
                 columnDefs: [{
                         orderable: true,
-                        targets: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+                        targets: [0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12]
                     },
                     {
                         orderable: false,
-                        targets: [14]
+                        targets: [6]
                     } // Actions column not sortable
                 ],
                 dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rt<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>'
@@ -469,6 +467,20 @@
                     }
                 }
 
+                // Determine badge class for establishment
+                let establishmentBadgeClass = 'badge-secondary'; // default
+                if (app.establishment) {
+                    // Simple hash-based color assignment for consistency
+                    const colors = ['badge-primary', 'badge-info', 'badge-success', 'badge-warning', 'badge-danger',
+                        'badge-dark'
+                    ];
+                    let hash = 0;
+                    for (let i = 0; i < app.establishment.length; i++) {
+                        hash = app.establishment.charCodeAt(i) + ((hash << 5) - hash);
+                    }
+                    establishmentBadgeClass = colors[Math.abs(hash) % colors.length];
+                }
+
                 const actionsHtml = `
                     <button class="btn btn-info btn-xs view-application" data-id="${app.id}" title="View Details">
                         <i class="fas fa-eye"></i>
@@ -476,12 +488,12 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                                    <i class="fas fa-arrow-up"></i>
-                                                                </button>` :
+                                                                        <i class="fas fa-arrow-up"></i>
+                                                                    </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                                    <i class="fas fa-arrow-down"></i>
-                                                                </button>` : ''
+                                                                        <i class="fas fa-arrow-down"></i>
+                                                                    </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
@@ -489,19 +501,18 @@
                     app.person_regiment_no,
                     app.person_name,
                     app.person_rank,
-                    app.establishment,
+                    app.establishment ?
+                    `<span class="badge ${establishmentBadgeClass}">${app.establishment}</span>` : 'N/A',
                     app.bus_pass_type ?
                     `<span class="badge ${busPassTypeBadgeClass}">${app.bus_pass_type.replace(/_/g, ' ')}</span>` :
                     'N/A',
+                    actionsHtml,
                     app.requested_bus_name || 'N/A',
                     app.destination_from_ahq || 'N/A',
                     app.weekend_bus_name || 'N/A',
                     app.weekend_destination || 'N/A',
                     app.living_in_bus || 'N/A',
-                    app.destination_location_ahq || 'N/A',
-                    `<span class="status-badge ${statusClass}">${statusText}</span>`,
-                    app.branch_card_id || 'N/A',
-                    actionsHtml
+                    app.destination_location_ahq || 'N/A'
                 ]);
             });
 
