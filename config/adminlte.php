@@ -321,7 +321,7 @@ return [
                     ],
                 ],
                 [
-                    'text' => 'Bus Routes',
+                    'text' => 'Living Out Bus Routes',
                     'url' => 'bus-routes',
                     'icon' => 'fas fa-fw fa-road',
                     'active' => [
@@ -378,7 +378,7 @@ return [
                     ],
                 ],
                 [
-                    'text' => 'Living In Bus Names',
+                    'text' => 'Living In Bus Routes',
                     'url' => 'living-in-buses',
                     'icon' => 'fas fa-fw fa-bus',
                     'active' => [
