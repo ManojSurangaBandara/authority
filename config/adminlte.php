@@ -569,7 +569,7 @@ return [
         [
             'text' => 'Reports',
             'icon' => 'fas fa-fw fa-cogs',
-            'can' => 'operational_user_access',
+            'can' => 'access_reports',
             'submenu' => [
                 // [
                 //     'text' => 'Rejected Applications',

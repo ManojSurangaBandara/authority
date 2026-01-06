@@ -73,6 +73,17 @@ class AppServiceProvider extends ServiceProvider
             ]);
         });
 
+        // Gate for Reports - DMOV users only
+        Gate::define('access_reports', function ($user) {
+            return $user->hasAnyRole([
+                'Subject Clerk (DMOV)',
+                'Staff Officer 2 (DMOV)',
+                'Col Mov (DMOV)',
+                'Director (DMOV)',
+                'System Administrator (DMOV)'
+            ]);
+        });
+
         // Individual role gates for more granular control if needed
         Gate::define('bus_pass_subject_clerk_branch', function ($user) {
             return $user->hasRole('Bus Pass Subject Clerk (Branch)');
