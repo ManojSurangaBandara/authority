@@ -11,15 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('slcmp_incharge_assignments', function (Blueprint $table) {
-            $table->dropForeign(['route_id']);
-        });
+        // No foreign key was created for route_id in the migration that added it,
+        // so there's nothing to drop here. This migration can be skipped.
     }
 
     public function down(): void
     {
-        Schema::table('slcmp_incharge_assignments', function (Blueprint $table) {
-            $table->foreign('route_id')->references('id')->on('bus_routes')->onDelete('cascade');
-        });
+        // No foreign key was created for route_id, so nothing to restore.
     }
 };
