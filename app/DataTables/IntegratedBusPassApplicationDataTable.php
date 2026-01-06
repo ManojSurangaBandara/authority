@@ -51,11 +51,7 @@ class IntegratedBusPassApplicationDataTable extends DataTable
                     $q->where('name', 'like', "%{$keyword}%");
                 });
             })
-            ->filterColumn('establishment.name', function ($query, $keyword) {
-                $query->whereHas('establishment', function ($q) use ($keyword) {
-                    $q->where('name', 'like', "%{$keyword}%");
-                });
-            })
+           
             ->rawColumns(['action', 'status_badge', 'type_label', 'applied_date', 'person_rank'])
             ->setRowId('id');
     }
@@ -114,7 +110,6 @@ class IntegratedBusPassApplicationDataTable extends DataTable
             Column::make('person.regiment_no')->title('Regiment No')->name('person.regiment_no'),
             Column::make('person.name')->title('Name')->name('person.name'),
             Column::make('person_rank')->title('Rank')->searchable(false),
-            Column::make('establishment.name')->title('Establishment')->name('establishment.name'),
             Column::make('type_label')->title('Pass Type')->searchable(false),
             Column::make('status_badge')->title('Status')->searchable(false)->orderable(false),
             Column::make('applied_date')->title('Applied Date')->searchable(false)->orderable(false),
