@@ -36,6 +36,12 @@ class IntegratedBusPassApplicationDataTable extends DataTable
             ->addColumn('person_rank', function ($row) {
                 return $row->person ? $row->person->rank : '';
             })
+            ->addColumn('route_changed_indicator', function ($row) {
+                if ($row->hasRouteBeenUpdated()) {
+                    return '<span class="badge badge-warning" title="Route has been changed during approval process"><i class="fas fa-exclamation-triangle"></i> Route Changed</span>';
+                }
+                return '';
+            })
             ->addColumn('action', function ($row) {
                 $viewBtn = '<a href="' . route('bus-pass-applications.show', $row->id) . '" class="btn btn-xs btn-info" title="View"><i class="fas fa-eye"></i></a>';
 
@@ -51,9 +57,12 @@ class IntegratedBusPassApplicationDataTable extends DataTable
                     $q->where('name', 'like', "%{$keyword}%");
                 });
             })
-           
-            ->rawColumns(['action', 'status_badge', 'type_label', 'applied_date', 'person_rank'])
-            ->setRowId('id');
+
+            ->rawColumns(['action', 'status_badge', 'type_label', 'applied_date', 'person_rank', 'route_changed_indicator'])
+            ->setRowId('id')
+            ->setRowClass(function ($row) {
+                return $row->hasRouteBeenUpdated() ? 'table-warning' : '';
+            });
     }
 
     /**
@@ -63,7 +72,7 @@ class IntegratedBusPassApplicationDataTable extends DataTable
      */
     public function query(BusPassApplication $model): QueryBuilder
     {
-        $query = $model->newQuery()->with(['person', 'establishment'])->whereIn('status', ['integrated_to_branch_card', 'integrated_to_temp_card']);
+        $query = $model->newQuery()->with(['person', 'establishment', 'approvalHistory'])->whereIn('status', ['integrated_to_branch_card', 'integrated_to_temp_card']);
 
         // Filter by establishment for branch users
         $user = Auth::user();
@@ -113,6 +122,7 @@ class IntegratedBusPassApplicationDataTable extends DataTable
             Column::make('type_label')->title('Pass Type')->searchable(false),
             Column::make('status_badge')->title('Status')->searchable(false)->orderable(false),
             Column::make('applied_date')->title('Applied Date')->searchable(false)->orderable(false),
+            Column::make('route_changed_indicator')->title('Route Status')->searchable(false)->orderable(false),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)

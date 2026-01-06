@@ -503,6 +503,16 @@ class BusPassApplication extends Model
     }
 
     /**
+     * Check if the route has been updated during approval process
+     */
+    public function hasRouteBeenUpdated()
+    {
+        return $this->approvalHistory()
+            ->where('action', 'route_updated')
+            ->exists();
+    }
+
+    /**
      * Get route statistics (approved count + pending count + seating capacity)
      */
     public function getRouteStatistics($routeName, $routeType = 'living_out', $approvedByRoles = null, $pendingStatus = null)
