@@ -97,6 +97,14 @@ class AppServiceProvider extends ServiceProvider
             return $user->hasRole('Director (Branch)');
         });
 
+        Gate::define('branch_user_access', function ($user) {
+            return $user->hasAnyRole([
+                'Bus Pass Subject Clerk (Branch)',
+                'Staff Officer (Branch)',
+                'Director (Branch)'
+            ]);
+        });
+
         Gate::define('manage_user_accounts', function ($user) {
             return $user->hasRole('System Administrator (DMOV)');
         });
