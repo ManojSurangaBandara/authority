@@ -499,6 +499,16 @@ return [
         ],
 
         [
+            'text' => 'Integrated Applications',
+            'url' => 'integrated-applications',
+            'icon' => 'fas fa-fw fa-check',
+            'can' => 'operational_user_access',
+            'active' => [
+                'integrated-applications*',
+            ],
+        ],
+
+        [
             'text' => 'Bus Pass Approvals',
             'url' => 'bus-pass-approvals',
             'icon' => 'fas fa-fw fa-check-circle',
