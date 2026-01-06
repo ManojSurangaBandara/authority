@@ -41,10 +41,20 @@ class IntegratedBusPassApplicationDataTable extends DataTable
 
                 return $viewBtn;
             })
-            ->filter(function ($query) {
-                if ($estId = request('establishment_id')) {
-                    $query->where('establishment_id', $estId);
-                }
+            ->filterColumn('person.regiment_no', function ($query, $keyword) {
+                $query->whereHas('person', function ($q) use ($keyword) {
+                    $q->where('regiment_no', 'like', "%{$keyword}%");
+                });
+            })
+            ->filterColumn('person.name', function ($query, $keyword) {
+                $query->whereHas('person', function ($q) use ($keyword) {
+                    $q->where('name', 'like', "%{$keyword}%");
+                });
+            })
+            ->filterColumn('establishment.name', function ($query, $keyword) {
+                $query->whereHas('establishment', function ($q) use ($keyword) {
+                    $q->where('name', 'like', "%{$keyword}%");
+                });
             })
             ->rawColumns(['action', 'status_badge', 'type_label', 'applied_date', 'person_rank'])
             ->setRowId('id');
