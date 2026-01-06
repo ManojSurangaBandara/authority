@@ -1437,10 +1437,6 @@ class DashboardController extends Controller
         $userLevelMapping = [
             'pending_subject_clerk' => 'Branch Clerk',
             'pending_staff_officer_branch' => 'Branch Staff Officer',
-            'forwarded_to_movement' => 'DMOV Subject Clerk',
-            'pending_subject_clerk_mov' => 'DMOV Subject Clerk',
-            'pending_staff_officer_2_mov' => 'DMOV Staff Officer 2',
-            'pending_col_mov' => 'Col Mov (DMOV)'
         ];
 
         $pendingCounts = [];
@@ -1449,17 +1445,10 @@ class DashboardController extends Controller
 
         // Get counts for each status, filtered by establishment for branch statuses
         foreach ($userLevelMapping as $status => $userLevel) {
-            if (in_array($status, ['pending_subject_clerk', 'pending_staff_officer_branch'])) {
-                // Branch specific statuses - filter by establishment
-                $count = BusPassApplication::where('status', $status)
-                    ->where('establishment_id', $establishmentId)
-                    ->count();
-            } else {
-                // DMOV statuses - show applications from this branch that reached DMOV
-                $count = BusPassApplication::where('status', $status)
-                    ->where('establishment_id', $establishmentId)
-                    ->count();
-            }
+            // Branch specific statuses - filter by establishment
+            $count = BusPassApplication::where('status', $status)
+                ->where('establishment_id', $establishmentId)
+                ->count();
 
             if ($count > 0) {
                 $pendingCounts[$userLevel] = ($pendingCounts[$userLevel] ?? 0) + $count;

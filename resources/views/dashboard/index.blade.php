@@ -152,24 +152,16 @@
                 const branchStaffOfficerPendingChart = new Chart(branchStaffOfficerPendingCtx, {
                     type: 'bar',
                     data: {
-                        labels: ['Branch Clerk', 'Branch Staff Officer', 'DMOV Clerk', 'DMOV Staff Officer 2',
-                            'Col MOV'
-                        ],
+                        labels: ['Branch Clerk', 'Branch Staff Officer'],
                         datasets: [{
                             label: 'Pending Applications (My Branch)',
                             data: [
                                 approvalData.pending_branch_clerk,
-                                approvalData.pending_branch_staff_officer,
-                                approvalData.pending_dmov_clerk,
-                                approvalData.pending_dmov_staff_officer_2,
-                                approvalData.pending_dmov_col
+                                approvalData.pending_branch_staff_officer
                             ],
                             backgroundColor: [
                                 '#ffc107',
-                                '#28a745',
-                                '#dc3545',
-                                '#17a2b8',
-                                '#007bff'
+                                '#28a745'
                             ]
                         }]
                     },
@@ -211,24 +203,16 @@
                 const branchSubjectClerkPendingChart = new Chart(branchSubjectClerkPendingCtx, {
                     type: 'bar',
                     data: {
-                        labels: ['Branch Clerk', 'Branch Staff Officer', 'DMOV Clerk', 'DMOV Staff Officer 2',
-                            'Col MOV'
-                        ],
+                        labels: ['Branch Clerk', 'Branch Staff Officer'],
                         datasets: [{
                             label: 'Pending Applications (My Branch)',
                             data: [
                                 branchApprovalData.pending_branch_clerk,
-                                branchApprovalData.pending_branch_staff_officer,
-                                branchApprovalData.pending_dmov_clerk,
-                                branchApprovalData.pending_dmov_staff_officer_2,
-                                branchApprovalData.pending_dmov_col
+                                branchApprovalData.pending_branch_staff_officer
                             ],
                             backgroundColor: [
                                 '#ffc107',
-                                '#28a745',
-                                '#dc3545',
-                                '#17a2b8',
-                                '#007bff'
+                                '#28a745'
                             ]
                         }]
                     },
@@ -457,24 +441,16 @@
                 const branchClerkPendingChart = new Chart(branchClerkPendingCtx, {
                     type: 'bar',
                     data: {
-                        labels: ['Branch Clerk', 'Branch Staff Officer', 'DMOV Clerk', 'DMOV Staff Officer 2',
-                            'Col MOV'
-                        ],
+                        labels: ['Branch Clerk', 'Branch Staff Officer'],
                         datasets: [{
                             label: 'Pending Applications (My Branch)',
                             data: [
                                 branchApprovalData.pending_branch_clerk,
-                                branchApprovalData.pending_branch_staff_officer,
-                                branchApprovalData.pending_dmov_clerk,
-                                branchApprovalData.pending_dmov_staff_officer_2,
-                                branchApprovalData.pending_dmov_col
+                                branchApprovalData.pending_branch_staff_officer
                             ],
                             backgroundColor: [
                                 '#ffc107',
-                                '#28a745',
-                                '#dc3545',
-                                '#17a2b8',
-                                '#007bff'
+                                '#28a745'
                             ]
                         }]
                     },
