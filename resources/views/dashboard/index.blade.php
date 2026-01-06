@@ -697,6 +697,9 @@
             </div>
         </div>
     @endif
+
+    @include('footer')
+
 @stop
 
 {{-- @endsection --}}

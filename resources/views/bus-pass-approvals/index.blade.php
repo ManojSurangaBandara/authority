@@ -30,6 +30,9 @@
             </div>
         </div>
     </div>
+
+    @include('footer')
+
 @stop
 
 <!-- Modal container for dynamically loaded modals -->
@@ -90,7 +93,7 @@
         table.dataTable {
             width: 100% !important;
             max-width: 100% !important;
-            
+
         }
     </style>
 @stop

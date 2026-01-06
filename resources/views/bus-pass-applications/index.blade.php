@@ -99,6 +99,9 @@
             </div>
         </div>
     </div>
+
+    @include('footer')
+
 @endsection
 
 @push('js')

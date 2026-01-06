@@ -167,6 +167,9 @@
         @csrf
         @method('PATCH')
     </form>
+
+    @include('footer')
+
 @stop
 
 @section('css')

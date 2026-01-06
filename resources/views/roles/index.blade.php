@@ -182,6 +182,9 @@
             </div>
         </div>
     </div>
+
+    @include('footer')
+
 @stop
 
 @section('css')

@@ -107,6 +107,8 @@
 
     <!-- Modal container for dynamically loaded modals -->
     <div id="modal-container"></div>
+    @include('footer')
+
 
 @stop
 

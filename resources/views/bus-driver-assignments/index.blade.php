@@ -203,6 +203,8 @@
 
     <!-- Success/Error Messages -->
     <div id="alert-container"></div>
+    @include('footer')
+
 
 @stop
 
