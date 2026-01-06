@@ -48,6 +48,17 @@ We would like to extend our thanks to the following sponsors for funding Laravel
 
 Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
+## QR Code Template Setup
+
+For the QR download functionality to work with custom templates:
+
+1. Create a `qr_format.jpeg` file and place it in the `public/storage/` folder
+2. The template should be designed as a card or certificate format
+3. Leave space in the center or desired position for the QR code overlay
+4. The QR code will be automatically centered by default
+5. Route information will be automatically added at the bottom of the image
+6. For custom positioning, modify the coordinates in `QrDownloadController.php`
+
 ## Code of Conduct
 
 In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
