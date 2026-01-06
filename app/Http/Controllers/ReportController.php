@@ -215,13 +215,13 @@ class ReportController extends Controller
                         $query->where('requested_bus_name', $routeName)
                             ->orWhere('weekend_bus_name', $routeName);
                     })
-                    ->whereIn('status', ['integrated_to_branch_card', 'temp_card_handed_over'])
+                    ->whereIn('status', ['integrated_to_branch_card', 'integrated_to_temp_card'])
                     ->get();
             } else {
                 // For living in buses, count from living_in_bus
                 $applications = BusPassApplication::with(['person.personType'])
                     ->where('living_in_bus', $routeName)
-                    ->whereIn('status', ['integrated_to_branch_card', 'temp_card_handed_over'])
+                    ->whereIn('status', ['integrated_to_branch_card', 'integrated_to_temp_card'])
                     ->get();
             }
 

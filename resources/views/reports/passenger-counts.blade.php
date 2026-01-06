@@ -57,7 +57,7 @@
                                             <td></td>
                                             <td>
                                                 <strong>{{ $route['route'] }}</strong>
-                                                @if (isset($route['has_duplicate']) && $route['has_duplicate'] && isset($route['route_type']))
+                                                @if (isset($route['route_type']))
                                                     @if ($route['route_type'] === 'living_in_bus')
                                                         <span class="badge badge-info ml-1">Living In</span>
                                                     @else
