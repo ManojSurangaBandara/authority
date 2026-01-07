@@ -244,6 +244,9 @@
         let currentRouteId = 'all';
         let currentRouteType = 'living_out';
         let applicationsTable = null;
+        let currentEstablishmentId = null;
+        let currentEstablishmentType = null;
+        let currentEstablishmentName = null;
         const canIntegrate = $('meta[name="user-role"]').attr('content') === 'integration_allowed';
 
         // Make current route info available globally for modal
@@ -289,6 +292,11 @@
                 // Update global variables for modal
                 window.currentRouteId = currentRouteId;
                 window.currentRouteType = currentRouteType;
+
+                // Clear current establishment when route changes
+                currentEstablishmentId = null;
+                currentEstablishmentType = null;
+                currentEstablishmentName = null;
 
                 loadChartData();
                 loadAllApplications(); // Reload applications when route changes
@@ -514,6 +522,11 @@
         }
 
         function loadApplications(establishmentId, type, establishmentName) {
+            // Store current establishment info
+            currentEstablishmentId = establishmentId;
+            currentEstablishmentType = type;
+            currentEstablishmentName = establishmentName;
+
             $.ajax({
                 url: '{{ route('bus-pass-integration.applications') }}',
                 method: 'GET',
@@ -614,12 +627,12 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                                                        <i class="fas fa-arrow-up"></i>
-                                                                                    </button>` :
+                                                                                            <i class="fas fa-arrow-up"></i>
+                                                                                        </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                                                        <i class="fas fa-arrow-down"></i>
-                                                                                    </button>` : ''
+                                                                                            <i class="fas fa-arrow-down"></i>
+                                                                                        </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
@@ -717,12 +730,12 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                                                        <i class="fas fa-arrow-up"></i>
-                                                                                    </button>` :
+                                                                                            <i class="fas fa-arrow-up"></i>
+                                                                                        </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                                                        <i class="fas fa-arrow-down"></i>
-                                                                                    </button>` : ''
+                                                                                            <i class="fas fa-arrow-down"></i>
+                                                                                        </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
@@ -761,6 +774,10 @@
             if (applicationsTable) {
                 applicationsTable.clear().draw();
             }
+            // Clear current establishment variables
+            currentEstablishmentId = null;
+            currentEstablishmentType = null;
+            currentEstablishmentName = null;
         }
 
         // View application modal
@@ -840,7 +857,15 @@
                         if (response.success) {
                             alert(response.message);
                             loadChartData();
-                            hideApplicationsTable();
+                            // Reload applications for current establishment if one is being viewed
+                            if (currentEstablishmentId && currentEstablishmentType &&
+                                currentEstablishmentName) {
+                                loadApplications(currentEstablishmentId, currentEstablishmentType,
+                                    currentEstablishmentName);
+                            } else {
+                                // If viewing all applications, reload all applications
+                                loadAllApplications();
+                            }
                         } else {
                             alert('Error: ' + response.message);
                         }
@@ -868,7 +893,15 @@
                         if (response.success) {
                             alert(response.message);
                             loadChartData();
-                            hideApplicationsTable();
+                            // Reload applications for current establishment if one is being viewed
+                            if (currentEstablishmentId && currentEstablishmentType &&
+                                currentEstablishmentName) {
+                                loadApplications(currentEstablishmentId, currentEstablishmentType,
+                                    currentEstablishmentName);
+                            } else {
+                                // If viewing all applications, reload all applications
+                                loadAllApplications();
+                            }
                         } else {
                             alert('Error: ' + response.message);
                         }
