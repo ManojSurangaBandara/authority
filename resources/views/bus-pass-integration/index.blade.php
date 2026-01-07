@@ -80,25 +80,27 @@
                                 </div>
                             </div>
                         </div>
-                        <table id="applicationsTable" class="table table-bordered table-striped" style="display: none;">
-                            <thead>
-                                <tr>
-                                    <th>Application ID</th>
-                                    <th>Regiment No</th>
-                                    <th>Person Name</th>
-                                    <th>Rank</th>
-                                    <th>Establishment</th>
-                                    <th>Bus Pass Type</th>
-                                    <th>Actions</th>
-                                    <th>Daily Travel Bus</th>
-                                    <th>Daily Travel Destination</th>
-                                    <th>Weekend Bus</th>
-                                    <th>Weekend Destination</th>
-                                    <th>Living In Bus</th>
-                                    <th>Living In Destination</th>
-                                </tr>
-                            </thead>
-                        </table>
+                        <div class="applications-table-wrapper">
+                            <table id="applicationsTable" class="table table-bordered table-striped" style="display: none;">
+                                <thead>
+                                    <tr>
+                                        <th>Application ID</th>
+                                        <th>Regiment No</th>
+                                        <th>Person Name</th>
+                                        <th>Rank</th>
+                                        <th>Establishment</th>
+                                        <th>Bus Pass Type</th>
+                                        <th>Actions</th>
+                                        <th>Daily Travel Bus</th>
+                                        <th>Daily Travel Destination</th>
+                                        <th>Weekend Bus</th>
+                                        <th>Weekend Destination</th>
+                                        <th>Living In Bus</th>
+                                        <th>Living In Destination</th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -148,6 +150,69 @@
         .status-integrated_to_temp_card {
             background-color: #007bff;
             color: white;
+        }
+
+        /* Horizontal scrolling for Applications Table */
+        .applications-table-wrapper {
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        /* Force table to have minimum width for scrolling */
+        #applicationsTable {
+            min-width: 1400px !important;
+            width: 100% !important;
+            white-space: nowrap;
+        }
+
+        /* DataTable wrapper styling */
+        #applicationsTable_wrapper {
+            width: 100%;
+            overflow: visible;
+        }
+
+        /* Ensure table headers don't wrap */
+        #applicationsTable thead th {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Ensure table cells don't wrap */
+        #applicationsTable tbody td {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+
+        /* Custom scrollbar styling */
+        .applications-table-wrapper::-webkit-scrollbar {
+            height: 12px;
+        }
+
+        .applications-table-wrapper::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 6px;
+        }
+
+        .applications-table-wrapper::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 6px;
+            border: 2px solid #f1f1f1;
+        }
+
+        .applications-table-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Firefox scrollbar */
+        .applications-table-wrapper {
+            scrollbar-width: thin;
+            scrollbar-color: #888 #f1f1f1;
         }
     </style>
 @stop
@@ -229,7 +294,8 @@
                 order: [], // Preserve server-side ordering
                 info: true,
                 autoWidth: false,
-                responsive: true,
+                responsive: false,
+                scrollX: false,
                 pageLength: 25,
                 language: {
                     search: "",
@@ -254,7 +320,19 @@
                         targets: [6]
                     } // Actions column not sortable
                 ],
-                dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rt<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>'
+                dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rt<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+                initComplete: function() {
+                    // Ensure table wrapper has proper scroll styling after initialization
+                    setTimeout(function() {
+                        var tableWrapper = $('.applications-table-wrapper');
+                        if (tableWrapper.length > 0) {
+                            tableWrapper.css({
+                                'overflow-x': 'auto',
+                                'overflow-y': 'hidden'
+                            });
+                        }
+                    }, 100);
+                }
             });
 
             // Hide the default search input since we have our own
@@ -490,12 +568,12 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                                        <i class="fas fa-arrow-up"></i>
-                                                                    </button>` :
+                                                                            <i class="fas fa-arrow-up"></i>
+                                                                        </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                                        <i class="fas fa-arrow-down"></i>
-                                                                    </button>` : ''
+                                                                            <i class="fas fa-arrow-down"></i>
+                                                                        </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
