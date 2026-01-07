@@ -395,7 +395,7 @@ return [
                 // ],
 
                 [
-                    'text' => 'Destination Locations',
+                    'text' => 'Living In Destination Locations',
                     'url' => 'destination-locations',
                     'icon' => 'fas fa-fw fa-map-marker-alt',
                     'active' => [
