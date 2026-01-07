@@ -88,7 +88,7 @@ class BusPassIntegrationController extends Controller
     }
 
     /**
-     * Get applications for a specific establishment
+     * Get applications for a specific establishment or all applications
      */
     public function getApplications(Request $request): JsonResponse
     {
@@ -100,15 +100,32 @@ class BusPassIntegrationController extends Controller
         $establishmentId = $request->get('establishment_id');
         $routeId = $request->get('route_id');
         $type = $request->get('type', 'pending'); // pending or integrated
+        $all = $request->get('all', false); // New parameter to get all applications
+
+        // Debug logging
+        \Log::info('BusPassIntegrationController::getApplications', [
+            'establishment_id' => $establishmentId,
+            'route_id' => $routeId,
+            'route_type' => $request->get('route_type'),
+            'type' => $type,
+            'all' => $all
+        ]);
 
         $statusMap = [
             'pending' => ['approved_for_integration', 'approved_for_temp_card'],
             'integrated' => ['integrated_to_branch_card', 'integrated_to_temp_card']
         ];
 
-        $query = BusPassApplication::with(['person', 'establishment'])
-            ->where('establishment_id', $establishmentId)
-            ->whereIn('status', $statusMap[$type]);
+        if ($all) {
+            // Get all applications for the selected route
+            $query = BusPassApplication::with(['person', 'establishment'])
+                ->whereIn('status', array_merge($statusMap['pending'], $statusMap['integrated']));
+        } else {
+            // Get applications for specific establishment
+            $query = BusPassApplication::with(['person', 'establishment'])
+                ->where('establishment_id', $establishmentId)
+                ->whereIn('status', $statusMap[$type]);
+        }
 
         // Filter by route if specified
         if ($routeId && $routeId !== 'all') {
@@ -117,27 +134,39 @@ class BusPassIntegrationController extends Controller
             if ($routeType === 'living_out') {
                 $route = BusRoute::find($routeId);
                 if ($route) {
+                    \Log::info('Filtering by living_out route', ['route_id' => $routeId, 'route_name' => $route->name]);
                     $query->where(function ($q) use ($route) {
                         $q->where('requested_bus_name', $route->name)
                             ->orWhere('weekend_bus_name', $route->name);
                     });
+                } else {
+                    \Log::info('Living out route not found', ['route_id' => $routeId]);
                 }
             } elseif ($routeType === 'living_in') {
                 $livingInBus = \App\Models\LivingInBuses::find($routeId);
                 if ($livingInBus) {
+                    \Log::info('Filtering by living_in route', ['route_id' => $routeId, 'route_name' => $livingInBus->name]);
                     $query->where('living_in_bus', $livingInBus->name);
+                } else {
+                    \Log::info('Living in route not found', ['route_id' => $routeId]);
                 }
             }
+        } else {
+            \Log::info('No route filtering applied', ['route_id' => $routeId]);
         }
 
+        \Log::info('Final query SQL', ['sql' => $query->toSql(), 'bindings' => $query->getBindings()]);
+
         // Order by most recently updated first for integrated applications, created_at for pending
-        if ($type === 'integrated') {
+        if (!$all && $type === 'integrated') {
             $query->orderBy('updated_at', 'desc');
         } else {
             $query->orderBy('created_at', 'desc');
         }
 
         $applications = $query->get();
+
+        \Log::info('Applications found', ['count' => $applications->count()]);
 
         return response()->json([
             'data' => $applications->map(function ($app) {

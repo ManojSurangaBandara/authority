@@ -64,7 +64,7 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title" id="tableTitle">Click on chart bars to view applications</h3>
+                        <h3 class="card-title" id="tableTitle">All Applications</h3>
                     </div>
                     <div class="card-body">
                         <div class="row mb-3">
@@ -81,7 +81,7 @@
                             </div>
                         </div>
                         <div class="applications-table-wrapper">
-                            <table id="applicationsTable" class="table table-bordered table-striped" style="display: none;">
+                            <table id="applicationsTable" class="table table-bordered table-striped">
                                 <thead>
                                     <tr>
                                         <th>Application ID</th>
@@ -253,20 +253,45 @@
         $(document).ready(function() {
             console.log('Document ready, initializing...');
             console.log('Chart.js available:', typeof Chart);
+
+            // Read current selected route from localStorage or dropdown
+            let savedRouteId = localStorage.getItem('selectedRouteId');
+            let savedRouteType = localStorage.getItem('selectedRouteType');
+
+            if (savedRouteId) {
+                // Restore saved selection
+                $('#routeFilter').val(savedRouteId);
+                currentRouteId = savedRouteId;
+                currentRouteType = savedRouteType || 'living_out';
+            } else {
+                // Read current selected route from dropdown
+                currentRouteId = $('#routeFilter').val();
+                currentRouteType = $('#routeFilter').find('option:selected').data('route-type') || 'living_out';
+            }
+
+            // Update global variables for modal
+            window.currentRouteId = currentRouteId;
+            window.currentRouteType = currentRouteType;
+
             initializeDataTable();
             loadChartData();
+            loadAllApplications(); // Load all applications initially
 
             // Route filter change
             $('#routeFilter').on('change', function() {
                 currentRouteId = $(this).val();
                 currentRouteType = $(this).find('option:selected').data('route-type') || 'living_out';
 
+                // Save to localStorage
+                localStorage.setItem('selectedRouteId', currentRouteId);
+                localStorage.setItem('selectedRouteType', currentRouteType);
+
                 // Update global variables for modal
                 window.currentRouteId = currentRouteId;
                 window.currentRouteType = currentRouteType;
 
                 loadChartData();
-                hideApplicationsTable();
+                loadAllApplications(); // Reload applications when route changes
             });
 
             // Search functionality
@@ -508,6 +533,27 @@
             });
         }
 
+        function loadAllApplications() {
+            console.log('Loading all applications for route:', currentRouteId, 'type:', currentRouteType);
+            $.ajax({
+                url: '{{ route('bus-pass-integration.applications') }}',
+                method: 'GET',
+                data: {
+                    route_id: currentRouteId,
+                    route_type: currentRouteType,
+                    all: true // Flag to get all applications
+                },
+                success: function(response) {
+                    console.log('Received applications:', response.data.length);
+                    displayAllApplications(response.data);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading all applications:', error);
+                    // Don't show alert for initial load, just log error
+                }
+            });
+        }
+
         function displayApplications(applications, establishmentName, type) {
             const title =
                 `${establishmentName} - ${type === 'pending' ? 'Pending Integration' : 'Integrated'} Applications (${applications.length})`;
@@ -568,12 +614,115 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                                            <i class="fas fa-arrow-up"></i>
-                                                                        </button>` :
+                                                                                        <i class="fas fa-arrow-up"></i>
+                                                                                    </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                                            <i class="fas fa-arrow-down"></i>
-                                                                        </button>` : ''
+                                                                                        <i class="fas fa-arrow-down"></i>
+                                                                                    </button>` : ''
+                        : ''}`;
+
+                applicationsTable.row.add([
+                    app.id,
+                    app.person_regiment_no,
+                    app.person_name,
+                    app.person_rank,
+                    app.establishment ?
+                    `<span class="badge ${establishmentBadgeClass}">${app.establishment}</span>` : 'N/A',
+                    app.bus_pass_type ?
+                    `<span class="badge ${busPassTypeBadgeClass}">${app.bus_pass_type.replace(/_/g, ' ')}</span>` :
+                    'N/A',
+                    actionsHtml,
+                    app.requested_bus_name || 'N/A',
+                    app.destination_from_ahq || 'N/A',
+                    app.weekend_bus_name || 'N/A',
+                    app.weekend_destination || 'N/A',
+                    app.living_in_bus || 'N/A',
+                    app.destination_location_ahq || 'N/A'
+                ]);
+            });
+
+            // Draw the table
+            if (applicationsTable) {
+                applicationsTable.draw();
+            }
+
+            $('#applicationsTable').show();
+        }
+
+        function displayAllApplications(applications) {
+            let title = `All Applications (${applications.length})`;
+
+            // If a specific route is selected, show the route name in the title
+            if (currentRouteId !== 'all') {
+                const selectedOption = $('#routeFilter').find('option:selected');
+                const routeName = selectedOption.text();
+                title = `${routeName} - All Applications (${applications.length})`;
+            }
+
+            $('#tableTitle').text(title);
+
+            // Clear existing data
+            if (applicationsTable) {
+                applicationsTable.clear();
+            }
+
+            // Add new data
+            applications.forEach(function(app) {
+                const statusClass = `status-${app.status.replace(/_/g, '_')}`;
+                const statusText = app.status.replace(/_/g, ' ');
+
+                // Determine badge class for bus pass type
+                let busPassTypeBadgeClass = 'badge-secondary'; // default
+                if (app.bus_pass_type) {
+                    switch (app.bus_pass_type) {
+                        case 'daily_travel':
+                            busPassTypeBadgeClass = 'badge-primary';
+                            break;
+                        case 'unmarried_daily_travel':
+                            busPassTypeBadgeClass = 'badge-info';
+                            break;
+                        case 'weekend_monthly_travel':
+                            busPassTypeBadgeClass = 'badge-success';
+                            break;
+                        case 'living_in_only':
+                            busPassTypeBadgeClass = 'badge-warning';
+                            break;
+                        case 'weekend_only':
+                            busPassTypeBadgeClass = 'badge-dark';
+                            break;
+                        default:
+                            busPassTypeBadgeClass = 'badge-secondary';
+                    }
+                }
+
+                // Determine badge class for establishment
+                let establishmentBadgeClass = 'badge-secondary'; // default
+                if (app.establishment) {
+                    // Simple hash-based color assignment for consistency
+                    const colors = ['badge-primary', 'badge-info', 'badge-success', 'badge-warning', 'badge-danger',
+                        'badge-dark'
+                    ];
+                    let hash = 0;
+                    for (let i = 0; i < app.establishment.length; i++) {
+                        hash = app.establishment.charCodeAt(i) + ((hash << 5) - hash);
+                    }
+                    establishmentBadgeClass = colors[Math.abs(hash) % colors.length];
+                }
+
+                const actionsHtml = `
+                    <button class="btn btn-info btn-xs view-application" data-id="${app.id}" title="View Details">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    ${canIntegrate ?
+                        (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
+                            `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
+                                                                                        <i class="fas fa-arrow-up"></i>
+                                                                                    </button>` :
+                        (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
+                            `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
+                                                                                        <i class="fas fa-arrow-down"></i>
+                                                                                    </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
