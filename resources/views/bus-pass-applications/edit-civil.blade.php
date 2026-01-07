@@ -311,11 +311,10 @@
                                                 <option value="">Select Type</option>
                                                 <option value="daily_travel"
                                                     {{ old('bus_pass_type', $bus_pass_application->bus_pass_type) == 'daily_travel' ? 'selected' : '' }}>
-                                                    Daily
-                                                    Travel (Living out)</option>
-                                                <option value="weekend_monthly_travel"
-                                                    {{ old('bus_pass_type', $bus_pass_application->bus_pass_type) == 'weekend_monthly_travel' ? 'selected' : '' }}>
-                                                    Weekend and Living in Bus</option>
+                                                    Daily Travel</option>
+                                                <option value="weekend_only"
+                                                    {{ old('bus_pass_type', $bus_pass_application->bus_pass_type) == 'weekend_only' ? 'selected' : '' }}>
+                                                    Weekend Only</option>
                                             </select>
                                             @error('bus_pass_type')
                                                 <span class="invalid-feedback">{{ $message }}</span>
@@ -412,48 +411,17 @@
                                     </div>
                                 </div>
 
-                                <div id="weekend_monthly_section" style="display: none;">
+                                <div id="weekend_only_section" style="display: none;">
                                     <div class="row">
                                         <div class="col-12">
-                                            <h5 class="text-info mb-3">Living in Person - Weekend/Monthly Traveling</h5>
+                                            <h5 class="text-info mb-3">Weekend Only</h5>
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label for="living_in_bus">Living in bus</label>
-                                                <select class="form-control" id="living_in_bus" name="living_in_bus">
-                                                    <option value="">Select Living in bus</option>
-                                                    @if (isset($livingInBuses))
-                                                        @foreach ($livingInBuses as $bus)
-                                                            <option value="{{ $bus->name }}"
-                                                                {{ old('living_in_bus', $bus_pass_application->living_in_bus) == $bus->name ? 'selected' : '' }}>
-                                                                {{ $bus->name }}</option>
-                                                        @endforeach
-                                                    @endif
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label for="destination_location_ahq">Destination Location from AHQ</label>
-                                                <select class="form-control" id="destination_location_ahq"
-                                                    name="destination_location_ahq">
-                                                    <option value="">Select Destination Location</option>
-                                                    @foreach ($destinationLocations as $location)
-                                                        <option value="{{ $location->destination_location }}"
-                                                            {{ old('destination_location_ahq', $bus_pass_application->destination_location_ahq) == $location->destination_location ? 'selected' : '' }}>
-                                                            {{ $location->destination_location }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                <label for="weekend_bus_name">Weekend Bus Name</label>
-                                                <select class="form-control" id="weekend_bus_name"
+                                                <label for="weekend_bus_name_only">Weekend Bus Name</label>
+                                                <select class="form-control" id="weekend_bus_name_only"
                                                     name="weekend_bus_name">
                                                     <option value="">Select Bus</option>
                                                     @if (isset($busRoutes))
@@ -468,8 +436,9 @@
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label for="weekend_destination">Destination</label>
-                                                <input type="text" class="form-control" id="weekend_destination"
+                                                <label for="weekend_destination_only">Destination Location from
+                                                    AHQ</label>
+                                                <input type="text" class="form-control" id="weekend_destination_only"
                                                     name="weekend_destination"
                                                     value="{{ old('weekend_destination', $bus_pass_application->weekend_destination) }}">
                                             </div>
@@ -747,12 +716,12 @@
             $('#bus_pass_type').change(function() {
                 var type = $(this).val();
                 $('#daily_travel_section').hide();
-                $('#weekend_monthly_section').hide();
+                $('#weekend_only_section').hide();
 
                 if (type === 'daily_travel') {
                     $('#daily_travel_section').show();
-                } else if (type === 'weekend_monthly_travel') {
-                    $('#weekend_monthly_section').show();
+                } else if (type === 'weekend_only') {
+                    $('#weekend_only_section').show();
                 }
             });
 
@@ -840,7 +809,7 @@
                 // Disable all form fields in hidden sections to prevent submission of empty values
                 $('#daily_travel_section:hidden input, #daily_travel_section:hidden select').prop(
                     'disabled', true);
-                $('#weekend_monthly_section:hidden input, #weekend_monthly_section:hidden select').prop(
+                $('#weekend_only_section:hidden input, #weekend_only_section:hidden select').prop(
                     'disabled', true);
             });
         });
