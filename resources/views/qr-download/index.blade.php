@@ -75,7 +75,7 @@
                         <div class="card-header">
                             <i class="nav-icon fas fa-qrcode nav-icon"></i>
                             {{ __('QR Download') }}
-                            <small class="text-muted">Download QR codes for temporary bus pass cards</small>
+                            <small class="text">(Download QR codes for temporary bus pass cards)</small>
                         </div>
 
                         <div class="card-body">
