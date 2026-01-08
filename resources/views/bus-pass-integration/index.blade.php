@@ -261,16 +261,19 @@
             let savedRouteId = localStorage.getItem('selectedRouteId');
             let savedRouteType = localStorage.getItem('selectedRouteType');
 
-            if (savedRouteId) {
-                // Restore saved selection
-                $('#routeFilter').val(savedRouteId);
-                currentRouteId = savedRouteId;
-                currentRouteType = savedRouteType || 'living_out';
-            } else {
-                // Read current selected route from dropdown
-                currentRouteId = $('#routeFilter').val();
-                currentRouteType = $('#routeFilter').find('option:selected').data('route-type') || 'living_out';
-            }
+            currentRouteId = $('#routeFilter').val();
+            currentRouteType = $('#routeFilter').find('option:selected').data('route-type') || 'living_out';
+
+            // if (savedRouteId) {
+            //     // Restore saved selection
+            //     $('#routeFilter').val(savedRouteId);
+            //     currentRouteId = savedRouteId;
+            //     currentRouteType = savedRouteType || 'living_out';
+            // } else {
+            //     // Read current selected route from dropdown
+            //     currentRouteId = $('#routeFilter').val();
+            //     currentRouteType = $('#routeFilter').find('option:selected').data('route-type') || 'living_out';
+            // }
 
             // Update global variables for modal
             window.currentRouteId = currentRouteId;
@@ -627,12 +630,12 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                                                            <i class="fas fa-arrow-up"></i>
-                                                                                        </button>` :
+                                                                                                <i class="fas fa-arrow-up"></i>
+                                                                                            </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                                                            <i class="fas fa-arrow-down"></i>
-                                                                                        </button>` : ''
+                                                                                                <i class="fas fa-arrow-down"></i>
+                                                                                            </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
@@ -730,12 +733,12 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                                                            <i class="fas fa-arrow-up"></i>
-                                                                                        </button>` :
+                                                                                                <i class="fas fa-arrow-up"></i>
+                                                                                            </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                                                            <i class="fas fa-arrow-down"></i>
-                                                                                        </button>` : ''
+                                                                                                <i class="fas fa-arrow-down"></i>
+                                                                                            </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
