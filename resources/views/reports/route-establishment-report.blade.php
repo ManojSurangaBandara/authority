@@ -88,7 +88,8 @@
                         @if ($selectedRoute)
                             <div class="mb-3">
                                 <h4>Report for Route:
-                                    <strong>{{ $selectedRoute === 'all' ? 'All Routes' : $selectedRoute }}</strong></h4>
+                                    <strong>{{ $selectedRoute === 'all' ? 'All Routes' : $selectedRoute }}</strong>
+                                </h4>
                             </div>
 
                             <div class="table-responsive">
@@ -96,11 +97,13 @@
                                     <thead class="thead-dark">
                                         <tr>
                                             <th style="width: 5%;">No</th>
-                                            <th style="width: 40%;">Establishment</th>
-                                            <th style="width: 13%;">All</th>
-                                            <th style="width: 13%;">Pending</th>
-                                            <th style="width: 13%;">Approved</th>
-                                            <th style="width: 13%;">Integrated</th>
+                                            <th style="width: 30%;">Establishment</th>
+                                            <th style="width: 10%;">All</th>
+                                            <th style="width: 10%;">Pending-Branch</th>
+                                            <th style="width: 10%;">Pending-DMOV</th>
+                                            <th style="width: 10%;">Approved</th>
+                                            <th style="width: 10%;">Integrated</th>
+                                            <th style="width: 10%;">Rejected</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -112,18 +115,24 @@
                                                     <span class="badge badge-primary">{{ $data['all'] }}</span>
                                                 </td>
                                                 <td class="text-center">
-                                                    <span class="badge badge-warning">{{ $data['pending'] }}</span>
+                                                    <span class="badge badge-warning">{{ $data['pending_branch'] }}</span>
                                                 </td>
                                                 <td class="text-center">
-                                                    <span class="badge badge-info">{{ $data['approved'] }}</span>
+                                                    <span class="badge badge-info">{{ $data['pending_dmov'] }}</span>
                                                 </td>
                                                 <td class="text-center">
-                                                    <span class="badge badge-success">{{ $data['integrated'] }}</span>
+                                                    <span class="badge badge-success">{{ $data['approved'] }}</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge badge-secondary">{{ $data['integrated'] }}</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge badge-danger">{{ $data['rejected'] }}</span>
                                                 </td>
                                             </tr>
                                         @empty
                                             <tr>
-                                                <td colspan="6" class="text-center">
+                                                <td colspan="8" class="text-center">
                                                     <div class="alert alert-info mb-0">
                                                         <i class="fas fa-info-circle"></i>
                                                         No data available for the selected route
@@ -137,9 +146,11 @@
                                             <tr class="table-dark">
                                                 <th colspan="2" class="text-right">Total:</th>
                                                 <th class="text-center">{{ $reportData->sum('all') }}</th>
-                                                <th class="text-center">{{ $reportData->sum('pending') }}</th>
+                                                <th class="text-center">{{ $reportData->sum('pending_branch') }}</th>
+                                                <th class="text-center">{{ $reportData->sum('pending_dmov') }}</th>
                                                 <th class="text-center">{{ $reportData->sum('approved') }}</th>
                                                 <th class="text-center">{{ $reportData->sum('integrated') }}</th>
+                                                <th class="text-center">{{ $reportData->sum('rejected') }}</th>
                                             </tr>
                                         </tfoot>
                                     @endif

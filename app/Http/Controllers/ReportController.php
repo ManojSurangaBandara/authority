@@ -429,27 +429,39 @@ class ReportController extends Controller
                 // Count all applications for this establishment and route
                 $allCount = (clone $baseQuery)->count();
 
-                // Count pending applications (not yet approved by Col Mov)
-                $pendingCount = (clone $baseQuery)
-                    ->whereNotIn('status', ['approved_for_integration', 'integrated_to_branch_card', 'temp_card_handed_over'])
+                // Count pending applications at branch level
+                $pendingBranchCount = (clone $baseQuery)
+                    ->whereIn('status', ['pending_subject_clerk', 'pending_staff_officer_branch'])
                     ->count();
 
-                // Count approved applications (approved by Col Mov)
+                // Count pending applications at DMOV level
+                $pendingDMOVCount = (clone $baseQuery)
+                    ->whereIn('status', ['forwarded_to_movement', 'pending_staff_officer_2_mov', 'pending_col_mov'])
+                    ->count();
+
+                // Count approved applications (approved by Col Mov or Director Mov but not yet integrated)
                 $approvedCount = (clone $baseQuery)
-                    ->whereIn('status', ['approved_for_integration'])
+                    ->whereIn('status', ['approved_for_integration', 'approved_for_temp_card'])
                     ->count();
 
                 // Count integrated applications
                 $integratedCount = (clone $baseQuery)
-                    ->whereIn('status', ['integrated_to_branch_card', 'temp_card_handed_over'])
+                    ->whereIn('status', ['integrated_to_branch_card', 'integrated_to_temp_card', 'temp_card_handed_over', 'temp_card_printed'])
+                    ->count();
+
+                // Count rejected applications
+                $rejectedCount = (clone $baseQuery)
+                    ->where('status', 'rejected')
                     ->count();
 
                 $reportData->push([
                     'establishment' => $establishment->name,
                     'all' => $allCount,
-                    'pending' => $pendingCount,
+                    'pending_branch' => $pendingBranchCount,
+                    'pending_dmov' => $pendingDMOVCount,
                     'approved' => $approvedCount,
-                    'integrated' => $integratedCount
+                    'integrated' => $integratedCount,
+                    'rejected' => $rejectedCount
                 ]);
             }
         }
@@ -485,16 +497,18 @@ class ReportController extends Controller
             $reportTitle = $routeName === 'all' ? 'All Routes' : $routeName;
             fputcsv($file, ['Route Establishment Report - ' . $reportTitle]);
             fputcsv($file, []); // Empty row
-            fputcsv($file, ['Establishment', 'All', 'Pending', 'Approved', 'Integrated']);
+            fputcsv($file, ['Establishment', 'All', 'Pending-Branch', 'Pending-DMOV', 'Approved', 'Integrated', 'Rejected']);
 
             // Write data
             foreach ($reportData as $row) {
                 fputcsv($file, [
                     $row['establishment'],
                     $row['all'],
-                    $row['pending'],
+                    $row['pending_branch'],
+                    $row['pending_dmov'],
                     $row['approved'],
-                    $row['integrated']
+                    $row['integrated'],
+                    $row['rejected']
                 ]);
             }
 
@@ -503,9 +517,11 @@ class ReportController extends Controller
             fputcsv($file, [
                 'Total',
                 $reportData->sum('all'),
-                $reportData->sum('pending'),
+                $reportData->sum('pending_branch'),
+                $reportData->sum('pending_dmov'),
                 $reportData->sum('approved'),
-                $reportData->sum('integrated')
+                $reportData->sum('integrated'),
+                $reportData->sum('rejected')
             ]);
 
             fclose($file);
