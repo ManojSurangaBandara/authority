@@ -546,7 +546,7 @@ class ReportController extends Controller
             'person.personType',
             'establishment'
         ])
-            ->whereIn('status', ['integrated_to_branch_card', 'temp_card_handed_over']);
+            ->whereIn('status', ['integrated_to_branch_card', 'integrated_to_temp_card', 'temp_card_handed_over', 'temp_card_printed']);
 
         // Apply establishment filter if selected
         if ($selectedEstablishment) {
