@@ -109,38 +109,7 @@ class AppServiceProvider extends ServiceProvider
             return $user->hasRole('System Administrator (DMOV)');
         });
 
-        // Register global helper function for pending approvals count
-        if (!function_exists('getPendingApprovalsCount')) {
-            function getPendingApprovalsCount()
-            {
-                if (!Auth::check()) {
-                    return 0;
-                }
-
-                /** @var User $user */
-                $user = Auth::user();
-                $pendingCount = 0;
-
-                // Calculate pending approvals based on user role
-                if ($user->hasRole('Bus Pass Subject Clerk (Branch)')) {
-                    $pendingCount = BusPassApplication::where('status', 'pending_subject_clerk')
-                        ->where('establishment_id', $user->establishment_id)
-                        ->count();
-                } elseif ($user->hasRole('Staff Officer (Branch)')) {
-                    $pendingCount = BusPassApplication::where('status', 'pending_staff_officer_branch')
-                        ->where('establishment_id', $user->establishment_id)
-                        ->count();
-                } elseif ($user->hasRole('Subject Clerk (DMOV)')) {
-                    $pendingCount = BusPassApplication::where('status', 'forwarded_to_movement')->count();
-                } elseif ($user->hasRole('Staff Officer 2 (DMOV)')) {
-                    $pendingCount = BusPassApplication::where('status', 'pending_staff_officer_2_mov')->count();
-                } elseif ($user->hasRole('Col Mov (DMOV)') || $user->hasRole('Director (DMOV)')) {
-                    $pendingCount = BusPassApplication::where('status', 'pending_col_mov')->count();
-                }
-
-                return $pendingCount;
-            }
-        }
+        // Register global helper function for pending approvals count is now in app/helpers.php
 
         // Register Blade directive for approval count badge
         Blade::directive('approvalCount', function () {

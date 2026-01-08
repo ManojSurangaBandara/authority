@@ -620,11 +620,32 @@ return [
 
                 [
                     'text' => 'Passenger Counts',
-                    'url' => 'passenger-counts',
                     'icon' => 'fas fa-fw fa-chart-bar',
-                    // 'can' => 'manage_user_accounts',
-                    'active' => [
-                        'passenger-counts*',
+                    'submenu' => [
+                        // [
+                        //     'text' => 'All Routes',
+                        //     'url' => 'passenger-counts',
+                        //     'icon' => 'fas fa-fw fa-list',
+                        //     'active' => [
+                        //         'passenger-counts*',
+                        //     ],
+                        // ],
+                        [
+                            'text' => 'Living Out',
+                            'url' => 'living-out-passenger-counts',
+                            'icon' => 'fas fa-fw fa-bus',
+                            'active' => [
+                                'living-out-passenger-counts*',
+                            ],
+                        ],
+                        [
+                            'text' => 'Living In',
+                            'url' => 'living-in-passenger-counts',
+                            'icon' => 'fas fa-fw fa-home',
+                            'active' => [
+                                'living-in-passenger-counts*',
+                            ],
+                        ],
                     ],
                 ],
                 [

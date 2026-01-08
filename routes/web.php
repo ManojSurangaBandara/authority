@@ -208,6 +208,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('passenger-counts', [ReportController::class, 'passengerCounts'])->name('passenger-counts.index');
 
+    Route::get('living-out-passenger-counts', [ReportController::class, 'livingOutPassengerCounts'])->name('living-out-passenger-counts.index');
+
+    Route::get('living-in-passenger-counts', [ReportController::class, 'livingInPassengerCounts'])->name('living-in-passenger-counts.index');
+
     Route::get('establishment-wise-applications', [ReportController::class, 'establishmentWiseApplications'])->name('establishment-wise-applications.index');
 
     Route::get('route-establishment-report', [ReportController::class, 'routeEstablishmentReport'])->name('route-establishment-report.index');

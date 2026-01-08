@@ -255,6 +255,147 @@ class ReportController extends Controller
     }
 
     /**
+     * Display living out passenger counts report by route and person type
+     */
+    public function livingOutPassengerCounts()
+    {
+        // Get only bus routes (living out routes)
+        $busRoutes = BusRoute::get()
+            ->map(function ($route) {
+                return (object) [
+                    'id' => $route->id,
+                    'name' => $route->name,
+                    'type' => 'bus_route'
+                ];
+            });
+
+        // Get person types
+        $personTypes = PersonType::where('is_active', true)->get();
+
+        // Build route data with passenger counts
+        $routeData = collect();
+        foreach ($busRoutes as $route) {
+            $routeName = $route->name;
+            $routeType = $route->type;
+
+            $counts = [
+                'route' => $routeName,
+                'route_type' => $routeType,
+                'route_display' => $routeName,
+                'has_duplicate' => false
+            ];
+
+            // Get seating capacity for this route
+            $capacityInfo = (new BusPassApplication())->getSeatingCapacityForRoute($routeName, 'living_out');
+            $counts['seating_capacity'] = $capacityInfo ? $capacityInfo['seats'] : null;
+
+            // Initialize counts for each person type
+            foreach ($personTypes as $personType) {
+                $counts[strtolower($personType->name)] = 0;
+            }
+
+            // Count passengers by person type for this route
+            $applications = BusPassApplication::with(['person.personType'])
+                ->where(function ($query) use ($routeName) {
+                    $query->where('requested_bus_name', $routeName)
+                        ->orWhere('weekend_bus_name', $routeName);
+                })
+                ->whereIn('status', ['integrated_to_branch_card', 'integrated_to_temp_card'])
+                ->get();
+
+            foreach ($applications as $application) {
+                if ($application->person && $application->person->personType) {
+                    $personTypeName = strtolower($application->person->personType->name);
+                    if (isset($counts[$personTypeName])) {
+                        $counts[$personTypeName]++;
+                    }
+                }
+            }
+
+            // Calculate total
+            $counts['total'] = array_sum(array_filter($counts, function ($value, $key) {
+                return is_numeric($value) && $key !== 'seating_capacity';
+            }, ARRAY_FILTER_USE_BOTH));
+
+            $routeData->push($counts);
+        }
+
+        // Sort by route name
+        $routeData = $routeData->sortBy('route')->values();
+
+        return view('reports.living-out-passenger-counts', compact('routeData', 'personTypes'));
+    }
+
+    /**
+     * Display living in passenger counts report by route and person type
+     */
+    public function livingInPassengerCounts()
+    {
+        // Get only living in buses
+        $livingInBuses = LivingInBuses::get()
+            ->map(function ($bus) {
+                return (object) [
+                    'id' => $bus->id,
+                    'name' => $bus->name,
+                    'type' => 'living_in_bus'
+                ];
+            });
+
+        // Get person types
+        $personTypes = PersonType::where('is_active', true)->get();
+
+        // Build route data with passenger counts
+        $routeData = collect();
+        foreach ($livingInBuses as $route) {
+            $routeName = $route->name;
+            $routeType = $route->type;
+
+            $counts = [
+                'route' => $routeName,
+                'route_type' => $routeType,
+                'route_display' => $routeName,
+                'has_duplicate' => false
+            ];
+
+            // Get seating capacity for this route
+            $capacityInfo = (new BusPassApplication())->getSeatingCapacityForRoute($routeName, 'living_in');
+            $counts['seating_capacity'] = $capacityInfo ? $capacityInfo['seats'] : null;
+
+            // Initialize counts for each person type
+            foreach ($personTypes as $personType) {
+                $counts[strtolower($personType->name)] = 0;
+            }
+
+            // Count passengers by person type for this route
+            $applications = BusPassApplication::with(['person.personType'])
+                ->where('living_in_bus', $routeName)
+                ->whereIn('status', ['integrated_to_branch_card', 'integrated_to_temp_card'])
+                ->get();
+
+            foreach ($applications as $application) {
+                if ($application->person && $application->person->personType) {
+                    $personTypeName = strtolower($application->person->personType->name);
+                    if (isset($counts[$personTypeName])) {
+                        $counts[$personTypeName]++;
+                    }
+                }
+            }
+
+            // Calculate total
+            $counts['total'] = array_sum(array_filter($counts, function ($value, $key) {
+                return is_numeric($value) && $key !== 'seating_capacity';
+            }, ARRAY_FILTER_USE_BOTH));
+
+            $routeData->push($counts);
+        }
+
+        // Sort by route name
+        $routeData = $routeData->sortBy('route')->values();
+
+        return view('reports.living-in-passenger-counts', compact('routeData', 'personTypes'));
+    }
+
+    /**
      * Display route establishment report
      */
     public function routeEstablishmentReport(Request $request)
