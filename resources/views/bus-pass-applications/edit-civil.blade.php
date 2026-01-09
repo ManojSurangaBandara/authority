@@ -790,11 +790,92 @@
 
             // Branch Card Verification
             $('#verify_branch_card').on('click', function() {
-                // For edit page, we'll mark as verified since it's an existing application
-                $('#verification_status').html(
-                    '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Verified!</span>'
-                );
-                branchCardVerified = true;
+                const civilId = $('#civil_id').val().trim();
+                const branchCardId = $('#branch_card_id').val().trim();
+
+                if (!civilId) {
+                    alert('Please fill in Civil ID first.');
+                    return;
+                }
+
+                if (!branchCardId) {
+                    alert('Please enter Branch Card ID.');
+                    return;
+                }
+
+                // Show loading state
+                $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Verifying...');
+                $('#verification_status').html('<span class="badge badge-info">Verifying...</span>');
+
+                // API call to verify branch card through backend proxy (civil applications use civil_id)
+                $.ajax({
+                    url: '{{ route('bus-pass-applications.verify-branch-card') }}',
+                    method: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        service_no: civilId, // Use civil_id as service_no for civil personnel
+                        ser_no: branchCardId
+                    },
+                    success: function(response) {
+                        // Check if person data exists and is verified
+                        if (response.person && response.person.length > 0) {
+                            const personData = response.person[0];
+
+                            // Check if the person is active and approved
+                            if (personData.active === 1 && personData.approved === 3 &&
+                                personData.approval_card === 'Approved' && personData
+                                .status_card === 'Active') {
+                                $('#verification_status').html(
+                                    '<span class="badge badge-success"><i class="fas fa-check-circle"></i> Verified!</span>'
+                                );
+                                branchCardVerified = true;
+
+                                // Show additional info for verification
+                                console.log('Branch Card Verified:', {
+                                    name: personData.name_with_initial,
+                                    rank: personData.rank,
+                                    unit: personData.unit,
+                                    establishment: personData.establishments
+                                });
+                            } else {
+                                $('#verification_status').html(
+                                    '<span class="badge badge-warning"><i class="fas fa-exclamation-triangle"></i> Card Not Active/Approved</span>'
+                                );
+                                branchCardVerified = false;
+                                alert(
+                                    'Branch card is not active or approved. Please check with your unit.'
+                                );
+                            }
+                        } else {
+                            // No person data found
+                            $('#verification_status').html(
+                                '<span class="badge badge-danger"><i class="fas fa-times-circle"></i> Not Verified</span>'
+                            );
+                            branchCardVerified = false;
+                            alert(
+                                'Branch card not found. Please check your Civil ID and Branch Card ID.'
+                            );
+                        }
+                    },
+                    error: function(xhr) {
+                        $('#verification_status').html(
+                            '<span class="badge badge-danger"><i class="fas fa-times-circle"></i> Verification Failed</span>'
+                        );
+                        branchCardVerified = false;
+
+                        let errorMsg = 'Branch card verification failed. Please try again.';
+                        if (xhr.status === 0) {
+                            errorMsg = 'Network error. Please check your internet connection.';
+                        } else if (xhr.status >= 500) {
+                            errorMsg = 'Server error. Please try again later.';
+                        }
+                        alert(errorMsg);
+                    },
+                    complete: function() {
+                        $('#verify_branch_card').prop('disabled', false).html(
+                            '<i class="fas fa-check-circle"></i> Verify');
+                    }
+                });
             });
 
             // Handle form submission - disable fields in hidden sections
