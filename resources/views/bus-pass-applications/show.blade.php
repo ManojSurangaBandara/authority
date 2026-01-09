@@ -341,7 +341,11 @@
                         <!-- Rent Allowance Document (Conditional) -->
                         @if (
                             $bus_pass_application->bus_pass_type !== 'living_in_only' &&
-                                $bus_pass_application->bus_pass_type !== 'unmarried_daily_travel')
+                                $bus_pass_application->bus_pass_type !== 'unmarried_daily_travel' &&
+                                !(
+                                    $bus_pass_application->bus_pass_type === 'weekend_monthly_travel' &&
+                                    $bus_pass_application->marital_status !== 'married'
+                                ))
                             <div class="row mt-3">
                                 <div class="col-md-12">
                                     <strong>Marriage Part II Order:</strong>
@@ -360,12 +364,18 @@
                         @endif
 
                         <!-- Permission Letter Document (Conditional) -->
-                        @if ($bus_pass_application->bus_pass_type === 'unmarried_daily_travel')
+                        @if (
+                            $bus_pass_application->bus_pass_type === 'unmarried_daily_travel' ||
+                                ($bus_pass_application->bus_pass_type === 'weekend_monthly_travel' &&
+                                    $bus_pass_application->marital_status !== 'married'))
                             <div class="row mt-3">
-                                @if ($bus_pass_application->marital_status !== 'married')
+                                @if (
+                                    $bus_pass_application->bus_pass_type === 'unmarried_daily_travel' ||
+                                        $bus_pass_application->marital_status !== 'married')
                                     <div class="col-md-12">
                                         <strong>Letter of Permission from the Head of Establishment:</strong>
-                                        <span class="text-info">(For Unmarried Daily Travel only)</span><br>
+                                        <span
+                                            class="text-info">({{ $bus_pass_application->bus_pass_type === 'unmarried_daily_travel' ? 'For Unmarried Daily Travel only' : 'For Single Personnel with Weekend and Living in Travel' }})</span><br>
                                         @if ($bus_pass_application->permission_letter)
                                             <a href="{{ asset('storage/' . $bus_pass_application->permission_letter) }}"
                                                 target="_blank" class="btn btn-sm btn-outline-primary">

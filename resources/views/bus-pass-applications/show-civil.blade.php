@@ -223,10 +223,29 @@
                                 </div>
                             @endif
 
-                            @if ($bus_pass_application->marriage_part_ii_order)
+                            @if (
+                                $bus_pass_application->marriage_part_ii_order &&
+                                    !(
+                                        $bus_pass_application->bus_pass_type === 'weekend_monthly_travel' &&
+                                        $bus_pass_application->marital_status !== 'married'
+                                    ))
                                 <div class="col-md-4">
                                     <strong>Marriage Part II Order:</strong><br>
                                     <a href="{{ asset('storage/' . $bus_pass_application->marriage_part_ii_order) }}"
+                                        target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-file-pdf"></i> View Document
+                                    </a>
+                                </div>
+                            @endif
+
+                            @if (
+                                $bus_pass_application->permission_letter &&
+                                    ($bus_pass_application->bus_pass_type === 'unmarried_daily_travel' ||
+                                        ($bus_pass_application->bus_pass_type === 'weekend_monthly_travel' &&
+                                            $bus_pass_application->marital_status !== 'married')))
+                                <div class="col-md-4">
+                                    <strong>Letter of Permission from the Head of Establishment:</strong><br>
+                                    <a href="{{ asset('storage/' . $bus_pass_application->permission_letter) }}"
                                         target="_blank" class="btn btn-sm btn-outline-primary">
                                         <i class="fas fa-file-pdf"></i> View Document
                                     </a>
