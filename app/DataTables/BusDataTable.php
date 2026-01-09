@@ -31,15 +31,19 @@ class BusDataTable extends DataTable
                 // Use the preloaded counts for better performance
                 $routesCount = $row->routes_count ?? 0;
                 $fillingStationAssignmentsCount = $row->filling_station_assignments_count ?? 0;
-                $isUsed = $routesCount > 0 || $fillingStationAssignmentsCount > 0;
+                $routeAssignmentsCount = $row->route_assignments_count ?? 0;
+                $isUsed = $routesCount > 0 || $fillingStationAssignmentsCount > 0 || $routeAssignmentsCount > 0;
 
                 // Build usage reasons array
                 $usageReasons = [];
                 if ($routesCount > 0) {
                     $usageReasons[] = "Assigned to {$routesCount} route(s)";
                 }
+                if ($routeAssignmentsCount > 0) {
+                    $usageReasons[] = "Has {$routeAssignmentsCount} active route assignment(s)";
+                }
                 if ($fillingStationAssignmentsCount > 0) {
-                    $usageReasons[] = "Has {$fillingStationAssignmentsCount} filling station assignment(s)";
+                    $usageReasons[] = "Has {$fillingStationAssignmentsCount} active filling station assignment(s)";
                 }
 
                 $reasonText = implode(', ', $usageReasons);
@@ -47,9 +51,9 @@ class BusDataTable extends DataTable
                 // View button (always available)
                 $viewBtn = '<a href="' . route('buses.show', $row->id) . '" class="btn btn-xs btn-info" title="View"><i class="fas fa-eye"></i></a>';
 
-                // Edit button (disabled if bus is assigned to routes)
-                if ($routesCount > 0) {
-                    $editBtn = '<span class="btn btn-xs btn-secondary disabled mx-1" title="Cannot edit: Assigned to ' . $routesCount . ' route(s)" data-toggle="tooltip">
+                // Edit button (disabled if bus is assigned to routes or has assignments)
+                if ($isUsed) {
+                    $editBtn = '<span class="btn btn-xs btn-secondary disabled mx-1" title="Cannot edit: ' . $reasonText . '" data-toggle="tooltip">
                         <i class="fas fa-edit"></i>
                     </span>';
                 } else {
@@ -84,7 +88,15 @@ class BusDataTable extends DataTable
      */
     public function query(Bus $model): QueryBuilder
     {
-        return $model->with('type')->withCount(['routes', 'fillingStationAssignments'])->newQuery();
+        return $model->with('type')->withCount([
+            'routes',
+            'fillingStationAssignments' => function ($query) {
+                $query->where('status', 'active');
+            },
+            'routeAssignments' => function ($query) {
+                $query->where('status', 'active');
+            }
+        ])->newQuery();
     }
 
     /**

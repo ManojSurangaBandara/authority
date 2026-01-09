@@ -61,23 +61,31 @@ class BusController extends Controller
      */
     public function edit(string $id)
     {
-        $bus = Bus::withCount(['routes', 'fillingStationAssignments'])->findOrFail($id);
+        $bus = Bus::withCount([
+            'routes',
+            'fillingStationAssignments' => function ($query) {
+                $query->where('status', 'active');
+            },
+            'routeAssignments' => function ($query) {
+                $query->where('status', 'active');
+            }
+        ])->findOrFail($id);
 
-        // Prevent editing if bus is assigned to routes
-        if ($bus->routes_count > 0) {
+        // Prevent editing if bus is assigned to routes or has active assignments
+        if ($bus->routes_count > 0 || $bus->route_assignments_count > 0) {
             return redirect()->route('buses.index')
-                ->with('error', 'Cannot edit bus: This bus is assigned to ' . $bus->routes_count . ' route(s). Please remove the bus from all routes before editing.');
+                ->with('error', 'Cannot edit bus: This bus is assigned to ' . ($bus->routes_count + $bus->route_assignments_count) . ' route(s)/assignment(s). Please remove the bus from all routes before editing.');
         }
 
         $busTypes = BusType::all();
 
-        // Check if bus is being used elsewhere (for filling station assignments)
+        // Check if bus is being used elsewhere (for active filling station assignments)
         $isUsed = $bus->filling_station_assignments_count > 0;
 
         // Build usage reasons for display
         $usageReasons = [];
         if ($bus->filling_station_assignments_count > 0) {
-            $usageReasons[] = "has {$bus->filling_station_assignments_count} filling station assignment(s)";
+            $usageReasons[] = "has {$bus->filling_station_assignments_count} active filling station assignment(s)";
         }
 
         return view('buses.edit', compact('bus', 'busTypes', 'isUsed', 'usageReasons'));
@@ -88,15 +96,23 @@ class BusController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $bus = Bus::withCount(['routes', 'fillingStationAssignments'])->findOrFail($id);
+        $bus = Bus::withCount([
+            'routes',
+            'fillingStationAssignments' => function ($query) {
+                $query->where('status', 'active');
+            },
+            'routeAssignments' => function ($query) {
+                $query->where('status', 'active');
+            }
+        ])->findOrFail($id);
 
-        // Prevent updating if bus is assigned to routes
-        if ($bus->routes_count > 0) {
+        // Prevent updating if bus is assigned to routes or has active assignments
+        if ($bus->routes_count > 0 || $bus->route_assignments_count > 0) {
             return redirect()->route('buses.index')
-                ->with('error', 'Cannot update bus: This bus is assigned to ' . $bus->routes_count . ' route(s). Please remove the bus from all routes before updating.');
+                ->with('error', 'Cannot update bus: This bus is assigned to ' . ($bus->routes_count + $bus->route_assignments_count) . ' route(s)/assignment(s). Please remove the bus from all routes before updating.');
         }
 
-        // Check if bus is being used elsewhere (for filling station assignments)
+        // Check if bus is being used elsewhere (for active filling station assignments)
         $isUsed = $bus->filling_station_assignments_count > 0;
 
         // Validation rules
@@ -136,16 +152,27 @@ class BusController extends Controller
      */
     public function destroy(string $id)
     {
-        $bus = Bus::withCount(['routes', 'fillingStationAssignments'])->findOrFail($id);
+        $bus = Bus::withCount([
+            'routes',
+            'fillingStationAssignments' => function ($query) {
+                $query->where('status', 'active');
+            },
+            'routeAssignments' => function ($query) {
+                $query->where('status', 'active');
+            }
+        ])->findOrFail($id);
 
-        // Prevent deletion if bus is assigned to routes or filling stations
-        if ($bus->routes_count > 0 || $bus->filling_station_assignments_count > 0) {
+        // Prevent deletion if bus is assigned to routes or has active assignments
+        if ($bus->routes_count > 0 || $bus->filling_station_assignments_count > 0 || $bus->route_assignments_count > 0) {
             $usageReasons = [];
             if ($bus->routes_count > 0) {
                 $usageReasons[] = "assigned to {$bus->routes_count} route(s)";
             }
+            if ($bus->route_assignments_count > 0) {
+                $usageReasons[] = "has {$bus->route_assignments_count} active route assignment(s)";
+            }
             if ($bus->filling_station_assignments_count > 0) {
-                $usageReasons[] = "has {$bus->filling_station_assignments_count} filling station assignment(s)";
+                $usageReasons[] = "has {$bus->filling_station_assignments_count} active filling station assignment(s)";
             }
 
             return redirect()->route('buses.index')
