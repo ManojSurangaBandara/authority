@@ -419,7 +419,10 @@
                                     @endif
                                 </td>
                             </tr>
-                            @if ($application->bus_pass_type === 'daily_travel' && $application->approval_living_out === 'yes')
+                            @if (
+                                $application->marital_status === 'married' &&
+                                    $application->bus_pass_type !== 'living_in_only' &&
+                                    $application->bus_pass_type !== 'unmarried_daily_travel')
                                 <tr>
                                     <td><strong>Marriage Part II Order:</strong></td>
                                     <td>
@@ -433,6 +436,29 @@
                                         @else
                                             <span class="text-muted">Not uploaded</span>
                                         @endif
+                                    </td>
+                                </tr>
+                            @endif
+                            @if (
+                                $application->bus_pass_type === 'unmarried_daily_travel' ||
+                                    ($application->bus_pass_type === 'weekend_monthly_travel' && $application->marital_status !== 'married'))
+                                <tr>
+                                    <td><strong>Letter of Permission:</strong></td>
+                                    <td>
+                                        @if ($application->permission_letter)
+                                            <a href="{{ asset('storage/' . $application->permission_letter) }}"
+                                                target="_blank" class="btn btn-xs btn-outline-primary">
+                                                <i class="fas fa-file-pdf"></i> View Document
+                                            </a>
+                                            <small class="text-success ml-2"><i class="fas fa-check-circle"></i>
+                                                Uploaded</small>
+                                        @else
+                                            <span class="text-muted">Not uploaded</span>
+                                        @endif
+                                        <br><small class="text-info">
+                                            <i class="fas fa-info-circle"></i>
+                                            {{ $application->bus_pass_type === 'unmarried_daily_travel' ? 'For Unmarried Daily Travel only' : 'For Single Personnel with Weekend and Living in Travel' }}
+                                        </small>
                                     </td>
                                 </tr>
                             @endif
