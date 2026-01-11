@@ -466,7 +466,19 @@ class BusPassApplicationController extends Controller
 
         }
 
+        // Check for duplicate branch card ID if provided
+        if ($request->branch_card_availability === 'has_branch_card' && $request->branch_card_id) {
+            $existingBranchCardApplication = BusPassApplication::where('branch_card_id', $request->branch_card_id)
+                ->whereNotNull('branch_card_id')
+                ->where('status', '!=', 'rejected') // Exclude rejected applications
+                ->first();
 
+            if ($existingBranchCardApplication) {
+                return redirect()->back()
+                    ->withErrors(['branch_card_id' => 'This Branch Card ID is already associated with another active application. Each Branch Card ID can only be used once.'])
+                    ->withInput();
+            }
+        }
 
         // Handle file uploads
         $data = [];
@@ -1021,6 +1033,21 @@ class BusPassApplicationController extends Controller
         } elseif ($request->bus_pass_type === 'weekend_only') {
             $data['weekend_bus_name'] = $request->weekend_bus_name;
             $data['weekend_destination'] = $request->weekend_destination;
+        }
+
+        // Check for duplicate branch card ID if provided (exclude current application)
+        if ($request->branch_card_availability === 'has_branch_card' && $request->branch_card_id) {
+            $existingBranchCardApplication = BusPassApplication::where('branch_card_id', $request->branch_card_id)
+                ->whereNotNull('branch_card_id')
+                ->where('id', '!=', $bus_pass_application->id) // Exclude current application
+                ->where('status', '!=', 'rejected') // Exclude rejected applications
+                ->first();
+
+            if ($existingBranchCardApplication) {
+                return redirect()->back()
+                    ->withErrors(['branch_card_id' => 'This Branch Card ID is already associated with another active application. Each Branch Card ID can only be used once.'])
+                    ->withInput();
+            }
         }
 
         try {
