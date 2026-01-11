@@ -1261,6 +1261,14 @@
                 handleBranchCardAvailability();
             });
 
+            // Handle regiment number change - clear branch card ID
+            $('#regiment_no').on('input', function() {
+                // Clear branch card ID when regiment number changes
+                $('#branch_card_id').val('');
+                branchCardVerified = false;
+                $('#verification_status').html('<span class="badge badge-warning">Not Verified</span>');
+            });
+
             // Handle branch card ID input change - reset verification status
             $('#branch_card_id').on('input', function() {
                 if ($('#branch_card_availability').val() === 'has_branch_card') {
@@ -1364,7 +1372,7 @@
                     }
                 });
             });
-            
+
             // Handle form submission - disable fields in hidden sections
             $('form').on('submit', function(e) {
                 // Check branch card verification if required
