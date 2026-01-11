@@ -263,20 +263,55 @@
                     <div class="row mt-3">
                         <div class="col-12">
                             <h5><i class="fas fa-calendar-weekend"></i> Weekend Only Details</h5>
-                            <table class="table table-sm">
-                                @if ($application->weekend_bus_name)
-                                    <tr>
-                                        <td><strong>Weekend Bus:</strong></td>
-                                        <td>{{ $application->weekend_bus_name }}</td>
-                                    </tr>
-                                @endif
-                                @if ($application->weekend_destination)
-                                    <tr>
-                                        <td><strong>Weekend Destination:</strong></td>
-                                        <td>{{ $application->weekend_destination }}</td>
-                                    </tr>
-                                @endif
-                            </table>
+                            @if (isset($canEditRoute) && $canEditRoute)
+                                <form id="routeUpdateFormWeekendOnly">
+                                    <input type="hidden" name="application_id" value="{{ $application->id }}">
+                                    <div class="mb-3">
+                                        <div class="form-row">
+                                            <div class="col-md-6">
+                                                <label for="weekend_bus_name">Weekend Bus:</label>
+                                                <select name="weekend_bus_name" id="weekend_bus_name"
+                                                    class="form-control form-control-sm">
+                                                    <option value="">Select Bus Route</option>
+                                                    @foreach ($busRoutes as $route)
+                                                        <option value="{{ $route->name }}"
+                                                            {{ $application->weekend_bus_name == $route->name ? 'selected' : '' }}>
+                                                            {{ $route->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="weekend_destination_readonly">Weekend Destination:</label>
+                                                <input type="text" class="form-control form-control-sm"
+                                                    value="{{ $application->weekend_destination }}" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="form-row mt-2">
+                                            <div class="col-12">
+                                                <button type="button" id="updateRouteBtnWeekendOnly"
+                                                    class="btn btn-primary">
+                                                    <i class="fas fa-save"></i> Update Route
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            @else
+                                <table class="table table-sm">
+                                    @if ($application->weekend_bus_name)
+                                        <tr>
+                                            <td><strong>Weekend Bus:</strong></td>
+                                            <td>{{ $application->weekend_bus_name }}</td>
+                                        </tr>
+                                    @endif
+                                    @if ($application->weekend_destination)
+                                        <tr>
+                                            <td><strong>Weekend Destination:</strong></td>
+                                            <td>{{ $application->weekend_destination }}</td>
+                                        </tr>
+                                    @endif
+                                </table>
+                            @endif
                         </div>
                     </div>
                 @endif
@@ -643,6 +678,11 @@
             // Handle route update for weekend monthly
             $('#updateRouteBtnWeekendMonthly').on('click', function() {
                 updateRoute('#routeUpdateFormWeekendMonthly');
+            });
+
+            // Handle route update for weekend only
+            $('#updateRouteBtnWeekendOnly').on('click', function() {
+                updateRoute('#routeUpdateFormWeekendOnly');
             });
 
             // Handle route update for daily travel
