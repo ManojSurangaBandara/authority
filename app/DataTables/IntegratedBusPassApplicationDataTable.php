@@ -36,6 +36,23 @@ class IntegratedBusPassApplicationDataTable extends DataTable
             ->addColumn('person_rank', function ($row) {
                 return $row->person ? $row->person->rank : '';
             })
+            ->addColumn('allowed_route', function ($row) {
+                $routes = [];
+
+                if ($row->requested_bus_name) {
+                    $routes[] = '<span class="badge badge-primary">' . $row->requested_bus_name . '</span>';
+                }
+
+                if ($row->weekend_bus_name) {
+                    $routes[] = '<span class="badge badge-success">' . $row->weekend_bus_name . '</span>';
+                }
+
+                if ($row->living_in_bus) {
+                    $routes[] = '<span class="badge badge-info">' . $row->living_in_bus . '</span>';
+                }
+
+                return !empty($routes) ? implode(' ', $routes) : '<small class="text-muted">N/A</small>';
+            })
             ->addColumn('route_changed_indicator', function ($row) {
                 if ($row->hasRouteBeenUpdated()) {
                     return '<span class="badge badge-warning" title="Route has been changed during approval process"><i class="fas fa-exclamation-triangle"></i> Route Changed</span>';
@@ -58,7 +75,7 @@ class IntegratedBusPassApplicationDataTable extends DataTable
                 });
             })
 
-            ->rawColumns(['action', 'status_badge', 'type_label', 'applied_date', 'person_rank', 'route_changed_indicator'])
+            ->rawColumns(['action', 'status_badge', 'type_label', 'applied_date', 'person_rank', 'route_changed_indicator', 'allowed_route'])
             ->setRowId('id')
             ->setRowClass(function ($row) {
                 return $row->hasRouteBeenUpdated() ? 'table-warning' : '';
@@ -120,6 +137,7 @@ class IntegratedBusPassApplicationDataTable extends DataTable
             Column::make('person.name')->title('Name')->name('person.name'),
             Column::make('person_rank')->title('Rank')->searchable(false),
             Column::make('type_label')->title('Pass Type')->searchable(false),
+            Column::make('allowed_route')->title('Allowed Route')->searchable(false)->orderable(false),
             Column::make('status_badge')->title('Status')->searchable(false)->orderable(false),
             Column::make('applied_date')->title('Applied Date')->searchable(false)->orderable(false),
             Column::make('route_changed_indicator')->title('Route Status')->searchable(false)->orderable(false),

@@ -507,9 +507,30 @@ class BusPassApplication extends Model
      */
     public function hasRouteBeenUpdated()
     {
-        return $this->approvalHistory()
-            ->where('action', 'route_updated')
-            ->exists();
+        // Check for explicit route_updated actions (from integrations page)
+        if ($this->approvalHistory()->where('action', 'route_updated')->exists()) {
+            return true;
+        }
+
+        // Check for route changes in approval remarks (from approval process by level 4 & 5 users)
+        $approvalHistory = $this->approvalHistory()
+            ->whereIn('action', ['approved', 'forwarded'])
+            ->where('remarks', 'like', '%--- System Updates ---%')
+            ->get();
+
+        foreach ($approvalHistory as $history) {
+            $remarks = $history->remarks;
+
+            // Check if remarks contain route-related updates
+            $routeFields = ['Requested Bus Name', 'Living In Bus', 'Weekend Bus Name'];
+            foreach ($routeFields as $field) {
+                if (strpos($remarks, $field . ' updated from') !== false) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
