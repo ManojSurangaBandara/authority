@@ -252,7 +252,8 @@
                                             <input type="date"
                                                 class="form-control @error('date_arrival_ahq') is-invalid @enderror"
                                                 id="date_arrival_ahq" name="date_arrival_ahq"
-                                                value="{{ old('date_arrival_ahq') }}" required>
+                                                value="{{ old('date_arrival_ahq') }}" max="{{ date('Y-m-d') }}"
+                                                required>
                                             @error('date_arrival_ahq')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
