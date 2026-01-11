@@ -1279,6 +1279,13 @@
                 $('#branch_card_id').val('');
                 branchCardVerified = false;
                 $('#verification_status').html('<span class="badge badge-warning">Not Verified</span>');
+
+                // Clear person details fields when regiment number changes
+                $('#rank').val('');
+                $('#name').val('');
+                $('#unit').val('');
+                $('#nic').val('');
+                $('#army_id').val('');
             });
 
             // Handle branch card ID input change - reset verification status
