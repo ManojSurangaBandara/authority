@@ -806,6 +806,11 @@
                     return;
                 }
 
+                if (civilId === '0') {
+                    alert('Civil ID cannot be 0. Please enter a valid Civil ID.');
+                    return;
+                }
+
                 if (!branchCardId) {
                     alert('Please enter Branch Card ID.');
                     return;

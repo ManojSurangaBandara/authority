@@ -1314,6 +1314,11 @@
                     return;
                 }
 
+                if (regimentNo === '0') {
+                    alert('Regiment No cannot be 0. Please enter a valid Regiment No.');
+                    return;
+                }
+
                 if (!branchCardId) {
                     alert('Please enter Branch Card ID.');
                     return;
