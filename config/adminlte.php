@@ -499,16 +499,6 @@ return [
         ],
 
         [
-            'text' => 'Integrated Applications',
-            'url' => 'integrated-applications',
-            'icon' => 'fas fa-fw fa-check',
-            'can' => 'branch_user_access',
-            'active' => [
-                'integrated-applications*',
-            ],
-        ],
-
-        [
             'text' => 'Bus Pass Approvals',
             'url' => 'bus-pass-approvals',
             'icon' => 'fas fa-fw fa-check-circle',
@@ -528,6 +518,16 @@ return [
                 'bus-pass-integration*',
             ],
             'classes' => 'bus-pass-integration-menu',
+        ],
+
+        [
+            'text' => 'Integrated Applications',
+            'url' => 'integrated-applications',
+            'icon' => 'fas fa-fw fa-check',
+            'can' => 'branch_user_access',
+            'active' => [
+                'integrated-applications*',
+            ],
         ],
 
         [
