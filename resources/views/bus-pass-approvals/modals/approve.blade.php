@@ -397,7 +397,7 @@ $weekendStats[
                                 movement approval.
                                 <br><strong>Note:</strong> You must specify SLTB Season availability before forwarding.
                             @elseif(auth()->user()->hasRole('Staff Officer 2 (DMOV)'))
-                                This approval will send the application to Col Mov (DMOV) for final authorization.
+                                This approval will send the application to Col Mov (DMOV) / Director (DMOV) for final authorization.
                             @elseif(auth()->user()->hasAnyRole(['Col Mov (DMOV)', 'Director (DMOV)']))
                                 This is the final approval. The application will be approved for integration into the
                                 system.
