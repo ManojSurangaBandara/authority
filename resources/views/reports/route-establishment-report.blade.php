@@ -202,7 +202,7 @@
                     "info": true,
                     "autoWidth": false,
                     "responsive": true,
-                    "pageLength": 25,
+                    "pageLength": 100,
                     "lengthMenu": [10, 25, 50, 100],
                     "order": [
                         [1, 'asc']
