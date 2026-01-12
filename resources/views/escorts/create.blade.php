@@ -61,8 +61,6 @@
                                     <label for="contact_no">Contact Number:</label>
                                     <input type="tel" name="contact_no" id="contact_no" required pattern="[0-9]{10}" maxlength="10" inputmode="numeric" oninvalid="this.setCustomValidity('Please enter a valid 10-digit mobile number')" oninput="this.setCustomValidity('')" class="form-control"
                                         value="{{ old('contact_no') }}">
-                                    <small class="form-text text-muted">Contact number must be entered manually as it is not
-                                        available from the API</small>
                                     @error('contact_no')
                                         <div class="text-danger">{{ $message }}</div>
                                     @enderror
