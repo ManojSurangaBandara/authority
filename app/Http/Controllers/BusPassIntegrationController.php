@@ -41,18 +41,19 @@ class BusPassIntegrationController extends Controller
 
         $routeId = $request->get('route_id');
 
-        // Base query for approved applications
-        $query = BusPassApplication::with(['establishment', 'person'])
-            ->whereIn('status', ['approved_for_integration', 'approved_for_temp_card', 'integrated_to_branch_card', 'integrated_to_temp_card']);
-
-        // Filter by route if specified
         if ($routeId && $routeId !== 'all') {
+            // When a specific route is selected, only show establishments that have applications for that route
             $routeType = $request->get('route_type', 'living_out');
 
+            // Base query for applications with the selected route
+            $applicationsQuery = BusPassApplication::with('establishment')
+                ->whereIn('status', ['approved_for_integration', 'approved_for_temp_card', 'integrated_to_branch_card', 'integrated_to_temp_card']);
+
+            // Apply route filter
             if ($routeType === 'living_out') {
                 $route = BusRoute::find($routeId);
                 if ($route) {
-                    $query->where(function ($q) use ($route) {
+                    $applicationsQuery->where(function ($q) use ($route) {
                         $q->where('requested_bus_name', $route->name)
                             ->orWhere('weekend_bus_name', $route->name);
                     });
@@ -60,25 +61,56 @@ class BusPassIntegrationController extends Controller
             } elseif ($routeType === 'living_in') {
                 $livingInBus = \App\Models\LivingInBuses::find($routeId);
                 if ($livingInBus) {
-                    $query->where('living_in_bus', $livingInBus->name);
+                    $applicationsQuery->where('living_in_bus', $livingInBus->name);
                 }
             }
-        }
 
-        // Group by establishment and status
-        $applications = $query->get()->groupBy('establishment_id');
+            // Get distinct establishments that have applications for this route
+            $establishmentsWithApps = $applicationsQuery->distinct('establishment_id')
+                ->pluck('establishment_id')
+                ->toArray();
+
+            $establishments = Establishment::whereIn('id', $establishmentsWithApps)->get();
+        } else {
+            // When 'all' routes selected, show all establishments
+            $establishments = Establishment::all();
+        }
 
         $chartData = [];
 
-        foreach ($applications as $establishmentId => $apps) {
-            $establishment = $apps->first()->establishment;
+        foreach ($establishments as $establishment) {
+            // Base query for approved applications for this establishment
+            $query = BusPassApplication::where('establishment_id', $establishment->id)
+                ->whereIn('status', ['approved_for_integration', 'approved_for_temp_card', 'integrated_to_branch_card', 'integrated_to_temp_card']);
 
-            $pendingIntegration = $apps->whereIn('status', ['approved_for_integration', 'approved_for_temp_card'])->count();
-            $integrated = $apps->whereIn('status', ['integrated_to_branch_card', 'integrated_to_temp_card'])->count();
+            // Filter by route if specified (only when route is selected)
+            if ($routeId && $routeId !== 'all') {
+                $routeType = $request->get('route_type', 'living_out');
+
+                if ($routeType === 'living_out') {
+                    $route = BusRoute::find($routeId);
+                    if ($route) {
+                        $query->where(function ($q) use ($route) {
+                            $q->where('requested_bus_name', $route->name)
+                                ->orWhere('weekend_bus_name', $route->name);
+                        });
+                    }
+                } elseif ($routeType === 'living_in') {
+                    $livingInBus = \App\Models\LivingInBuses::find($routeId);
+                    if ($livingInBus) {
+                        $query->where('living_in_bus', $livingInBus->name);
+                    }
+                }
+            }
+
+            $applications = $query->get();
+
+            $pendingIntegration = $applications->whereIn('status', ['approved_for_integration', 'approved_for_temp_card'])->count();
+            $integrated = $applications->whereIn('status', ['integrated_to_branch_card', 'integrated_to_temp_card'])->count();
 
             $chartData[] = [
-                'establishment_id' => $establishmentId,
-                'establishment_name' => $establishment->name ?? 'Unknown',
+                'establishment_id' => $establishment->id,
+                'establishment_name' => $establishment->name,
                 'pending_integration' => $pendingIntegration,
                 'integrated' => $integrated
             ];

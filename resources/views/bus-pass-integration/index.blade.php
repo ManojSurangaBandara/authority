@@ -52,7 +52,7 @@
                     </div>
                     <div class="card-body">
                         <div style="overflow-x: auto; overflow-y: hidden; min-height: 400px;">
-                            <canvas id="integrationChart" style="height: 400px; width: 100%; max-width: 100%;"></canvas>
+                            <canvas id="integrationChart" style="height: 400px;"></canvas>
                         </div>
                     </div>
                 </div>
@@ -120,6 +120,9 @@
         .chart-container {
             position: relative;
             height: 400px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            width: 100%;
         }
 
         .clickable-bar {
@@ -275,6 +278,10 @@
             //     currentRouteType = $('#routeFilter').find('option:selected').data('route-type') || 'living_out';
             // }
 
+            // Always read current selected route from dropdown
+            currentRouteId = $('#routeFilter').val();
+            currentRouteType = $('#routeFilter').find('option:selected').data('route-type') || 'living_out';
+
             // Update global variables for modal
             window.currentRouteId = currentRouteId;
             window.currentRouteType = currentRouteType;
@@ -413,7 +420,12 @@
 
             if (chart) {
                 chart.destroy();
+                chart = null;
             }
+
+            // Clear canvas
+            const context = ctx.getContext('2d');
+            context.clearRect(0, 0, ctx.width, ctx.height);
 
             const labels = data.map(item => item.establishment_name);
             const pendingData = data.map(item => item.pending_integration);
@@ -440,6 +452,17 @@
                 return;
             }
 
+            // Calculate dynamic width based on number of establishments
+            const numEstablishments = labels.length;
+            const barWidth = 10; // barThickness we set
+            const spacing = 5; // approximate spacing between bars
+            const minWidth = 800; // minimum width
+            const calculatedWidth = Math.max(minWidth, numEstablishments * (barWidth * 2 + spacing * 2));
+
+            // Set canvas width dynamically
+            ctx.width = calculatedWidth;
+            ctx.style.width = calculatedWidth + 'px';
+
             chart = new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -449,18 +472,21 @@
                         data: pendingData,
                         backgroundColor: 'rgba(255, 193, 7, 0.8)',
                         borderColor: 'rgba(255, 193, 7, 1)',
-                        borderWidth: 1
+                        borderWidth: 1,
+                        barThickness: 12
                     }, {
                         label: 'Integrated',
                         data: integratedData,
                         backgroundColor: 'rgba(40, 167, 69, 0.8)',
                         borderColor: 'rgba(40, 167, 69, 1)',
-                        borderWidth: 1
+                        borderWidth: 1,
+                        barThickness: 12
                     }]
                 },
                 options: {
-                    responsive: true,
+                    responsive: false,
                     maintainAspectRatio: false,
+                    width: calculatedWidth,
                     scales: {
                         y: {
                             beginAtZero: true,
@@ -479,7 +505,13 @@
                             title: {
                                 display: true,
                                 text: 'Establishments'
-                            }
+                            },
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45
+                            },
+                            barPercentage: 0.9,
+                            categoryPercentage: 0.3
                         }
                     },
                     plugins: {
@@ -630,12 +662,12 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                                                                <i class="fas fa-arrow-up"></i>
-                                                                                            </button>` :
+                                                                                                    <i class="fas fa-arrow-up"></i>
+                                                                                                </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                                                                <i class="fas fa-arrow-down"></i>
-                                                                                            </button>` : ''
+                                                                                                    <i class="fas fa-arrow-down"></i>
+                                                                                                </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
@@ -733,12 +765,12 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                                                                <i class="fas fa-arrow-up"></i>
-                                                                                            </button>` :
+                                                                                                    <i class="fas fa-arrow-up"></i>
+                                                                                                </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                                                                <i class="fas fa-arrow-down"></i>
-                                                                                            </button>` : ''
+                                                                                                    <i class="fas fa-arrow-down"></i>
+                                                                                                </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
