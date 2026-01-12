@@ -50,7 +50,7 @@
 
                                 <div class="mb-3">
                                     <label for="contact_no">Contact Number:</label>
-                                    <input type="text" name="contact_no" id="contact_no" required class="form-control"
+                                    <input type="tel" name="contact_no" pattern="[0-9]{10}" maxlength="10"  inputmode="numeric" id="contact_no" required oninvalid="this.setCustomValidity('Please enter a valid 10-digit mobile number')" oninput="this.setCustomValidity('')" class="form-control"
                                         value="{{ old('contact_no') }}">
                                     <small class="form-text text-muted">Contact number must be entered manually as it is not available from the API</small>
                                     @error('contact_no')
@@ -99,7 +99,7 @@
                             // Fill form fields with returned data
                             $('#rank').val(response.data.rank);
                             $('#name').val(response.data.name);
-                            
+
                             // Enable form submission
                             $('#rank').prop('readonly', true);
                             $('#name').prop('readonly', true);

@@ -83,7 +83,7 @@
 
                                 <div class="mb-3">
                                     <label for="contact_no">Contact Number:</label>
-                                    <input type="text" name="contact_no" id="contact_no" required class="form-control"
+                                    <input type="tel" name="contact_no" id="contact_no" required pattern="[0-9]{10}" maxlength="10" inputmode="numeric" oninvalid="this.setCustomValidity('Please enter a valid 10-digit mobile number')" oninput="this.setCustomValidity('')" class="form-control"
                                         value="{{ $escort->contact_no }}">
                                     @error('contact_no')
                                         <div class="text-danger">{{ $message }}</div>
