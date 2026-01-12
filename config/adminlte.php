@@ -649,7 +649,7 @@ return [
                     ],
                 ],
                 [
-                    'text' => 'Establishment wise Applications',
+                    'text' => 'Establishment wise Integrated Applications',
                     'url' => 'establishment-wise-applications',
                     'icon' => 'fas fa-fw fa-building',
                     // 'can' => 'manage_user_accounts',
