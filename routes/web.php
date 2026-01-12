@@ -184,7 +184,7 @@ Route::middleware('auth')->group(function () {
         // District routes
         Route::resource('district', DistrictController::class);
 
-        // Gs Devision routes
+        // GS Division routes
         Route::resource('gs-devision', GsDivisionController::class);
 
         // Police Station routes

@@ -37,7 +37,7 @@ class GsDivisionController extends Controller
         GsDivision::create($request->only('name'));
 
         return redirect()->route('gs-devision.index')
-            ->with('success', 'Gs Division created successfully.');
+            ->with('success', 'GS Division created successfully.');
     }
 
     /**
@@ -71,7 +71,7 @@ class GsDivisionController extends Controller
         $gs_devision->update($request->only('name'));
 
         return redirect()->route('gs-devision.index')
-            ->with('success', 'Gs Division updated successfully.');
+            ->with('success', 'GS Division updated successfully.');
     }
 
     /**
@@ -83,6 +83,6 @@ class GsDivisionController extends Controller
         $gs_devision->delete();
 
         return redirect()->route('gs-devision.index')
-            ->with('success', 'Gs Division deleted successfully.');
+            ->with('success', 'GS Division deleted successfully.');
     }
 }

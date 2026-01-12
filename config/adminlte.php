@@ -422,7 +422,7 @@ return [
                 ],
 
                 [
-                    'text' => 'Gs Devision',
+                    'text' => 'GS Division',
                     'url' => 'gs-devision',
                     'icon' => 'fas fa-fw fa-landmark',
                     'active' => [

@@ -25,7 +25,7 @@ class GsDivisionDataTable extends DataTable
                 $deleteBtn = '<form action="' . route('gs-devision.destroy', $row->id) . '" method="POST" style="display:inline">'
                     . csrf_field()
                     . method_field("DELETE")
-                    . '<button type="submit" class="btn btn-xs btn-danger" onclick="return confirm(\'Are you sure you want to delete this Gs Division?\')" title="Delete"><i class="fas fa-trash"></i></button></form>';
+                    . '<button type="submit" class="btn btn-xs btn-danger" onclick="return confirm(\'Are you sure you want to delete this GS Division?\')" title="Delete"><i class="fas fa-trash"></i></button></form>';
 
                 return $viewBtn . $editBtn . $deleteBtn;
             })
@@ -68,7 +68,7 @@ class GsDivisionDataTable extends DataTable
     {
         return [
             Column::make('DT_RowIndex')->title('#')->searchable(false)->orderable(false)->width(30),
-            Column::make('name')->title('Gs Division Name'),
+            Column::make('name')->title('GS Division Name'),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
