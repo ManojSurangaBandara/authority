@@ -28,8 +28,8 @@
                         </div>
                     </div>
                 </div>
+                @include('footer')
             </div>
-            @include('footer')
         @endsection
 
         @section('plugins.Datatables', true)
