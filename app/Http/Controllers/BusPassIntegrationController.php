@@ -70,10 +70,15 @@ class BusPassIntegrationController extends Controller
                 ->pluck('establishment_id')
                 ->toArray();
 
-            $establishments = Establishment::whereIn('id', $establishmentsWithApps)->get();
+            $establishments = Establishment::whereIn('id', $establishmentsWithApps)
+                ->orderByRaw('seniority_order IS NULL, seniority_order')
+                ->orderBy('name')
+                ->get();
         } else {
             // When 'all' routes selected, show all establishments
-            $establishments = Establishment::all();
+            $establishments = Establishment::orderByRaw('seniority_order IS NULL, seniority_order')
+                ->orderBy('name')
+                ->get();
         }
 
         $chartData = [];

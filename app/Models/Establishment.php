@@ -10,6 +10,7 @@ class Establishment extends Model
     protected $fillable = [
         'name',
         'is_active',
+        'seniority_order',
     ];
 
     protected $casts = [
