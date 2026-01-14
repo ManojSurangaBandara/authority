@@ -191,7 +191,7 @@
                                         <div class="form-group">
                                             <label for="telephone_no">Telephone No <span
                                                     class="text-danger">*</span></label>
-                                            <input type="text"
+                                            <input type="tel" pattern="[0-9]{10}" maxlength="10" inputmode="numeric" oninvalid="this.setCustomValidity('Please enter a valid 10-digit mobile number')" oninput="this.setCustomValidity('')"
                                                 class="form-control @error('telephone_no') is-invalid @enderror"
                                                 id="telephone_no" name="telephone_no" value="{{ old('telephone_no') }}"
                                                 required>
