@@ -179,19 +179,7 @@
                                 </div>
                             </div>
 
-                            <div class="row mt-3">
-                                <div class="col-md-6">
-                                    <strong>Marriage Part II Order:</strong><br>
-                                    @if ($bus_pass_application->marriage_part_ii_order)
-                                        <a href="{{ asset('storage/' . $bus_pass_application->marriage_part_ii_order) }}"
-                                            target="_blank" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-file-pdf"></i> View Document
-                                        </a>
-                                    @else
-                                        <span class="text-muted">Not uploaded</span>
-                                    @endif
-                                </div>
-                            </div>
+                        
                         @endif
 
                         @if ($bus_pass_application->bus_pass_type === 'unmarried_daily_travel')
