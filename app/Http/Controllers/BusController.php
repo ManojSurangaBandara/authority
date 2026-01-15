@@ -34,11 +34,13 @@ class BusController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'no' => 'required|unique:buses,no|max:20',
+            'no' => 'required|unique:buses,no|max:20|regex:/^[A-Za-z]/',
             'name' => 'required|unique:buses,name|max:50',
             'type_id' => 'required|integer|min:1',
             'no_of_seats' => 'required|integer|min:1',
             'total_capacity' => 'required|integer|min:1',
+        ], [
+            'no.regex' => 'Bus number must start with a letter (A-Z or a-z).',
         ]);
 
         Bus::create($request->all());
@@ -125,13 +127,15 @@ class BusController extends Controller
 
         // Only validate bus number if it's not in use (allowing changes)
         if (!$isUsed) {
-            $rules['no'] = 'required|max:20|unique:buses,no,' . $id;
+            $rules['no'] = 'required|max:20|unique:buses,no,' . $id . '|regex:/^[A-Za-z]/';
         } else {
             // If bus is in use, ensure the submitted number matches the existing one
             $rules['no'] = 'required|max:20|in:' . $bus->no;
         }
 
-        $request->validate($rules);
+        $request->validate($rules, [
+            'no.regex' => 'Bus number must start with a letter (A-Z or a-z).',
+        ]);
 
         // Prepare data for update
         $updateData = $request->only(['name', 'type_id', 'no_of_seats', 'total_capacity']);

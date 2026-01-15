@@ -16,10 +16,14 @@
                                 @csrf
                                 <div class="mb-3">
                                     <label for="">Bus Number:</label>
-                                    <input type="text" name="no" required class="form-control" />
+                                    <input type="text" name="no" required class="form-control" id="bus_number"
+                                        pattern="[A-Za-z].*" title="Bus number must start with a letter" />
                                     @error('no')
                                         <div class="text-danger">{{ $message }}</div>
                                     @enderror
+                                    <small class="form-text text-muted">
+                                        <strong>Examples:</strong> UHA-xxxx, යුහ-xxxx, ABC-xxxx
+                                    </small>
                                 </div>
                                 <div class="mb-3">
                                     <label for="">Bus Name:</label>

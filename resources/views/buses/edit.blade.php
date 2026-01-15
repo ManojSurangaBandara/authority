@@ -26,13 +26,19 @@
                                 <div class="mb-3">
                                     <label for="">Bus Number:</label>
                                     <input type="text" name="no" required class="form-control"
-                                        value="{{ $bus->no }}" {{ $isUsed ?? false ? 'readonly' : '' }} />
+                                        value="{{ $bus->no }}" {{ $isUsed ?? false ? 'readonly' : '' }} id="bus_number"
+                                        {{ $isUsed ?? false ? '' : 'pattern="[A-Za-z].*"' }}
+                                        {{ $isUsed ?? false ? '' : 'title="Bus number must start with a letter"' }} />
                                     @error('no')
                                         <div class="text-danger">{{ $message }}</div>
                                     @enderror
                                     @if ($isUsed ?? false)
                                         <small class="form-text text-muted">
                                             <i class="fas fa-lock"></i> Bus number is locked because this bus is in use.
+                                        </small>
+                                    @else
+                                        <small class="form-text text-muted">
+                                            <strong>Examples:</strong> UHA-xxxx, යුහ-xxxx, ABC-xxxx
                                         </small>
                                     @endif
                                 </div>
