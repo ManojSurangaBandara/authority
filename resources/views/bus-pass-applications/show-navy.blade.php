@@ -178,8 +178,6 @@
                                     {{ $bus_pass_application->destination_from_ahq ?? 'N/A' }}
                                 </div>
                             </div>
-
-                           
                         @endif
 
                         @if ($bus_pass_application->bus_pass_type === 'unmarried_daily_travel')
@@ -311,8 +309,8 @@
                                 class="col-md-{{ $bus_pass_application->bus_pass_type === 'living_in_only' ? '12' : '6' }}">
                                 <strong>Person Image:</strong><br>
                                 @if ($bus_pass_application->person_image)
-                                    <a href="{{ asset('storage/' . $bus_pass_application->person_image) }}"
-                                        target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <a href="{{ asset('storage/' . $bus_pass_application->person_image) }}" target="_blank"
+                                        class="btn btn-sm btn-outline-primary">
                                         <i class="fas fa-image"></i> View Image
                                     </a>
                                 @else
@@ -414,12 +412,12 @@
                                 </div>
                             </div>
 
-                            @if ($bus_pass_application->rejection_reason)
+                            @if ($bus_pass_application->rejection_reason || $bus_pass_application->remarks)
                                 <div class="row mt-3">
                                     <div class="col-md-12">
                                         <strong>Rejection Reason:</strong><br>
                                         <div class="alert alert-danger">
-                                            {{ $bus_pass_application->rejection_reason }}
+                                            {{ $bus_pass_application->rejection_reason ?: $bus_pass_application->remarks }}
                                         </div>
                                     </div>
                                 </div>
@@ -427,7 +425,7 @@
                         @endif
                     </div>
 
-                    @if ($bus_pass_application->remarks)
+                    @if ($bus_pass_application->remarks && $bus_pass_application->status !== 'rejected')
                         <div class="row mt-3">
                             <div class="col-md-12">
                                 <strong>Remarks:</strong><br>

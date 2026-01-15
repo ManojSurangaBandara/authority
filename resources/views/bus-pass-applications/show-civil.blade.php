@@ -320,12 +320,12 @@
                                 </div>
                             </div>
 
-                            @if ($bus_pass_application->rejection_reason)
+                            @if ($bus_pass_application->rejection_reason || $bus_pass_application->remarks)
                                 <div class="row mt-3">
                                     <div class="col-md-12">
                                         <strong>Rejection Reason:</strong><br>
                                         <div class="alert alert-danger">
-                                            {{ $bus_pass_application->rejection_reason }}
+                                            {{ $bus_pass_application->rejection_reason ?: $bus_pass_application->remarks }}
                                         </div>
                                     </div>
                                 </div>
@@ -333,6 +333,17 @@
                         @endif
 
                     </div>
+
+                    @if ($bus_pass_application->remarks && $bus_pass_application->status !== 'rejected')
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <strong>Remarks:</strong><br>
+                                <div class="alert alert-info">
+                                    {{ $bus_pass_application->remarks }}
+                                </div>
+                            </div>
+                        </div>
+                    @endif
 
                     <div class="card-footer">
                         <a href="{{ route('bus-pass-applications.index') }}" class="btn btn-secondary">
