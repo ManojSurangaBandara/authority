@@ -87,21 +87,7 @@ class ReportController extends Controller
 
     public function integrated(IntegratedBusPassApplicationDataTable $dataTable)
     {
-        // Check if user is a branch user
-        $user = Auth::user();
-        $branchRoles = ['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)'];
-
-        // Restrict access to branch users only
-        if (!$user || !$user->hasAnyRole($branchRoles)) {
-            abort(403, 'Access denied. This page is only accessible to branch users.');
-        }
-
-        // Filter establishments for branch users
-        if ($user->establishment_id) {
-            $establishments = Establishment::where('id', $user->establishment_id)->get();
-        } else {
-            $establishments = Establishment::all();
-        }
+        $establishments = Establishment::all();
 
         return $dataTable->render('reports.integrated-applications', compact('establishments'));
     }
