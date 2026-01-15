@@ -68,7 +68,7 @@
                     </div>
                     <div class="card-body">
                         <div class="row mb-3">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="input-group">
                                     <input type="text" class="form-control" id="applicationsTableSearch"
                                         placeholder="Search applications...">
@@ -78,6 +78,11 @@
                                         </button>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="col-md-2">
+                                <select id="rankFilter" class="form-control">
+                                    <option value="">All Ranks</option>
+                                </select>
                             </div>
                         </div>
                         <div class="applications-table-wrapper">
@@ -308,6 +313,12 @@
                 currentEstablishmentType = null;
                 currentEstablishmentName = null;
 
+                // Reset rank filter when route changes
+                $('#rankFilter').val('');
+                if (applicationsTable) {
+                    applicationsTable.column(3).search('').draw();
+                }
+
                 loadChartData();
                 loadAllApplications(); // Reload applications when route changes
             });
@@ -324,6 +335,21 @@
                 $('#applicationsTableSearch').val('');
                 if (applicationsTable) {
                     applicationsTable.search('').draw();
+                }
+            });
+
+            // Rank filter functionality
+            $('#rankFilter').on('change', function() {
+                const selectedRank = $(this).val();
+                if (applicationsTable) {
+                    if (selectedRank) {
+                        // Use regex for exact match to avoid partial matches
+                        const escapedRank = selectedRank.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                        applicationsTable.column(3).search('^' + escapedRank + '$', true, false)
+                    .draw(); // Column 3 is the Rank column
+                    } else {
+                        applicationsTable.column(3).search('').draw();
+                    }
                 }
             });
         });
@@ -562,6 +588,12 @@
             currentEstablishmentType = type;
             currentEstablishmentName = establishmentName;
 
+            // Reset rank filter to "All ranks" and clear DataTable filter when clicking on a bar
+            $('#rankFilter').val('');
+            if (applicationsTable) {
+                applicationsTable.column(3).search('').draw();
+            }
+
             $.ajax({
                 url: '{{ route('bus-pass-integration.applications') }}',
                 method: 'GET',
@@ -662,12 +694,12 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                                                                    <i class="fas fa-arrow-up"></i>
-                                                                                                </button>` :
+                                                                                                        <i class="fas fa-arrow-up"></i>
+                                                                                                    </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                                                                    <i class="fas fa-arrow-down"></i>
-                                                                                                </button>` : ''
+                                                                                                        <i class="fas fa-arrow-down"></i>
+                                                                                                    </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
@@ -709,6 +741,18 @@
             }
 
             $('#tableTitle').text(title);
+
+            // Collect unique ranks for filter dropdown
+            const uniqueRanks = [...new Set(applications.map(app => app.person_rank).filter(rank => rank && rank !==
+                'N/A'))].sort();
+
+            // Populate rank filter dropdown
+            const rankFilter = $('#rankFilter');
+            rankFilter.empty();
+            rankFilter.append('<option value="">All Ranks</option>');
+            uniqueRanks.forEach(rank => {
+                rankFilter.append(`<option value="${rank}">${rank}</option>`);
+            });
 
             // Clear existing data
             if (applicationsTable) {
@@ -765,12 +809,12 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                                                                    <i class="fas fa-arrow-up"></i>
-                                                                                                </button>` :
+                                                                                                        <i class="fas fa-arrow-up"></i>
+                                                                                                    </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                                                                    <i class="fas fa-arrow-down"></i>
-                                                                                                </button>` : ''
+                                                                                                        <i class="fas fa-arrow-down"></i>
+                                                                                                    </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
