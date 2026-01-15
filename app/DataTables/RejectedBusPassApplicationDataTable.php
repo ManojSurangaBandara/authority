@@ -36,19 +36,10 @@ class RejectedBusPassApplicationDataTable extends DataTable
             ->addColumn('person_rank', function ($row) {
                 return $row->person ? $row->person->rank : '';
             })
-            // ->addColumn('action', function ($row) {
-            //     $viewBtn = '<a href="' . route('bus-pass-applications.show', $row->id) . '" class="btn btn-xs btn-info" title="View"><i class="fas fa-eye"></i></a>';
-            //     $editBtn = '<a href="' . route('bus-pass-applications.edit', $row->id) . '" class="btn btn-xs btn-primary mx-1" title="Edit"><i class="fas fa-edit"></i></a>';
-            //     $deleteBtn = '<form action="' . route('bus-pass-applications.destroy', $row->id) . '" method="POST" style="display:inline">
-            //         ' . csrf_field() . '
-            //         ' . method_field("DELETE") . '
-            //         <button type="submit" class="btn btn-xs btn-danger" onclick="return confirm(\'Are you sure you want to delete this application?\')" title="Delete">
-            //             <i class="fas fa-trash"></i>
-            //         </button>
-            //     </form>';
-
-            //     return $viewBtn . $editBtn . $deleteBtn;
-            // })
+            ->addColumn('action', function ($row) {
+                $viewBtn = '<a href="' . route('bus-pass-applications.show', $row->id) . '" class="btn btn-xs btn-info" title="View Application"><i class="fas fa-eye"></i></a>';
+                return $viewBtn;
+            })
             ->filter(function ($query) {
                 if ($estId = request('establishment_id')) {
                     $query->where('establishment_id', $estId);
@@ -116,11 +107,11 @@ class RejectedBusPassApplicationDataTable extends DataTable
             Column::make('type_label')->title('Pass Type')->searchable(false),
             Column::make('status_badge')->title('Status')->searchable(false)->orderable(false),
             Column::make('applied_date')->title('Applied Date')->searchable(false)->orderable(false),
-            // Column::computed('action')
-            //     ->exportable(false)
-            //     ->printable(false)
-            //     ->width(120)
-            //     ->addClass('text-center'),
+            Column::computed('action')
+                ->exportable(false)
+                ->printable(false)
+                ->width(120)
+                ->addClass('text-center'),
         ];
     }
 

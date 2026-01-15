@@ -530,6 +530,17 @@ return [
             ],
         ],
 
+
+
+        [
+            'text' => 'Rejected Applications',
+            'url' => 'rejected-applications',
+            'icon' => 'fas fa-fw fa-times-circle',
+            'active' => [
+                'rejected-applications*',
+            ],
+        ],
+
         [
             'text' => 'QR Download',
             'url' => 'qr-download',
@@ -584,8 +595,7 @@ return [
                 // [
                 //     'text' => 'Rejected Applications',
                 //     'url' => 'rejected-applications',
-                //     'icon' => 'fas fa-fw fa-users',
-                //     // 'can' => 'manage_user_accounts',
+                //     'icon' => 'fas fa-fw fa-times-circle',
                 //     'active' => [
                 //         'rejected-applications*',
                 //     ],
