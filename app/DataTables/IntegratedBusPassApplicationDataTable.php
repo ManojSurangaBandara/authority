@@ -97,7 +97,8 @@ class IntegratedBusPassApplicationDataTable extends DataTable
             ->setRowId('id')
             ->setRowClass(function ($row) {
                 return $row->hasRouteBeenUpdated() ? 'table-warning' : '';
-            });
+            })
+            ->rawColumns(['action', 'status_badge', 'type_label', 'allowed_route', 'route_changed_indicator']);
     }
 
     /**
