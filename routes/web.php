@@ -143,6 +143,8 @@ Route::middleware('auth')->group(function () {
     Route::get('bus-filling-station-assignments-api/get-bus-details', [BusFillingStationAssignmentController::class, 'getBusDetails'])->name('bus-filling-station-assignments.get-bus-details');
 
     // Establishment routes
+    Route::get('establishment/seniority-order', [EstablishmentController::class, 'seniorityOrder'])->name('establishment.seniority-order');
+    Route::post('establishment/update-seniority-order', [EstablishmentController::class, 'updateSeniorityOrder'])->name('establishment.update-seniority-order');
     Route::resource('establishment', EstablishmentController::class);
 
     // User Management routes (System Administrator only)

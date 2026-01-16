@@ -93,4 +93,30 @@ class EstablishmentController extends Controller
         return redirect()->route('establishment.index')
             ->with('success', 'Establishment deleted successfully.');
     }
+
+    /**
+     * Display the seniority order management page.
+     */
+    public function seniorityOrder()
+    {
+        $establishments = Establishment::orderBy('seniority_order')->orderBy('name')->get();
+        return view('establishment.seniority-order', compact('establishments'));
+    }
+
+    /**
+     * Update the seniority order of establishments.
+     */
+    public function updateSeniorityOrder(Request $request)
+    {
+        $request->validate([
+            'establishments' => 'required|array',
+            'establishments.*' => 'integer|exists:establishments,id',
+        ]);
+
+        foreach ($request->establishments as $order => $id) {
+            Establishment::where('id', $id)->update(['seniority_order' => $order + 1]);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Seniority order updated successfully.']);
+    }
 }

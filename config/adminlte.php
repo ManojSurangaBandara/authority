@@ -368,6 +368,28 @@ return [
                     'active' => [
                         'establishment*',
                     ],
+                    'submenu' => [
+                        [
+                            'text' => 'Manage Establishments',
+                            'url' => 'establishment',
+                            'icon' => 'fas fa-list',
+                            'active' => [
+                                'establishment',
+                                'establishment/index',
+                                'establishment/create',
+                                'establishment/*/edit',
+                                'establishment/*/show',
+                            ],
+                        ],
+                        [
+                            'text' => 'Seniority Order',
+                            'url' => 'establishment/seniority-order',
+                            'icon' => 'fas fa-sort-numeric-up',
+                            'active' => [
+                                'establishment/seniority-order*',
+                            ],
+                        ],
+                    ],
                 ],
                 [
                     'text' => 'Persons',
@@ -781,6 +803,21 @@ return [
                     'type' => 'js',
                     'asset' => true,
                     'location' => 'js/sweetalert2.min.js',
+                ],
+            ],
+        ],
+        'Toastr' => [
+            'active' => true,
+            'files' => [
+                [
+                    'type' => 'js',
+                    'asset' => true,
+                    'location' => 'js/toastr.min.js',
+                ],
+                [
+                    'type' => 'css',
+                    'asset' => true,
+                    'location' => 'css/toastr.min.css',
                 ],
             ],
         ],
