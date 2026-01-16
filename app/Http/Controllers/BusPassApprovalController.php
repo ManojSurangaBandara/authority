@@ -457,7 +457,7 @@ class BusPassApprovalController extends Controller
         }
 
         // Allow viewing for users with integration access roles
-        if ($user->hasAnyRole(['Col Mov (DMOV)', 'Director (DMOV)'])) {
+        if ($user->hasAnyRole(['Subject Clerk (DMOV)', 'Staff Officer 2 (DMOV)', 'Col Mov (DMOV)', 'Director (DMOV)'])) {
             return true;
         }
 
@@ -571,8 +571,8 @@ class BusPassApprovalController extends Controller
         // Check if this is a view-only request (from integrations page)
         $isViewOnly = $request->query('view_only') === 'true';
 
-        // Check if user can edit routes (only for integration page)
-        $canEditRoute = $isViewOnly;
+        // Check if user can edit routes (only Col Mov for integration page)
+        $canEditRoute = $isViewOnly && $user->hasRole('Col Mov (DMOV)');
 
         // Get bus routes for editing
         $busRoutes = \App\Models\BusRoute::all();
