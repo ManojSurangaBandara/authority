@@ -806,10 +806,26 @@ class EscortAuthController extends Controller
             $routeId = $request->route_id;
             $routeType = $request->route_type;
 
-            // Query onboardings based on route type
+            // Determine time period based on current time
+            $now = now();
+            $isMorning = $now->hour < 12; // Before or at 12 PM
+            $startTime = $now->copy()->startOfDay();
+            $endTime = $now->copy()->endOfDay();
+
+            if ($isMorning) {
+                // Morning: from start of day to 12:00 PM
+                $endTime = $now->copy()->startOfDay()->setHour(12)->setMinute(0)->setSecond(0);
+                $timePeriod = 'morning';
+            } else {
+                // Afternoon: from 12:00 PM to end of day
+                $startTime = $now->copy()->startOfDay()->setHour(12)->setMinute(0)->setSecond(0);
+                $timePeriod = 'evening';
+            }
+
+            // Query onboardings based on route type and time period
             $query = Onboarding::where('escort_id', $escortId)
                 ->where('route_type', $routeType)
-                ->where('onboarded_at', '>=', now()->startOfDay()) // Today's onboardings only
+                ->whereBetween('onboarded_at', [$startTime, $endTime])
                 ->with([
                     'busPassApplication.person',
                     'busPassApplication.establishment',
@@ -842,10 +858,11 @@ class EscortAuthController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Onboarded passengers retrieved successfully',
+                'message' => 'Onboarded passengers retrieved successfully for ' . $timePeriod,
                 'data' => [
                     'route_id' => $routeId,
                     'route_type' => $routeType,
+                    'time_period' => $timePeriod,
                     'escort_name' => $escort->name,
                     'total_passengers' => $passengers->count(),
                     'passengers' => $passengers
