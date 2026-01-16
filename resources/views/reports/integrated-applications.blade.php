@@ -25,10 +25,10 @@
                                 </small>
                             @else
                                 <!-- Dropdown for other users -->
-                                <label for="establishment_id">Establishment <span class="text-danger">*</span></label>
+                                <label for="establishment_id">Establishment</label>
                                 <select class="form-control @error('establishment_id') is-invalid @enderror"
-                                    id="establishment_id" name="establishment_id" required>
-                                    <option value="">Select Establishment</option>
+                                    id="establishment_id" name="establishment_id">
+                                    <option value="">All Establishments</option>
                                     @foreach ($establishments as $establishment)
                                         <option value="{{ $establishment->id }}"
                                             {{ old('establishment_id') == $establishment->id ? 'selected' : '' }}>
@@ -168,7 +168,6 @@
                 // Initialize Select2 for establishment dropdown (non-branch users)
                 $('#establishment_id').select2({
                     theme: 'bootstrap4',
-                    placeholder: 'Select Establishment',
                     allowClear: true,
                     width: '100%'
                 });

@@ -74,8 +74,26 @@ class IntegratedBusPassApplicationDataTable extends DataTable
                     $q->where('name', 'like', "%{$keyword}%");
                 });
             })
+            ->filter(function ($query) {
+                if ($estId = request('establishment_id')) {
+                    $query->where('establishment_id', $estId);
+                }
 
-            ->rawColumns(['action', 'status_badge', 'type_label', 'applied_date', 'person_rank', 'route_changed_indicator', 'allowed_route'])
+                // Handle global search across multiple columns
+                if (request()->has('search') && !empty(request('search')['value'])) {
+                    $searchValue = request('search')['value'];
+                    $query->where(function ($q) use ($searchValue) {
+                        $q->where('id', 'LIKE', "%{$searchValue}%")
+                            ->orWhereHas('person', function ($personQuery) use ($searchValue) {
+                                $personQuery->where('regiment_no', 'LIKE', "%{$searchValue}%")
+                                    ->orWhere('name', 'LIKE', "%{$searchValue}%");
+                            })
+                            ->orWhereHas('establishment', function ($establishmentQuery) use ($searchValue) {
+                                $establishmentQuery->where('name', 'LIKE', "%{$searchValue}%");
+                            });
+                    });
+                }
+            })
             ->setRowId('id')
             ->setRowClass(function ($row) {
                 return $row->hasRouteBeenUpdated() ? 'table-warning' : '';
@@ -96,6 +114,11 @@ class IntegratedBusPassApplicationDataTable extends DataTable
         $branchRoles = ['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)'];
         if ($user && $user->hasAnyRole($branchRoles) && $user->establishment_id) {
             $query->where('establishment_id', $user->establishment_id);
+        }
+
+        // Filter by establishment_id from AJAX request (for non-branch users)
+        if (request()->has('establishment_id') && request('establishment_id')) {
+            $query->where('establishment_id', request('establishment_id'));
         }
 
         return $query->orderBy('bus_pass_applications.created_at', 'desc');
@@ -134,8 +157,9 @@ class IntegratedBusPassApplicationDataTable extends DataTable
     {
         return [
             Column::make('DT_RowIndex')->title('#')->searchable(false)->orderable(false),
-            Column::make('person.regiment_no')->title('Regiment No')->name('person.regiment_no'),
-            Column::make('person.name')->title('Name')->name('person.name'),
+            Column::make('id')->title('Application ID')->searchable(true)->orderable(true),
+            Column::make('person.regiment_no')->title('Regiment No')->name('person.regiment_no')->searchable(true),
+            Column::make('person.name')->title('Name')->name('person.name')->searchable(true),
             Column::make('person_rank')->title('Rank')->searchable(false),
             Column::make('type_label')->title('Pass Type')->searchable(false),
             Column::make('allowed_route')->title('Allowed Route')->searchable(false)->orderable(false),

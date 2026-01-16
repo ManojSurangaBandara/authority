@@ -25,10 +25,10 @@
                                 </small>
                             @else
                                 <!-- Dropdown for other users -->
-                                <label for="establishment_id">Establishment <span class="text-danger">*</span></label>
+                                <label for="establishment_id">Establishment</label>
                                 <select class="form-control @error('establishment_id') is-invalid @enderror"
-                                    id="establishment_id" name="establishment_id" required>
-                                    <option value="">Select Establishment</option>
+                                    id="establishment_id" name="establishment_id">
+                                    <option value="">All Establishments</option>
                                     @foreach ($establishments as $establishment)
                                         <option value="{{ $establishment->id }}"
                                             {{ old('establishment_id') == $establishment->id ? 'selected' : '' }}>
@@ -165,7 +165,6 @@
                 // Initialize Select2 for establishment dropdown (non-branch users)
                 $('#establishment_id').select2({
                     theme: 'bootstrap4',
-                    placeholder: 'Select Establishment',
                     allowClear: true,
                     width: '100%'
                 });
@@ -189,62 +188,65 @@
                 if (window.LaravelDataTables && window.LaravelDataTables['bus-pass-application-table']) {
                     var table = window.LaravelDataTables['bus-pass-application-table'];
 
-                    // Add export buttons
-                    new $.fn.dataTable.Buttons(table, {
-                        dom: {
-                            button: {
-                                className: 'btn btn-sm'
-                            }
-                        },
-                        buttons: [{
-                                extend: 'copy',
-                                text: '<i class="fas fa-copy"></i> Copy',
-                                className: 'btn-info',
-                                exportOptions: {
-                                    columns: ':not(.no-export)'
+                    // Check if buttons are already present
+                    if (!table.buttons().length()) {
+                        // Add export buttons
+                        new $.fn.dataTable.Buttons(table, {
+                            dom: {
+                                button: {
+                                    className: 'btn btn-sm'
                                 }
                             },
-                            {
-                                extend: 'csv',
-                                text: '<i class="fas fa-file-csv"></i> CSV',
-                                className: 'btn-success',
-                                exportOptions: {
-                                    columns: ':not(.no-export)'
+                            buttons: [{
+                                    extend: 'copy',
+                                    text: '<i class="fas fa-copy"></i> Copy',
+                                    className: 'btn-info',
+                                    exportOptions: {
+                                        columns: ':not(.no-export)'
+                                    }
+                                },
+                                {
+                                    extend: 'csv',
+                                    text: '<i class="fas fa-file-csv"></i> CSV',
+                                    className: 'btn-success',
+                                    exportOptions: {
+                                        columns: ':not(.no-export)'
+                                    }
+                                },
+                                {
+                                    extend: 'excel',
+                                    text: '<i class="fas fa-file-excel"></i> Excel',
+                                    className: 'btn-success',
+                                    exportOptions: {
+                                        columns: ':not(.no-export)'
+                                    }
+                                },
+                                {
+                                    extend: 'pdf',
+                                    text: '<i class="fas fa-file-pdf"></i> PDF',
+                                    className: 'btn-danger',
+                                    orientation: 'landscape',
+                                    pageSize: 'A4',
+                                    exportOptions: {
+                                        columns: ':not(.no-export)'
+                                    }
+                                },
+                                {
+                                    extend: 'print',
+                                    text: '<i class="fas fa-print"></i> Print',
+                                    className: 'btn-secondary',
+                                    exportOptions: {
+                                        columns: ':not(.no-export)'
+                                    }
                                 }
-                            },
-                            {
-                                extend: 'excel',
-                                text: '<i class="fas fa-file-excel"></i> Excel',
-                                className: 'btn-success',
-                                exportOptions: {
-                                    columns: ':not(.no-export)'
-                                }
-                            },
-                            {
-                                extend: 'pdf',
-                                text: '<i class="fas fa-file-pdf"></i> PDF',
-                                className: 'btn-danger',
-                                orientation: 'landscape',
-                                pageSize: 'A4',
-                                exportOptions: {
-                                    columns: ':not(.no-export)'
-                                }
-                            },
-                            {
-                                extend: 'print',
-                                text: '<i class="fas fa-print"></i> Print',
-                                className: 'btn-secondary',
-                                exportOptions: {
-                                    columns: ':not(.no-export)'
-                                }
-                            }
-                        ]
-                    });
+                            ]
+                        });
 
-                    // Append buttons to card header
-                    table.buttons().container().appendTo($('.card-header'));
+                        // Append buttons to card header
+                        table.buttons().container().appendTo($('.card-header'));
+                    }
                 }
-            }, 2000);
+            }, 500);
 
         });
     </script>

@@ -44,6 +44,21 @@ class RejectedBusPassApplicationDataTable extends DataTable
                 if ($estId = request('establishment_id')) {
                     $query->where('establishment_id', $estId);
                 }
+
+                // Handle global search across multiple columns
+                if (request()->has('search') && !empty(request('search')['value'])) {
+                    $searchValue = request('search')['value'];
+                    $query->where(function ($q) use ($searchValue) {
+                        $q->where('id', 'LIKE', "%{$searchValue}%")
+                            ->orWhereHas('person', function ($personQuery) use ($searchValue) {
+                                $personQuery->where('regiment_no', 'LIKE', "%{$searchValue}%")
+                                    ->orWhere('name', 'LIKE', "%{$searchValue}%");
+                            })
+                            ->orWhereHas('establishment', function ($establishmentQuery) use ($searchValue) {
+                                $establishmentQuery->where('name', 'LIKE', "%{$searchValue}%");
+                            });
+                    });
+                }
             })
             ->rawColumns(['action', 'status_badge', 'type_label', 'applied_date', 'person_rank'])
             ->setRowId('id');
@@ -65,6 +80,11 @@ class RejectedBusPassApplicationDataTable extends DataTable
             $query->where('establishment_id', $user->establishment_id);
         }
 
+        // Filter by establishment_id from AJAX request (for non-branch users)
+        if (request()->has('establishment_id') && request('establishment_id')) {
+            $query->where('establishment_id', request('establishment_id'));
+        }
+
         return $query->orderBy('bus_pass_applications.created_at', 'desc');
     }
 
@@ -78,6 +98,7 @@ class RejectedBusPassApplicationDataTable extends DataTable
             ->columns($this->getColumns())
             ->minifiedAjax()
             ->selectStyleSingle()
+            ->dom('Bfrtip')
             ->buttons([
                 Button::make('excel'),
                 Button::make('csv'),
@@ -100,10 +121,11 @@ class RejectedBusPassApplicationDataTable extends DataTable
     {
         return [
             Column::make('DT_RowIndex')->title('#')->searchable(false)->orderable(false),
-            Column::make('person.regiment_no')->title('Regiment No')->name('person.regiment_no'),
-            Column::make('person.name')->title('Name')->name('person.name'),
+            Column::make('id')->title('Application ID')->searchable(true)->orderable(true),
+            Column::make('person.regiment_no')->title('Regiment No')->name('person.regiment_no')->searchable(true),
+            Column::make('person.name')->title('Name')->name('person.name')->searchable(true),
             Column::make('person_rank')->title('Rank')->searchable(false),
-            Column::make('establishment.name')->title('Establishment')->name('establishment.name'),
+            Column::make('establishment.name')->title('Establishment')->name('establishment.name')->searchable(true),
             Column::make('type_label')->title('Pass Type')->searchable(false),
             Column::make('status_badge')->title('Status')->searchable(false)->orderable(false),
             Column::make('applied_date')->title('Applied Date')->searchable(false)->orderable(false),
