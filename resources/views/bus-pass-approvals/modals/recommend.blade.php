@@ -217,7 +217,8 @@
 
 @if ($application->obtain_sltb_season == 'yes')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        // Execute immediately when modal is loaded, not on DOMContentLoaded
+        (function() {
             const checkbox = document.getElementById('sltb_season_awareness{{ $application->id }}');
             const recommendBtn = document.getElementById('recommendBtn{{ $application->id }}');
 
@@ -232,6 +233,6 @@
                     }
                 });
             }
-        });
+        })();
     </script>
 @endif
