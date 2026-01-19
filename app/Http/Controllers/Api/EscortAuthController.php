@@ -149,6 +149,51 @@ class EscortAuthController extends Controller
     }
 
     /**
+     * Refresh escort token.
+     */
+    public function refresh(): JsonResponse
+    {
+        try {
+            $newToken = JWTAuth::refresh(JWTAuth::getToken());
+            // Set the new token so we can read its payload
+            JWTAuth::setToken($newToken);
+            $payload = JWTAuth::getPayload();
+
+            // Verify this is an escort token
+            if ($payload->get('type') !== 'escort') {
+                return $this->forbiddenResponse('Invalid token type');
+            }
+
+            $escortId = $payload->get('escort_id');
+            $escort = Escort::find($escortId);
+
+            if (!$escort) {
+                return $this->notFoundResponse('Escort not found');
+            }
+
+            $data = [
+                'escort' => [
+                    'id' => $escort->id,
+                    'regiment_no' => $escort->regiment_no,
+                    'eno' => $escort->eno,
+                    'name' => $escort->name,
+                    'rank' => $escort->rank,
+                    'contact_no' => $escort->contact_no,
+                ],
+                'authorization' => [
+                    'token' => $newToken,
+                    'type' => 'bearer',
+                    'expires_in' => JWTAuth::factory()->getTTL() * 60
+                ]
+            ];
+
+            return $this->successResponse($data, 'Token refreshed successfully');
+        } catch (JWTException $e) {
+            return $this->unauthorizedResponse('Token could not be refreshed');
+        }
+    }
+
+    /**
      * Authenticate escort credentials with ePortal API
      */
     protected function authenticateWithEPortal(string $e_no, string $password): bool
