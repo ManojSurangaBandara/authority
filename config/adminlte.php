@@ -460,6 +460,14 @@ return [
                         'police-station*',
                     ],
                 ],
+                [
+                    'text' => 'Incident Types',
+                    'url' => 'incident-type',
+                    'icon' => 'fas fa-fw fa-exclamation-triangle',
+                    'active' => [
+                        'incident-type*',
+                    ],
+                ],
             ],
         ],
         [

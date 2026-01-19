@@ -31,6 +31,7 @@ use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\DistrictController;
 use App\Http\Controllers\GsDivisionController;
 use App\Http\Controllers\PoliceStationController;
+use App\Http\Controllers\IncidentTypeController;
 
 Route::get('/', function () {
     return view('auth.login');
@@ -191,6 +192,9 @@ Route::middleware('auth')->group(function () {
 
         // Police Station routes
         Route::resource('police-station', PoliceStationController::class);
+
+        // Incident Type routes
+        Route::resource('incident-type', IncidentTypeController::class);
     });
 
     Route::get('rejected-applications', [ReportController::class, 'rejected'])->name('rejected-applications.index');
