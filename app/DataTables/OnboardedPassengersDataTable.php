@@ -24,6 +24,9 @@ class OnboardedPassengersDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addIndexColumn()
+            ->addColumn('application_id', function ($row) {
+                return $row->bus_pass_application_id;
+            })
             ->addColumn('regiment_no', function ($row) {
                 return $row->busPassApplication->person->regiment_no ?? '';
             })
@@ -44,11 +47,12 @@ class OnboardedPassengersDataTable extends DataTable
                 // Handle global search
                 if ($search = request('search')['value'] ?? null) {
                     $query->where(function ($q) use ($search) {
-                        $q->whereHas('busPassApplication.person', function ($person) use ($search) {
-                            $person->where('regiment_no', 'like', "%{$search}%")
-                                ->orWhere('name', 'like', "%{$search}%")
-                                ->orWhere('rank', 'like', "%{$search}%");
-                        });
+                        $q->where('bus_pass_application_id', 'like', "%{$search}%")
+                            ->orWhereHas('busPassApplication.person', function ($person) use ($search) {
+                                $person->where('regiment_no', 'like', "%{$search}%")
+                                    ->orWhere('name', 'like', "%{$search}%")
+                                    ->orWhere('rank', 'like', "%{$search}%");
+                            });
                     });
                 }
 
@@ -72,7 +76,7 @@ class OnboardedPassengersDataTable extends DataTable
                     }
                 }
             })
-            ->rawColumns(['regiment_no', 'name', 'rank', 'onboard_time', 'action'])
+            ->rawColumns(['application_id', 'regiment_no', 'name', 'rank', 'onboard_time', 'action'])
             ->setRowAttr(['data-href' => function ($row) {
                 return route('bus-pass-applications.show', $row->bus_pass_application_id);
             }])
@@ -124,6 +128,7 @@ class OnboardedPassengersDataTable extends DataTable
     {
         return [
             Column::make('DT_RowIndex')->title('#')->searchable(false)->orderable(false),
+            Column::make('application_id')->title('Application Id')->searchable(true),
             Column::make('regiment_no')->title('Regiment No')->searchable(true),
             Column::make('name')->title('Name')->searchable(true),
             Column::make('rank')->title('Rank')->searchable(true),
