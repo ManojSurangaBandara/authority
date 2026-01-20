@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EscortAuthController;
+use App\Http\Controllers\Api\IncidentApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -71,6 +72,7 @@ Route::middleware(['escort.auth'])->prefix('escort')->group(function () {
     Route::post('/validate-temp-card-boarding', [EscortAuthController::class, 'validateTempCardBoarding']);
     Route::post('/onboard-passenger', [EscortAuthController::class, 'onboardPassenger']);
     Route::post('/onboarded-passengers', [EscortAuthController::class, 'getOnboardedPassengers']);
+    Route::post('/report-incident', [IncidentApiController::class, 'report']);
 
     // Future escort-specific endpoints can be added here
     // Route::post('/scan-qr', [EscortController::class, 'scanQr']);
