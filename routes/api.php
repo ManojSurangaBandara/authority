@@ -72,6 +72,7 @@ Route::middleware(['escort.auth'])->prefix('escort')->group(function () {
     Route::post('/validate-temp-card-boarding', [EscortAuthController::class, 'validateTempCardBoarding']);
     Route::post('/onboard-passenger', [EscortAuthController::class, 'onboardPassenger']);
     Route::post('/onboarded-passengers', [EscortAuthController::class, 'getOnboardedPassengers']);
+    Route::get('/incident-types', [IncidentApiController::class, 'getIncidentTypes']);
     Route::post('/report-incident', [IncidentApiController::class, 'report']);
 
     // Future escort-specific endpoints can be added here

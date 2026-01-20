@@ -5,11 +5,25 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Incident;
+use App\Models\IncidentType;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class IncidentApiController extends Controller
 {
+    /**
+     * Get all incident types.
+     */
+    public function getIncidentTypes()
+    {
+        $incidentTypes = IncidentType::select('id', 'name')->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $incidentTypes
+        ]);
+    }
+
     /**
      * Report a new incident.
      */
