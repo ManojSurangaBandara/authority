@@ -714,6 +714,15 @@ return [
                         'onboarded-passengers*',
                     ],
                 ],
+                [
+                    'text' => 'Incident Reports',
+                    'url' => 'incident-reports',
+                    'icon' => 'fas fa-fw fa-exclamation-triangle',
+                    // 'can' => 'manage_user_accounts',
+                    'active' => [
+                        'incident-reports*',
+                    ],
+                ],
 
             ],
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\DataTables\HandedOverBusPassApplicationDataTable;
 use App\DataTables\IntegratedBusPassApplicationDataTable;
 use App\DataTables\IntegratedToBuildCardDataTable;
+use App\DataTables\IncidentReportsDataTable;
 use App\DataTables\NotyetHandedOverBussPassApplicationDataTable;
 use App\DataTables\OnboardedPassengersDataTable;
 use App\DataTables\PendingBusPassApplicationDataTable;
@@ -17,6 +18,8 @@ use App\Models\BusPassApplication;
 use App\Models\BusRoute;
 use App\Models\PersonType;
 use App\Models\LivingInBuses;
+use App\Models\IncidentType;
+use App\Models\Incident;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -113,6 +116,29 @@ class ReportController extends Controller
         $types = ['morning' => 'Morning', 'evening' => 'Evening'];
 
         return $dataTable->render('reports.onboarded-passengers', compact('routes', 'types'));
+    }
+
+    public function incident_reports(IncidentReportsDataTable $dataTable)
+    {
+        $busRoutes = BusRoute::all()->map(function ($r) {
+            return ['id' => 'route_' . $r->id, 'name' => $r->name . ' (Living Out)'];
+        });
+        $livingInRoutes = LivingInBuses::all()->map(function ($l) {
+            return ['id' => 'living_' . $l->id, 'name' => $l->name . ' (Living In)'];
+        });
+        $routes = $busRoutes->merge($livingInRoutes);
+
+        $types = IncidentType::pluck('name', 'id')->toArray();
+        $tripTypes = ['morning' => 'Morning', 'evening' => 'Evening'];
+
+        return $dataTable->render('reports.incident-reports', compact('routes', 'types', 'tripTypes'));
+    }
+
+    public function show_incident($id)
+    {
+        $incident = Incident::with(['incidentType', 'escort', 'driver', 'bus', 'slcmpIncharge'])->findOrFail($id);
+
+        return view('reports.incident-detail', compact('incident'));
     }
 
     public function pending(PendingBusPassApplicationDataTable $dataTable)
