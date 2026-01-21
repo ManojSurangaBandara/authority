@@ -58,6 +58,26 @@ class IncidentReportsDataTable extends DataTable
                 return $viewBtn;
             })
             ->filter(function ($query) {
+                // Handle global search
+                if ($search = request('search.value')) {
+                    $query->where(function ($q) use ($search) {
+                        $q->where('incidents.description', 'like', "%{$search}%")
+                            ->orWhereHas('incidentType', function ($incidentType) use ($search) {
+                                $incidentType->where('name', 'like', "%{$search}%");
+                            })
+                            ->orWhereHas('escort', function ($escort) use ($search) {
+                                $escort->where('name', 'like', "%{$search}%");
+                            })
+                            ->orWhereHas('driver', function ($driver) use ($search) {
+                                $driver->where('name', 'like', "%{$search}%");
+                            })
+                            ->orWhereHas('bus', function ($bus) use ($search) {
+                                $bus->where('no', 'like', "%{$search}%")
+                                    ->orWhere('name', 'like', "%{$search}%");
+                            });
+                    });
+                }
+
                 if ($date = request('date')) {
                     $query->whereDate('incidents.created_at', $date);
                 }
@@ -135,14 +155,14 @@ class IncidentReportsDataTable extends DataTable
     {
         return [
             Column::make('DT_RowIndex')->title('#')->searchable(false)->orderable(false)->width(30),
-            Column::make('incident_type_name')->title('Incident Type'),
-            Column::make('description')->title('Description'),
-            Column::make('escort_name')->title('Escort'),
-            Column::make('route_name')->title('Route'),
-            Column::make('driver_name')->title('Driver'),
-            Column::make('bus_number')->title('Bus'),
-            Column::make('reported_at')->title('Reported At'),
-            Column::make('images_count')->title('Images'),
+            Column::make('incident_type_name')->title('Incident Type')->searchable(true),
+            Column::make('description')->title('Description')->searchable(true),
+            Column::make('escort_name')->title('Escort')->searchable(true),
+            Column::make('route_name')->title('Route')->searchable(true),
+            Column::make('driver_name')->title('Driver')->searchable(true),
+            Column::make('bus_number')->title('Bus')->searchable(true),
+            Column::make('reported_at')->title('Reported At')->searchable(true),
+            Column::make('images_count')->title('Images')->searchable(false),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
