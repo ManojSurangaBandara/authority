@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\BusPassApplication;
+use App\Models\BusPassApprovalHistory;
 use App\Models\BusRoute;
 use App\Models\Establishment;
 use Illuminate\Http\Request;
@@ -235,8 +236,17 @@ class BusPassIntegrationController extends Controller
      */
     public function show($id): JsonResponse
     {
-        // Only DMOV users can view application details
-        if (!auth()->user()->hasRole(['Subject Clerk (DMOV)', 'Staff Officer 2 (DMOV)', 'Col Mov (DMOV)', 'Director (DMOV)'])) {
+        // Allow DMOV users and branch users to view application details
+        $allowedRoles = [
+            'Subject Clerk (DMOV)',
+            'Staff Officer 2 (DMOV)',
+            'Col Mov (DMOV)',
+            'Director (DMOV)',
+            'Bus Pass Subject Clerk (Branch)',
+            'Staff Officer (Branch)'
+        ];
+
+        if (!auth()->user()->hasAnyRole($allowedRoles)) {
             return response()->json(['error' => 'Access denied'], 403);
         }
 
@@ -356,6 +366,66 @@ class BusPassIntegrationController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Undo integration failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Reject integration application and forward to branch staff officer
+     */
+    public function reject(Request $request, $id)
+    {
+        $request->validate([
+            'remarks' => 'required|string|max:1000'
+        ]);
+
+        $application = BusPassApplication::findOrFail($id);
+
+        // Check if application is in pending integration status
+        if (!in_array($application->status, ['approved_for_integration', 'approved_for_temp_card'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only pending integration applications can be rejected'
+            ], 400);
+        }
+
+        DB::beginTransaction();
+        try {
+            // Store the previous status before updating
+            $previousStatus = $application->status;
+
+            // Update application status to rejected for integration
+            $application->update([
+                'status' => 'rejected_for_integration',
+                'integration_rejection_remarks' => $request->remarks,
+                'integration_rejected_at' => now(),
+                'integration_rejected_by' => auth()->id()
+            ]);
+
+            // Create approval history record
+            BusPassApprovalHistory::create([
+                'bus_pass_application_id' => $application->id,
+                'user_id' => auth()->id(),
+                'action' => 'integration_rejected',
+                'previous_status' => $previousStatus,
+                'new_status' => 'rejected_for_integration',
+                'remarks' => $request->remarks,
+                'action_date' => now()
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Application rejected and forwarded to branch staff officer for review',
+                'new_status' => $application->status
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Rejection failed: ' . $e->getMessage()
             ], 500);
         }
     }

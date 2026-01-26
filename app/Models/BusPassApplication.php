@@ -107,6 +107,7 @@ class BusPassApplication extends Model
             'approved_for_integration' => 'Approved for Branch Card Integration',
             'approved_for_temp_card' => 'Approved for Temporary Card',
             'integrated_to_branch_card' => 'Integrated to Branch Card',
+            'rejected_for_integration' => 'Rejected for Integration',
             'temp_card_printed' => 'Temporary Card Printed',
             'temp_card_handed_over' => 'Temporary Card Handed Over',
             'rejected' => 'Rejected',
@@ -135,6 +136,7 @@ class BusPassApplication extends Model
                 'temp_card_printed',
                 'temp_card_handed_over',
                 'rejected',
+                'rejected_for_integration',
                 'deactivated'
             ];
             if (!in_array($this->status, $allowedStatuses)) {
@@ -157,6 +159,7 @@ class BusPassApplication extends Model
             'approved_for_integration' => 'success',
             'approved_for_temp_card' => 'success',
             'integrated_to_branch_card' => 'success',
+            'rejected_for_integration' => 'warning',
             'temp_card_printed' => 'success',
             'temp_card_handed_over' => 'success',
             'rejected' => 'danger',
@@ -303,6 +306,38 @@ class BusPassApplication extends Model
         $latestApprovalAfter = $this->approvalHistory()
             ->whereIn('action', ['approved', 'forwarded', 'recommended'])
             ->where('action_date', '>', $latestDmovNotRecommended->action_date)
+            ->exists();
+
+        return !$latestApprovalAfter;
+    }
+
+    /**
+     * Get latest integration rejected action
+     */
+    public function getLatestIntegrationRejectedAction()
+    {
+        return $this->approvalHistory()
+            ->where('action', 'integration_rejected')
+            ->with('user')
+            ->orderBy('action_date', 'desc')
+            ->first();
+    }
+
+    /**
+     * Check if application was recently rejected from integration
+     */
+    public function wasRecentlyRejectedFromIntegration()
+    {
+        $latestIntegrationRejected = $this->getLatestIntegrationRejectedAction();
+
+        if (!$latestIntegrationRejected) {
+            return false;
+        }
+
+        // Check if the latest integration rejected action is more recent than any approved/forwarded actions
+        $latestApprovalAfter = $this->approvalHistory()
+            ->whereIn('action', ['approved', 'forwarded', 'recommended'])
+            ->where('action_date', '>', $latestIntegrationRejected->action_date)
             ->exists();
 
         return !$latestApprovalAfter;

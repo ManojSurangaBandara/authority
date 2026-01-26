@@ -346,7 +346,7 @@
                         // Use regex for exact match to avoid partial matches
                         const escapedRank = selectedRank.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                         applicationsTable.column(3).search('^' + escapedRank + '$', true, false)
-                    .draw(); // Column 3 is the Rank column
+                            .draw(); // Column 3 is the Rank column
                     } else {
                         applicationsTable.column(3).search('').draw();
                     }
@@ -694,12 +694,15 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                                                                        <i class="fas fa-arrow-up"></i>
-                                                                                                    </button>` :
+                                                                                                            <i class="fas fa-arrow-up"></i>
+                                                                                                        </button>
+                                                                                                        <button class="btn btn-danger btn-xs reject-application ml-1" data-id="${app.id}" title="Reject Application">
+                                                                                                            <i class="fas fa-times"></i>
+                                                                                                        </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                                                                        <i class="fas fa-arrow-down"></i>
-                                                                                                    </button>` : ''
+                                                                                                            <i class="fas fa-arrow-down"></i>
+                                                                                                        </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
@@ -809,12 +812,15 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                                                                        <i class="fas fa-arrow-up"></i>
-                                                                                                    </button>` :
+                                                                                                            <i class="fas fa-arrow-up"></i>
+                                                                                                        </button>
+                                                                                                        <button class="btn btn-danger btn-xs reject-application ml-1" data-id="${app.id}" title="Reject Application">
+                                                                                                            <i class="fas fa-times"></i>
+                                                                                                        </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                                                                        <i class="fas fa-arrow-down"></i>
-                                                                                                    </button>` : ''
+                                                                                                            <i class="fas fa-arrow-down"></i>
+                                                                                                        </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
@@ -991,6 +997,98 @@
                     }
                 });
             }
+        });
+
+        // Reject integration action
+        $(document).on('click', '.reject-application', function() {
+            const applicationId = $(this).data('id');
+
+            // Show reject modal
+            const modalHtml = `
+                <div class="modal fade" id="rejectModal" tabindex="-1" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Reject Integration Application</h5>
+                                <button type="button" class="close" data-dismiss="modal">
+                                    <span>&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="rejectForm">
+                                    <div class="form-group">
+                                        <label for="rejectRemarks">Remarks (Required)</label>
+                                        <textarea class="form-control" id="rejectRemarks" name="remarks" rows="4" placeholder="Please provide reasons for rejection..." required></textarea>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-danger" id="confirmReject">Reject & Forward</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Remove any existing modal
+            $('#rejectModal').remove();
+
+            // Add modal to container
+            $('#modal-container').append(modalHtml);
+
+            // Show modal
+            $('#rejectModal').modal('show');
+
+            // Handle reject confirmation
+            $('#confirmReject').off('click').on('click', function() {
+                const remarks = $('#rejectRemarks').val().trim();
+
+                if (!remarks) {
+                    alert('Please provide remarks for rejection.');
+                    return;
+                }
+
+                // Disable button to prevent double submission
+                $(this).prop('disabled', true).text('Rejecting...');
+
+                $.ajax({
+                    url: '{{ url('bus-pass-integration') }}/' + applicationId + '/reject',
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    data: {
+                        remarks: remarks
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            $('#rejectModal').modal('hide');
+                            loadChartData();
+                            // Reload applications for current establishment if one is being viewed
+                            if (currentEstablishmentId && currentEstablishmentType &&
+                                currentEstablishmentName) {
+                                loadApplications(currentEstablishmentId,
+                                    currentEstablishmentType,
+                                    currentEstablishmentName);
+                            } else {
+                                // If viewing all applications, reload all applications
+                                loadAllApplications();
+                            }
+                        } else {
+                            alert('Error: ' + response.message);
+                            $('#confirmReject').prop('disabled', false).text(
+                            'Reject & Forward');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error rejecting application:', error);
+                        alert('Error rejecting application');
+                        $('#confirmReject').prop('disabled', false).text('Reject & Forward');
+                    }
+                });
+            });
         });
 
         // Function to remove application from current view (called from modal)

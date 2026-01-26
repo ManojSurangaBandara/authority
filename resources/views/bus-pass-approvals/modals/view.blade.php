@@ -590,8 +590,8 @@
                 @if (!$isViewOnly ?? false)
                     @if (auth()->user()->can('approve_bus_pass'))
                         @if (auth()->user()->hasRole('Staff Officer (Branch)'))
-                            @if ($application->wasRecentlyDmovNotRecommended())
-                                {{-- Application returned from DMOV: Only show forward to branch clerk --}}
+                            @if ($application->wasRecentlyDmovNotRecommended() || $application->status === 'rejected_for_integration')
+                                {{-- Application returned from DMOV or rejected from integration: Only show forward to branch clerk --}}
                                 <button type="button" class="btn btn-primary" data-dismiss="modal"
                                     data-toggle="modal"
                                     data-target="#forwardToBranchClerkModal{{ $application->id }}">

@@ -1018,6 +1018,18 @@ class BusPassApplicationController extends Controller
         $data['declaration_1'] = $request->declaration_1;
         $data['declaration_2'] = $request->declaration_2;
 
+        // Clear previous route-related fields when bus pass type changes
+        $currentBusPassType = $bus_pass_application->bus_pass_type;
+        if ($currentBusPassType !== $request->bus_pass_type) {
+            // Clear all route-related fields first
+            $data['requested_bus_name'] = null;
+            $data['destination_from_ahq'] = null;
+            $data['living_in_bus'] = null;
+            $data['destination_location_ahq'] = null;
+            $data['weekend_bus_name'] = null;
+            $data['weekend_destination'] = null;
+        }
+
         // Add conditional fields based on bus pass type
         if ($request->bus_pass_type === 'daily_travel' || $request->bus_pass_type === 'unmarried_daily_travel') {
             $data['requested_bus_name'] = $request->requested_bus_name;

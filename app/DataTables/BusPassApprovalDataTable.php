@@ -34,6 +34,11 @@ class BusPassApprovalDataTable extends DataTable
                     $html .= '<br><span class="badge badge-warning"><i class="fas fa-undo"></i> Returned from DMOV</span>';
                 }
 
+                // Check if recently rejected from integration
+                if (method_exists($row, 'wasRecentlyRejectedFromIntegration') && $row->wasRecentlyRejectedFromIntegration()) {
+                    $html .= '<br><span class="badge badge-danger"><i class="fas fa-undo"></i> Returned from Integration</span>';
+                }
+
                 return $html;
             })
             ->addColumn('regiment_no', function ($row) {
@@ -92,12 +97,13 @@ class BusPassApprovalDataTable extends DataTable
                 $html = '<div class="btn-group" role="group">';
                 $html .= '<button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="' . $modalTarget . '" title="View"><i class="fas fa-eye"></i></button>';
 
-                // Add edit button for branch clerk on returned applications (from DMOV or branch staff officer)
+                // Add edit button for branch clerk on returned applications (from DMOV, branch staff officer, or integration)
                 $user = Auth::user();
                 if ($user && $user->hasRole('Bus Pass Subject Clerk (Branch)')) {
                     $hasDmovReturned = method_exists($row, 'wasRecentlyDmovNotRecommended') && $row->wasRecentlyDmovNotRecommended();
                     $hasBranchReturned = method_exists($row, 'wasRecentlyNotRecommended') && $row->wasRecentlyNotRecommended();
-                    if ($hasDmovReturned || $hasBranchReturned) {
+                    $hasIntegrationReturned = method_exists($row, 'wasRecentlyRejectedFromIntegration') && $row->wasRecentlyRejectedFromIntegration();
+                    if ($hasDmovReturned || $hasBranchReturned || $hasIntegrationReturned) {
                         $html .= '<a href="' . route('bus-pass-applications.edit', $row->id) . '" class="btn btn-sm btn-warning" title="Edit Application"><i class="fas fa-edit"></i></a>';
                     }
                 }
@@ -111,8 +117,9 @@ class BusPassApprovalDataTable extends DataTable
             ->setRowClass(function ($row) {
                 $hasNotRecommended = method_exists($row, 'wasRecentlyNotRecommended') && $row->wasRecentlyNotRecommended();
                 $hasDmovNotRecommended = method_exists($row, 'wasRecentlyDmovNotRecommended') && $row->wasRecentlyDmovNotRecommended();
+                $hasIntegrationRejected = method_exists($row, 'wasRecentlyRejectedFromIntegration') && $row->wasRecentlyRejectedFromIntegration();
 
-                return ($hasNotRecommended || $hasDmovNotRecommended) ? 'table-warning' : '';
+                return ($hasNotRecommended || $hasDmovNotRecommended || $hasIntegrationRejected) ? 'table-warning' : '';
             });
     }
 
@@ -159,7 +166,7 @@ class BusPassApprovalDataTable extends DataTable
         }
 
         if ($user->hasRole('Staff Officer (Branch)')) {
-            return ['pending_staff_officer_branch'];
+            return ['pending_staff_officer_branch', 'rejected_for_integration'];
         }
 
         if ($user->hasRole('Subject Clerk (DMOV)')) {

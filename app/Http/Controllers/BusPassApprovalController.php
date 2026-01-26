@@ -326,7 +326,7 @@ class BusPassApprovalController extends Controller
     }
 
     /**
-     * Forward application back to Branch Clerk (Staff Officer Branch only for DMOV returned applications)
+     * Forward application back to Branch Clerk (Staff Officer Branch only for DMOV returned applications or integration rejected applications)
      */
     public function forwardToBranchClerk(Request $request, BusPassApplication $application)
     {
@@ -341,9 +341,12 @@ class BusPassApprovalController extends Controller
             return redirect()->back()->with('error', 'You do not have permission to process this application.');
         }
 
-        // Check if application was recently returned from DMOV
-        if (!$application->wasRecentlyDmovNotRecommended()) {
-            return redirect()->back()->with('error', 'This action is only available for applications returned from DMOV.');
+        // Check if application was recently returned from DMOV or rejected from integration
+        $isValidForForwarding = $application->wasRecentlyDmovNotRecommended() ||
+            $application->status === 'rejected_for_integration';
+
+        if (!$isValidForForwarding) {
+            return redirect()->back()->with('error', 'This action is only available for applications returned from DMOV or rejected from integration.');
         }
 
         DB::transaction(function () use ($application, $user, $request) {
@@ -448,7 +451,9 @@ class BusPassApprovalController extends Controller
             'approved_for_integration',
             'approved_for_temp_card',
             'integrated_to_branch_card',
-            'integrated_to_temp_card'
+            'integrated_to_temp_card',
+            // Allow viewing of applications rejected during integration so branch users can review and forward
+            'rejected_for_integration'
         ];
 
         // Check if application is in integration-related status
@@ -549,6 +554,18 @@ class BusPassApprovalController extends Controller
     {
         // Check if user can view this application
         $user = Auth::user();
+
+        // Debug logging to trace authorization checks (temporary)
+        \Log::info('BusPassApprovalController::loadModal', [
+            'authenticated' => auth()->check(),
+            'user_id' => $user ? $user->id : null,
+            'roles' => $user ? $user->roles->pluck('name')->toArray() : [],
+            'application_id' => $application->id,
+            'application_status' => $application->status,
+            'can_approve' => $this->canUserApprove($user, $application),
+            'can_view_for_integration' => $this->canUserViewForIntegration($user, $application)
+        ]);
+
         if (!$this->canUserApprove($user, $application) && !$this->canUserViewForIntegration($user, $application)) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
@@ -583,14 +600,22 @@ class BusPassApprovalController extends Controller
         // Only render action modals if not view-only
         $actionModals = '';
         if (!$isViewOnly) {
-            $actionModalViews = [
-                'bus-pass-approvals.modals.approve',
-                'bus-pass-approvals.modals.reject',
-                'bus-pass-approvals.modals.recommend',
-                'bus-pass-approvals.modals.not-recommend',
-                'bus-pass-approvals.modals.dmov-not-recommend',
-                'bus-pass-approvals.modals.forward-to-branch-clerk'
-            ];
+            // If application was rejected during integration and the current user is a Branch Staff Officer,
+            // only show the "Forward to Branch Clerk" action to enforce the workflow.
+            if ($application->status === 'rejected_for_integration' && $user->hasRole('Staff Officer (Branch)')) {
+                $actionModalViews = [
+                    'bus-pass-approvals.modals.forward-to-branch-clerk'
+                ];
+            } else {
+                $actionModalViews = [
+                    'bus-pass-approvals.modals.approve',
+                    'bus-pass-approvals.modals.reject',
+                    'bus-pass-approvals.modals.recommend',
+                    'bus-pass-approvals.modals.not-recommend',
+                    'bus-pass-approvals.modals.dmov-not-recommend',
+                    'bus-pass-approvals.modals.forward-to-branch-clerk'
+                ];
+            }
 
             foreach ($actionModalViews as $modalView) {
                 try {
