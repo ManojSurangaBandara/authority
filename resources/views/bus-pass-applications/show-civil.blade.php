@@ -57,6 +57,21 @@
                                 {{ $bus_pass_application->person->telephone_no }}
                             </div>
                             <div class="col-md-4">
+                                <strong>Blood Group:</strong><br>
+                                {{ $bus_pass_application->person->blood_group ?: 'Not specified' }}
+                            </div>
+                            <div class="col-md-4">
+                                <strong>NOK Name:</strong><br>
+                                {{ $bus_pass_application->person->nok_name ?: 'Not specified' }}
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <strong>NOK Telephone No:</strong><br>
+                                {{ $bus_pass_application->person->nok_telephone_no ?: 'Not specified' }}
+                            </div>
+                            <div class="col-md-4">
                                 <strong>Province:</strong><br>
                                 {{ $bus_pass_application->person->province->name ?? 'Not specified' }}
                             </div>

@@ -209,7 +209,9 @@
                                                 class="form-control @error('telephone_no') is-invalid @enderror"
                                                 id="telephone_no" name="telephone_no"
                                                 value="{{ old('telephone_no', $bus_pass_application->person->telephone_no) }}"
-                                                required pattern="[0-9]{10}" maxlength="10" inputmode="numeric" oninvalid="this.setCustomValidity('Please enter a valid 10-digit mobile number')" oninput="this.setCustomValidity('')" >
+                                                required pattern="[0-9]{10}" maxlength="10" inputmode="numeric"
+                                                oninvalid="this.setCustomValidity('Please enter a valid 10-digit mobile number')"
+                                                oninput="this.setCustomValidity('')">
                                             @error('telephone_no')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
@@ -251,6 +253,50 @@
                                                 @endforeach
                                             </select>
                                             @error('police_station_id')
+                                                <span class="invalid-feedback">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="blood_group">Blood Group</label>
+                                            <input type="text"
+                                                class="form-control @error('blood_group') is-invalid @enderror"
+                                                id="blood_group" name="blood_group"
+                                                value="{{ old('blood_group', $bus_pass_application->person->blood_group) }}"
+                                                placeholder="e.g., A+, B-, O+">
+                                            @error('blood_group')
+                                                <span class="invalid-feedback">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="nok_name">NOK Name</label>
+                                            <input type="text"
+                                                class="form-control @error('nok_name') is-invalid @enderror"
+                                                id="nok_name" name="nok_name"
+                                                value="{{ old('nok_name', $bus_pass_application->person->nok_name) }}"
+                                                placeholder="Name of NOK">
+                                            @error('nok_name')
+                                                <span class="invalid-feedback">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="nok_telephone_no">NOK Telephone No</label>
+                                            <input type="tel" pattern="[0-9]{10}" maxlength="10" inputmode="numeric"
+                                                oninvalid="this.setCustomValidity('Please enter a valid 10-digit mobile number')"
+                                                oninput="this.setCustomValidity('')"
+                                                class="form-control @error('nok_telephone_no') is-invalid @enderror"
+                                                id="nok_telephone_no" name="nok_telephone_no"
+                                                value="{{ old('nok_telephone_no', $bus_pass_application->person->nok_telephone_no) }}"
+                                                placeholder="10-digit mobile number">
+                                            @error('nok_telephone_no')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
                                         </div>

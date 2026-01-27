@@ -87,6 +87,21 @@
                                 {{ $bus_pass_application->person->telephone_no }}
                             </div>
                             <div class="col-md-4">
+                                <strong>Blood Group:</strong><br>
+                                {{ $bus_pass_application->person->blood_group ?: 'Not specified' }}
+                            </div>
+                            <div class="col-md-4">
+                                <strong>NOK Name:</strong><br>
+                                {{ $bus_pass_application->person->nok_name ?: 'Not specified' }}
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <strong>NOK Telephone No:</strong><br>
+                                {{ $bus_pass_application->person->nok_telephone_no ?: 'Not specified' }}
+                            </div>
+                            <div class="col-md-4">
                                 <strong>Grama Seva Division:</strong><br>
                                 {{ $bus_pass_application->person->gsDivision->name ?? 'Not specified' }}
                             </div>
@@ -314,8 +329,8 @@
                                 class="col-md-{{ $bus_pass_application->bus_pass_type === 'living_in_only' ? '12' : '6' }}">
                                 <strong>Person Image:</strong><br>
                                 @if ($bus_pass_application->person_image)
-                                    <a href="{{ asset('storage/' . $bus_pass_application->person_image) }}" target="_blank"
-                                        class="btn btn-sm btn-outline-primary">
+                                    <a href="{{ asset('storage/' . $bus_pass_application->person_image) }}"
+                                        target="_blank" class="btn btn-sm btn-outline-primary">
                                         <i class="fas fa-image"></i> View Image
                                     </a>
                                 @else
