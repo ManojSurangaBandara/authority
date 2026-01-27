@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\DataTables\BusPassApplicationDataTable;
+use App\DataTables\EmergencyDetailsDataTable;
 use App\Models\BusPassApplication;
 use App\Models\BusRoute;
 use App\Models\Establishment;
@@ -1292,5 +1293,73 @@ class BusPassApplicationController extends Controller
                 'message' => 'Branch card verification failed: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Display the emergency details page for branch users.
+     */
+    public function emergencyDetailsIndex(EmergencyDetailsDataTable $dataTable)
+    {
+        // Only allow branch users to access this page
+        if (!auth()->user()->hasAnyRole(['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)'])) {
+            abort(403, 'Unauthorized access');
+        }
+
+        return $dataTable->render('emergency-details.index');
+    }
+
+    /**
+     * Show the form for editing emergency details.
+     */
+    public function emergencyDetailsEdit(BusPassApplication $application)
+    {
+        // Only allow branch users to access this page
+        if (!auth()->user()->hasAnyRole(['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)'])) {
+            abort(403, 'Unauthorized access');
+        }
+
+        // Check if the application belongs to the user's establishment
+        if (auth()->user()->establishment_id !== $application->establishment_id) {
+            abort(403, 'You can only edit applications from your establishment');
+        }
+
+        return view('emergency-details.edit', compact('application'));
+    }
+
+    /**
+     * Update the emergency details for the application.
+     */
+    public function emergencyDetailsUpdate(Request $request, BusPassApplication $application)
+    {
+        // Only allow branch users to access this functionality
+        if (!auth()->user()->hasAnyRole(['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)'])) {
+            abort(403, 'Unauthorized access');
+        }
+
+        // Check if the application belongs to the user's establishment
+        if (auth()->user()->establishment_id !== $application->establishment_id) {
+            abort(403, 'You can only edit applications from your establishment');
+        }
+
+        // Validate the emergency details
+        $request->validate([
+            'blood_group' => 'required|string|max:10',
+            'nok_name' => 'required|string|max:255',
+            'nok_telephone_no' => 'required|string|max:10|regex:/^[0-9]{10}$/',
+        ], [
+            'blood_group.required' => 'Blood Group is required',
+            'nok_name.required' => 'NOK Name is required',
+            'nok_telephone_no.required' => 'NOK Telephone Number is required',
+            'nok_telephone_no.regex' => 'NOK Telephone Number must be a valid 10-digit number',
+        ]);
+
+        // Update the person's emergency details
+        $application->person->update([
+            'blood_group' => $request->blood_group,
+            'nok_name' => $request->nok_name,
+            'nok_telephone_no' => $request->nok_telephone_no,
+        ]);
+
+        return redirect()->route('emergency-details.index')->with('success', 'Emergency details updated successfully');
     }
 }

@@ -88,6 +88,11 @@ Route::middleware('auth')->group(function () {
     Route::get('bus-pass-applications-api/get-details', [BusPassApplicationController::class, 'getPersonDetails'])->name('bus-pass-applications.get-details');
     Route::post('bus-pass-applications-api/verify-branch-card', [BusPassApplicationController::class, 'verifyBranchCard'])->name('bus-pass-applications.verify-branch-card');
 
+    // Emergency Details routes (for branch users)
+    Route::get('emergency-details', [BusPassApplicationController::class, 'emergencyDetailsIndex'])->name('emergency-details.index');
+    Route::get('emergency-details/{application}/edit', [BusPassApplicationController::class, 'emergencyDetailsEdit'])->name('emergency-details.edit');
+    Route::put('emergency-details/{application}', [BusPassApplicationController::class, 'emergencyDetailsUpdate'])->name('emergency-details.update');
+
     // QR Download routes
     Route::get('qr-download', [QrDownloadController::class, 'index'])->name('qr-download.index');
     Route::get('qr-download/{id}/download', [QrDownloadController::class, 'download'])->name('qr-download.download');

@@ -529,6 +529,16 @@ return [
         ],
 
         [
+            'text' => 'Fill Emergency Details',
+            'url' => 'emergency-details',
+            'icon' => 'fas fa-fw fa-user-md',
+            'can' => 'bus_pass_subject_clerk_branch',
+            'active' => [
+                'emergency-details*',
+            ],
+        ],
+
+        [
             'text' => 'Bus Pass Approvals',
             'url' => 'bus-pass-approvals',
             'icon' => 'fas fa-fw fa-check-circle',

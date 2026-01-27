@@ -361,24 +361,34 @@
                     @endif
 
                     <div class="card-footer">
-                        <a href="{{ route('bus-pass-applications.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Back to Applications
-                        </a>
+                        @php
+                            $showFooterButtons = true; // Default to true, hide when from emergency details
+                            $fromParam = request('from');
+                            if ($fromParam === 'emergency-details') {
+                                $showFooterButtons = false; // Hide all footer buttons
+                            }
+                        @endphp
 
-                        @if (auth()->user()->hasRole('Bus Pass Subject Clerk (Branch)') &&
-                                $bus_pass_application->status === 'pending_subject_clerk')
-                            <a href="{{ route('bus-pass-applications.edit', $bus_pass_application->id) }}"
-                                class="btn btn-primary">
-                                <i class="fas fa-edit"></i> Edit Application
+                        @if ($showFooterButtons)
+                            <a href="{{ route('bus-pass-applications.index') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Applications
                             </a>
-                        @endif
 
-                        @if (
-                            $bus_pass_application->status === 'approved_for_integration' ||
-                                $bus_pass_application->status === 'approved_for_temp_card')
-                            <button class="btn btn-success" onclick="window.print()">
-                                <i class="fas fa-print"></i> Print Application
-                            </button>
+                            @if (auth()->user()->hasRole('Bus Pass Subject Clerk (Branch)') &&
+                                    $bus_pass_application->status === 'pending_subject_clerk')
+                                <a href="{{ route('bus-pass-applications.edit', $bus_pass_application->id) }}"
+                                    class="btn btn-primary">
+                                    <i class="fas fa-edit"></i> Edit Application
+                                </a>
+                            @endif
+
+                            @if (
+                                $bus_pass_application->status === 'approved_for_integration' ||
+                                    $bus_pass_application->status === 'approved_for_temp_card')
+                                <button class="btn btn-success" onclick="window.print()">
+                                    <i class="fas fa-print"></i> Print Application
+                                </button>
+                            @endif
                         @endif
                     </div>
                 </div>
