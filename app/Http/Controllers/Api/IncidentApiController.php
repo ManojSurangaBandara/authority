@@ -43,6 +43,8 @@ class IncidentApiController extends Controller
         $validator = Validator::make($request->all(), [
             'incident_type_id' => 'required|exists:incident_types,id',
             'description' => 'required|string|max:1000',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
             'images' => 'nullable|array|max:3',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:5120', // max 5MB per image
         ]);
@@ -138,6 +140,8 @@ class IncidentApiController extends Controller
         $incident = Incident::create([
             'incident_type_id' => $request->incident_type_id,
             'description' => $request->description,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
             'image1' => $imagePaths[0] ?? null,
             'image2' => $imagePaths[1] ?? null,
             'image3' => $imagePaths[2] ?? null,

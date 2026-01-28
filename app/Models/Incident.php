@@ -10,6 +10,8 @@ class Incident extends Model
     protected $fillable = [
         'incident_type_id',
         'description',
+        'latitude',
+        'longitude',
         'image1',
         'image2',
         'image3',
