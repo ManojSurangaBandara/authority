@@ -284,7 +284,7 @@ class DashboardController extends Controller
     {
         return [
             'pending_branch_clerk' => BusPassApplication::where('status', 'pending_subject_clerk')->where('establishment_id', $establishmentId)->count(),
-            'pending_branch_staff_officer' => BusPassApplication::where('status', 'pending_staff_officer_branch')->where('establishment_id', $establishmentId)->count(),
+            'pending_branch_staff_officer' => BusPassApplication::whereIn('status', ['pending_staff_officer_branch', 'rejected_for_integration'])->where('establishment_id', $establishmentId)->count(),
             'pending_dmov_clerk' => BusPassApplication::where('status', 'forwarded_to_movement')->where('establishment_id', $establishmentId)->count(),
             'pending_dmov_staff_officer_2' => BusPassApplication::where('status', 'pending_staff_officer_2_mov')->where('establishment_id', $establishmentId)->count(),
             'pending_dmov_col' => BusPassApplication::where('status', 'pending_col_mov')->where('establishment_id', $establishmentId)->count(),
@@ -307,7 +307,7 @@ class DashboardController extends Controller
 
             // Applications received for review
             $receivedCount = BusPassApplication::where('establishment_id', $establishmentId)
-                ->where('status', 'pending_staff_officer_branch')
+                ->whereIn('status', ['pending_staff_officer_branch', 'rejected_for_integration'])
                 ->whereBetween('updated_at', [$monthStart . ' 00:00:00', $monthEnd . ' 23:59:59'])
                 ->count();
 
@@ -1437,6 +1437,7 @@ class DashboardController extends Controller
         $userLevelMapping = [
             'pending_subject_clerk' => 'Branch Clerk',
             'pending_staff_officer_branch' => 'Branch Staff Officer',
+            'rejected_for_integration' => 'Branch Staff Officer', // Returned from Integration also handled by Staff Officer
         ];
 
         $pendingCounts = [];

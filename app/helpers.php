@@ -21,7 +21,7 @@ if (!function_exists('getPendingApprovalsCount')) {
                 ->where('establishment_id', $user->establishment_id)
                 ->count();
         } elseif ($user->hasRole('Staff Officer (Branch)')) {
-            $pendingCount = BusPassApplication::where('status', 'pending_staff_officer_branch')
+            $pendingCount = BusPassApplication::whereIn('status', ['pending_staff_officer_branch', 'rejected_for_integration'])
                 ->where('establishment_id', $user->establishment_id)
                 ->count();
         } elseif ($user->hasRole('Subject Clerk (DMOV)')) {
