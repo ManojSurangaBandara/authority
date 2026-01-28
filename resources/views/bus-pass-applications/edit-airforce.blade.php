@@ -307,12 +307,13 @@
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="blood_group">Blood Group</label>
+                                            <label for="blood_group">Blood Group <span
+                                                    class="text-danger">*</span></label>
                                             <input type="text"
                                                 class="form-control @error('blood_group') is-invalid @enderror"
                                                 id="blood_group" name="blood_group"
                                                 value="{{ old('blood_group', $bus_pass_application->person->blood_group ?? '') }}"
-                                                placeholder="e.g., A+, B-, O+">
+                                                placeholder="e.g., A+, B-, O+" required>
                                             @error('blood_group')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
@@ -320,12 +321,12 @@
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="nok_name">NOK Name</label>
+                                            <label for="nok_name">NOK Name <span class="text-danger">*</span></label>
                                             <input type="text"
                                                 class="form-control @error('nok_name') is-invalid @enderror"
                                                 id="nok_name" name="nok_name"
                                                 value="{{ old('nok_name', $bus_pass_application->person->nok_name ?? '') }}"
-                                                placeholder="Name of NOK">
+                                                placeholder="Name of NOK" required>
                                             @error('nok_name')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
@@ -333,14 +334,15 @@
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="nok_telephone_no">NOK Telephone No</label>
+                                            <label for="nok_telephone_no">NOK Telephone No <span
+                                                    class="text-danger">*</span></label>
                                             <input type="tel" pattern="[0-9]{10}" maxlength="10" inputmode="numeric"
                                                 oninvalid="this.setCustomValidity('Please enter a valid 10-digit mobile number')"
                                                 oninput="this.setCustomValidity('')"
                                                 class="form-control @error('nok_telephone_no') is-invalid @enderror"
                                                 id="nok_telephone_no" name="nok_telephone_no"
                                                 value="{{ old('nok_telephone_no', $bus_pass_application->person->nok_telephone_no ?? '') }}"
-                                                placeholder="10-digit mobile number">
+                                                placeholder="10-digit mobile number" required>
                                             @error('nok_telephone_no')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
@@ -491,7 +493,8 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label for="requested_bus_name">Requested Bus Name</label>
+                                                <label for="requested_bus_name">Requested Bus Name <span
+                                                        class="text-danger">*</span></label>
                                                 <select class="form-control" id="requested_bus_name"
                                                     name="requested_bus_name">
                                                     <option value="">Select Bus</option>
@@ -507,7 +510,8 @@
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label for="destination_from_ahq">Destination location from AHQ</label>
+                                                <label for="destination_from_ahq">Destination location from AHQ <span
+                                                        class="text-danger">*</span></label>
                                                 <input type="text" class="form-control" id="destination_from_ahq"
                                                     name="destination_from_ahq"
                                                     value="{{ old('destination_from_ahq', $bus_pass_application->destination_from_ahq) }}">
@@ -526,7 +530,8 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label for="requested_bus_name_unmarried_edit">Requested Bus Name</label>
+                                                <label for="requested_bus_name_unmarried_edit">Requested Bus Name <span
+                                                        class="text-danger">*</span></label>
                                                 <select class="form-control" id="requested_bus_name_unmarried_edit"
                                                     name="requested_bus_name">
                                                     <option value="">Select Bus</option>
@@ -543,7 +548,7 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label for="destination_from_ahq_unmarried_edit">Destination location from
-                                                    AHQ</label>
+                                                    AHQ <span class="text-danger">*</span></label>
                                                 <input type="text" class="form-control"
                                                     id="destination_from_ahq_unmarried_edit" name="destination_from_ahq"
                                                     value="{{ old('destination_from_ahq', $bus_pass_application->destination_from_ahq) }}">
@@ -561,7 +566,8 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label for="living_in_bus">Living in bus</label>
+                                                <label for="living_in_bus">Living in bus <span
+                                                        class="text-danger">*</span></label>
                                                 <select class="form-control" id="living_in_bus" name="living_in_bus">
                                                     <option value="">Select Living in bus</option>
                                                     @if (isset($livingInBuses))
@@ -576,7 +582,8 @@
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label for="destination_location_ahq">Destination Location from AHQ</label>
+                                                <label for="destination_location_ahq">Destination Location from AHQ <span
+                                                        class="text-danger">*</span></label>
                                                 <select class="form-control" id="destination_location_ahq"
                                                     name="destination_location_ahq">
                                                     <option value="">Select Destination Location</option>
@@ -592,7 +599,8 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label for="weekend_bus_name">Weekend Bus Name</label>
+                                                <label for="weekend_bus_name">Weekend Bus Name <span
+                                                        class="text-danger">*</span></label>
                                                 <select class="form-control" id="weekend_bus_name"
                                                     name="weekend_bus_name">
                                                     <option value="">Select Bus</option>
@@ -608,7 +616,8 @@
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label for="weekend_destination">Destination</label>
+                                                <label for="weekend_destination">Destination <span
+                                                        class="text-danger">*</span></label>
                                                 <input type="text" class="form-control" id="weekend_destination"
                                                     name="weekend_destination"
                                                     value="{{ old('weekend_destination', $bus_pass_application->weekend_destination) }}">
@@ -626,7 +635,8 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label for="living_in_bus_only">Living in bus</label>
+                                                <label for="living_in_bus_only">Living in bus <span
+                                                        class="text-danger">*</span></label>
                                                 <select class="form-control" id="living_in_bus_only"
                                                     name="living_in_bus">
                                                     <option value="">Select Living in bus</option>
@@ -643,7 +653,7 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label for="destination_location_living_in_edit">Destination Location from
-                                                    AHQ (Living in)</label>
+                                                    AHQ (Living in) <span class="text-danger">*</span></label>
                                                 <select class="form-control" id="destination_location_living_in_edit"
                                                     name="destination_location_ahq">
                                                     <option value="">Select Destination Location</option>
@@ -663,7 +673,8 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label for="weekend_bus_name_only">Weekend Bus Name</label>
+                                                <label for="weekend_bus_name_only">Weekend Bus Name <span
+                                                        class="text-danger">*</span></label>
                                                 <select class="form-control" id="weekend_bus_name_only"
                                                     name="weekend_bus_name">
                                                     <option value="">Select Bus</option>
@@ -679,7 +690,8 @@
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label for="weekend_destination_only">Destination Location from AHQ</label>
+                                                <label for="weekend_destination_only">Destination Location from AHQ <span
+                                                        class="text-danger">*</span></label>
                                                 <input type="text" class="form-control" id="weekend_destination_only"
                                                     name="weekend_destination"
                                                     value="{{ old('weekend_destination', $bus_pass_application->weekend_destination) }}">
@@ -754,7 +766,8 @@
                                 <div class="row">
                                     <div class="col-md-6" id="grama_niladari_section">
                                         <div class="form-group">
-                                            <label for="grama_niladari_certificate">Grama Niladari Certificate</label>
+                                            <label for="grama_niladari_certificate">Grama Niladari Certificate <span
+                                                    class="text-danger">*</span></label>
                                             @if ($bus_pass_application->grama_niladari_certificate)
                                                 <div class="mb-2">
                                                     <a href="{{ asset('storage/' . $bus_pass_application->grama_niladari_certificate) }}"
