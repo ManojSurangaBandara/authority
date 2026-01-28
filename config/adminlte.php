@@ -699,11 +699,11 @@ return [
                 ],
                 [
                     'text' => 'Establishment wise Integrated Applications',
-                    'url' => 'establishment-wise-applications',
+                    'url' => 'report-establishment-wise-applications',
                     'icon' => 'fas fa-fw fa-building',
                     // 'can' => 'manage_user_accounts',
                     'active' => [
-                        'establishment-wise-applications*',
+                        'report-establishment-wise-applications*',
                     ],
                 ],
                 [
