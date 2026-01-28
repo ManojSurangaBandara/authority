@@ -462,21 +462,19 @@
                         $showEditButton = false; // Default to false, only show for specific conditions
                         $showFooterButtons = true; // Default to true, hide when from emergency details
 
-                        // Only Bus Pass Subject Clerk (Branch) should be able to edit applications
-                        if (auth()->user()->hasRole('Bus Pass Subject Clerk (Branch)')) {
-                            // Don't show edit button if coming from emergency details page
-    $fromParam = request('from');
-    if ($fromParam === 'emergency-details') {
-        $showFooterButtons = false; // Hide all footer buttons
-    } else {
-        // Show edit button only if status allows editing (before forwarding to movement)
-        $editableStatuses = ['pending_subject_clerk', 'pending_staff_officer_branch'];
-        if (in_array($bus_pass_application->status, $editableStatuses)) {
-            $showEditButton = true;
-        }
-    }
-    // Debug: Uncomment to see values
-    // dd(['from' => $fromParam, 'status' => $bus_pass_application->status, 'hasRole' => auth()->user()->hasRole('Bus Pass Subject Clerk (Branch)')]);
+                        // Check if coming from pages that should hide footer buttons
+                        $fromParam = request('from');
+                        if ($fromParam === 'emergency-details' || $fromParam === 'onboarded-passengers') {
+                            $showFooterButtons = false; // Hide all footer buttons
+                        } else {
+                            // Only Bus Pass Subject Clerk (Branch) should be able to edit applications
+                            if (auth()->user()->hasRole('Bus Pass Subject Clerk (Branch)')) {
+                                // Show edit button only if status allows editing (before forwarding to movement)
+                                $editableStatuses = ['pending_subject_clerk', 'pending_staff_officer_branch'];
+                                if (in_array($bus_pass_application->status, $editableStatuses)) {
+                                    $showEditButton = true;
+                                }
+                            }
                         }
                     @endphp
 

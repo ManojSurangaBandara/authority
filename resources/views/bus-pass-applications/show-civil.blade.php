@@ -364,7 +364,7 @@
                         @php
                             $showFooterButtons = true; // Default to true, hide when from emergency details
                             $fromParam = request('from');
-                            if ($fromParam === 'emergency-details') {
+                            if ($fromParam === 'emergency-details' || $fromParam === 'onboarded-passengers') {
                                 $showFooterButtons = false; // Hide all footer buttons
                             }
                         @endphp

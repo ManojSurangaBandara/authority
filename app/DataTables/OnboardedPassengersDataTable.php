@@ -40,7 +40,7 @@ class OnboardedPassengersDataTable extends DataTable
                 return $row->onboarded_at ? $row->onboarded_at->format('d M Y H:i') : '';
             })
             ->addColumn('action', function ($row) {
-                $viewBtn = '<a href="' . route('bus-pass-applications.show', $row->bus_pass_application_id) . '" class="btn btn-xs btn-info" title="View"><i class="fas fa-eye"></i></a>';
+                $viewBtn = '<a href="' . route('bus-pass-applications.show', $row->bus_pass_application_id) . '?from=onboarded-passengers" class="btn btn-xs btn-info" title="View"><i class="fas fa-eye"></i></a>';
                 return $viewBtn;
             })
             ->filter(function ($query) {
