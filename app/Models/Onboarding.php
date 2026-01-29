@@ -9,20 +9,12 @@ class Onboarding extends Model
 {
     protected $fillable = [
         'bus_pass_application_id',
-        'escort_id',
-        'bus_route_id',
-        'living_in_bus_id',
         'trip_id',
-        'route_type',
-        'branch_card_id',
-        'serial_number',
         'onboarded_at',
-        'boarding_data',
     ];
 
     protected $casts = [
         'onboarded_at' => 'datetime',
-        'boarding_data' => 'array',
     ];
 
     /**
@@ -34,14 +26,6 @@ class Onboarding extends Model
     }
 
     /**
-     * Relationship with Escort
-     */
-    public function escort(): BelongsTo
-    {
-        return $this->belongsTo(Escort::class);
-    }
-
-    /**
      * Relationship with Trip
      */
     public function trip(): BelongsTo
@@ -50,18 +34,79 @@ class Onboarding extends Model
     }
 
     /**
-     * Relationship with BusRoute (for living out routes)
+     * Get escort from trip
      */
-    public function busRoute(): BelongsTo
+    public function escort()
     {
-        return $this->belongsTo(BusRoute::class);
+        return $this->trip ? $this->trip->escort() : null;
     }
 
     /**
-     * Relationship with LivingInBus (for living in routes)
+     * Get bus route from trip
      */
-    public function livingInBus(): BelongsTo
+    public function busRoute()
     {
-        return $this->belongsTo(LivingInBuses::class);
+        return $this->trip ? $this->trip->busRoute() : null;
+    }
+
+    /**
+     * Get living in bus from trip
+     */
+    public function livingInBus()
+    {
+        return $this->trip ? $this->trip->livingInBus() : null;
+    }
+
+    /**
+     * Get route type from trip
+     */
+    public function getRouteTypeAttribute()
+    {
+        return $this->trip ? $this->trip->route_type : null;
+    }
+
+    /**
+     * Get branch card id from bus pass application
+     */
+    public function getBranchCardIdAttribute()
+    {
+        return $this->busPassApplication ? $this->busPassApplication->branch_card_id : null;
+    }
+
+    /**
+     * Get serial number from bus pass application
+     */
+    public function getSerialNumberAttribute()
+    {
+        return $this->busPassApplication ? $this->busPassApplication->serial_number : null;
+    }
+
+    /**
+     * Get boarding data from bus pass application
+     */
+    public function getBoardingDataAttribute()
+    {
+        return $this->busPassApplication ? $this->busPassApplication->boarding_data : null;
+    }
+
+    /**
+     * Get escort name
+     */
+    public function getEscortNameAttribute()
+    {
+        return $this->escort ? $this->escort->name : null;
+    }
+
+    /**
+     * Get route name
+     */
+    public function getRouteNameAttribute()
+    {
+        if ($this->route_type === 'living_out') {
+            return $this->busRoute ? $this->busRoute->name : null;
+        } elseif ($this->route_type === 'living_in') {
+            return $this->livingInBus ? $this->livingInBus->name : null;
+        }
+        return null;
     }
 }

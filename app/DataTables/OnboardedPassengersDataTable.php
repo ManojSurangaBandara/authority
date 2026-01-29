@@ -69,11 +69,19 @@ class OnboardedPassengersDataTable extends DataTable
                 if ($route = request('route')) {
                     if (strpos($route, 'route_') === 0) {
                         $id = substr($route, 6);
-                        $query->where('onboardings.bus_route_id', $id);
+                        $query->whereHas('trip', function ($trip) use ($id) {
+                            $trip->where('bus_route_id', $id)
+                                ->where('route_type', 'living_out');
+                        });
                     } elseif (strpos($route, 'living_') === 0) {
                         $id = substr($route, 7);
-                        $query->where('onboardings.living_in_bus_id', $id);
+                        $query->whereHas('trip', function ($trip) use ($id) {
+                            $trip->where('bus_route_id', $id)
+                                ->where('route_type', 'living_in');
+                        });
                     }
+                    // When route filter is applied, only show onboardings with valid trips
+                    $query->whereNotNull('trip_id');
                 }
             })
             ->rawColumns(['application_id', 'regiment_no', 'name', 'rank', 'onboard_time', 'action'])
@@ -91,7 +99,17 @@ class OnboardedPassengersDataTable extends DataTable
     public function query(Onboarding $model): QueryBuilder
     {
         return $model->newQuery()
-            ->with(['busPassApplication.person', 'busRoute', 'livingInBus'])
+            ->with(['busPassApplication.person', 'trip.busRoute'])
+            ->leftJoin('trips', 'onboardings.trip_id', '=', 'trips.id')
+            ->leftJoin('bus_routes', function ($join) {
+                $join->on('trips.bus_route_id', '=', 'bus_routes.id')
+                    ->where('trips.route_type', '=', 'living_out');
+            })
+            ->leftJoin('living_in_buses', function ($join) {
+                $join->on('trips.bus_route_id', '=', 'living_in_buses.id')
+                    ->where('trips.route_type', '=', 'living_in');
+            })
+            ->select('onboardings.*', 'bus_routes.name as bus_route_name', 'living_in_buses.name as living_in_bus_name')
             ->orderBy('onboardings.onboarded_at', 'desc');
     }
 

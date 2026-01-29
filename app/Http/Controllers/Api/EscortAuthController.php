@@ -560,21 +560,8 @@ class EscortAuthController extends Controller
             // Create onboarding record
             $onboarding = Onboarding::create([
                 'bus_pass_application_id' => $busPassApplication->id,
-                'escort_id' => $escort->id,
-                'bus_route_id' => $activeAssignment->busRoute?->id,
-                'living_in_bus_id' => $activeAssignment->livingInBus?->id,
                 'trip_id' => $currentTrip?->id,
-                'route_type' => $activeAssignment->busRoute ? 'living_out' : 'living_in',
-                'branch_card_id' => $busPassApplication->branch_card_id ?: $busPassApplication->temp_card_qr,
-                'serial_number' => $busPassApplication->temp_card_qr,
                 'onboarded_at' => now(),
-                'boarding_data' => [
-                    'escort_name' => $escort->name,
-                    'escort_regiment_no' => $escort->regiment_no,
-                    'route_name' => $activeAssignment->busRoute?->name ?: $activeAssignment->livingInBus?->name,
-                    'passenger_name' => $busPassApplication->person?->name,
-                    'establishment_name' => $busPassApplication->establishment?->name,
-                ]
             ]);
 
             // Log the onboarding
@@ -592,7 +579,7 @@ class EscortAuthController extends Controller
                     'onboarding_id' => $onboarding->id,
                     'onboarded_at' => $onboarding->onboarded_at,
                     'passenger_name' => $busPassApplication->person?->name,
-                    'route_name' => $activeAssignment->busRoute?->name ?: $activeAssignment->livingInBus?->name,
+                    'route_name' => $onboarding->route_name,
                     'route_type' => $onboarding->route_type,
                 ]
             ]);
@@ -897,21 +884,17 @@ class EscortAuthController extends Controller
             }
 
             // Query onboardings based on route type and time period
-            $query = Onboarding::where('escort_id', $escortId)
-                ->where('route_type', $routeType)
+            $query = Onboarding::whereHas('trip', function ($trip) use ($escortId, $routeType, $routeId) {
+                $trip->where('escort_id', $escortId)
+                    ->where('route_type', $routeType)
+                    ->where('bus_route_id', $routeId);
+            })
                 ->whereBetween('onboarded_at', [$startTime, $endTime])
                 ->with([
                     'busPassApplication.person',
                     'busPassApplication.establishment',
-                    'busRoute',
-                    'escort'
+                    'trip.escort'
                 ]);
-
-            if ($routeType === 'living_out') {
-                $query->where('bus_route_id', $routeId);
-            } else {
-                $query->where('living_in_bus_id', $routeId);
-            }
 
             $onboardings = $query->orderBy('onboarded_at', 'desc')->get();
 
@@ -926,7 +909,7 @@ class EscortAuthController extends Controller
                     'branch_card_id' => $onboarding->branch_card_id,
                     'serial_number' => $onboarding->serial_number,
                     'onboarded_at' => $onboarding->onboarded_at->format('Y-m-d H:i:s'),
-                    'route_name' => $onboarding->busRoute?->name ?? $onboarding->boarding_data['route_name'] ?? 'N/A',
+                    'route_name' => $onboarding->route_name ?? 'N/A',
                 ];
             });
 
