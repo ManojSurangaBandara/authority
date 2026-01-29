@@ -136,7 +136,7 @@ class ReportController extends Controller
 
     public function show_incident($id)
     {
-        $incident = Incident::with(['incidentType', 'escort', 'driver', 'bus', 'slcmpIncharge'])->findOrFail($id);
+        $incident = Incident::with(['incidentType', 'trip.escort', 'trip.driver', 'trip.bus', 'trip.slcmpIncharge'])->findOrFail($id);
 
         return view('reports.incident-detail', compact('incident'));
     }

@@ -31,7 +31,7 @@
                                             </tr>
                                             <tr>
                                                 <th>Escort</th>
-                                                <td>{{ $incident->escort->name ?? '' }}</td>
+                                                <td>{{ $incident->escort_name ?? '' }}</td>
                                             </tr>
                                             <tr>
                                                 <th>Route Type</th>
@@ -39,22 +39,7 @@
                                             </tr>
                                             <tr>
                                                 <th>Route</th>
-                                                <td>
-                                                    @php
-                                                        $routeName = '';
-                                                        if ($incident->route_type === 'living_out') {
-                                                            $route = \App\Models\BusRoute::find(
-                                                                $incident->bus_route_id,
-                                                            );
-                                                            $routeName = $route ? $route->name : '';
-                                                        } elseif ($incident->route_type === 'living_in') {
-                                                            $route = \App\Models\LivingInBuses::find(
-                                                                $incident->bus_route_id,
-                                                            );
-                                                            $routeName = $route ? $route->name : '';
-                                                        }
-                                                    @endphp
-                                                    {{ $routeName }}
+                                                <td>{{ $incident->route_details ? $incident->route_details['name'] : '' }}
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -65,15 +50,16 @@
                                         <tbody>
                                             <tr>
                                                 <th style="width: 40%">Driver</th>
-                                                <td>{{ $incident->driver->name ?? '' }}</td>
+                                                <td>{{ $incident->driver_name ?? '' }}</td>
                                             </tr>
                                             <tr>
                                                 <th>Bus</th>
-                                                <td>{{ $incident->bus->no ?? '' }}</td>
+                                                <td>{{ $incident->bus_details ? $incident->bus_details['no'] : '' }}</td>
                                             </tr>
                                             <tr>
                                                 <th>SLCMP In-charge</th>
-                                                <td>{{ $incident->slcmpIncharge->name ?? '' }}</td>
+                                                <td>{{ $incident->slcmp_incharge_name ?? '' }}
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <th>Images</th>

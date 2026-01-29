@@ -27,7 +27,7 @@ class IncidentReportsDataTable extends DataTable
                 return $row->incidentType->name ?? '';
             })
             ->addColumn('escort_name', function ($row) {
-                return $row->escort->name ?? '';
+                return $row->escort_name ?? '';
             })
             ->addColumn('route_name', function ($row) {
                 if ($row->route_type === 'living_out') {
@@ -38,10 +38,10 @@ class IncidentReportsDataTable extends DataTable
                 return '';
             })
             ->addColumn('driver_name', function ($row) {
-                return $row->driver->name ?? '';
+                return $row->driver_name ?? '';
             })
             ->addColumn('bus_number', function ($row) {
-                return $row->bus->no ?? '';
+                return $row->bus_details ? $row->bus_details['no'] : '';
             })
             ->addColumn('reported_at', function ($row) {
                 return $row->created_at ? $row->created_at->format('d M Y H:i') : '';
@@ -65,13 +65,13 @@ class IncidentReportsDataTable extends DataTable
                             ->orWhereHas('incidentType', function ($incidentType) use ($search) {
                                 $incidentType->where('name', 'like', "%{$search}%");
                             })
-                            ->orWhereHas('escort', function ($escort) use ($search) {
+                            ->orWhereHas('trip.escort', function ($escort) use ($search) {
                                 $escort->where('name', 'like', "%{$search}%");
                             })
-                            ->orWhereHas('driver', function ($driver) use ($search) {
+                            ->orWhereHas('trip.driver', function ($driver) use ($search) {
                                 $driver->where('name', 'like', "%{$search}%");
                             })
-                            ->orWhereHas('bus', function ($bus) use ($search) {
+                            ->orWhereHas('trip.bus', function ($bus) use ($search) {
                                 $bus->where('no', 'like', "%{$search}%")
                                     ->orWhere('name', 'like', "%{$search}%");
                             });
@@ -94,12 +94,16 @@ class IncidentReportsDataTable extends DataTable
                 if ($route = request('route')) {
                     if (strpos($route, 'route_') === 0) {
                         $id = substr($route, 6);
-                        $query->where('incidents.bus_route_id', $id)
-                            ->where('incidents.route_type', 'living_out');
+                        $query->whereHas('trip', function ($trip) use ($id) {
+                            $trip->where('bus_route_id', $id)
+                                ->where('route_type', 'living_out');
+                        });
                     } elseif (strpos($route, 'living_') === 0) {
                         $id = substr($route, 7);
-                        $query->where('incidents.bus_route_id', $id)
-                            ->where('incidents.route_type', 'living_in');
+                        $query->whereHas('trip', function ($trip) use ($id) {
+                            $trip->where('bus_route_id', $id)
+                                ->where('route_type', 'living_in');
+                        });
                     }
                 }
             })
@@ -118,14 +122,15 @@ class IncidentReportsDataTable extends DataTable
     public function query(Incident $model): QueryBuilder
     {
         return $model->newQuery()
-            ->with(['incidentType', 'escort', 'driver', 'bus', 'slcmpIncharge'])
+            ->with(['incidentType', 'trip.escort', 'trip.driver', 'trip.bus', 'trip.busRoute', 'trip.slcmpIncharge'])
+            ->leftJoin('trips', 'incidents.trip_id', '=', 'trips.id')
             ->leftJoin('bus_routes', function ($join) {
-                $join->on('incidents.bus_route_id', '=', 'bus_routes.id')
-                    ->where('incidents.route_type', '=', 'living_out');
+                $join->on('trips.bus_route_id', '=', 'bus_routes.id')
+                    ->where('trips.route_type', '=', 'living_out');
             })
             ->leftJoin('living_in_buses', function ($join) {
-                $join->on('incidents.bus_route_id', '=', 'living_in_buses.id')
-                    ->where('incidents.route_type', '=', 'living_in');
+                $join->on('trips.bus_route_id', '=', 'living_in_buses.id')
+                    ->where('trips.route_type', '=', 'living_in');
             })
             ->select('incidents.*', 'bus_routes.name as bus_route_name', 'living_in_buses.name as living_in_bus_name')
             ->orderBy('incidents.created_at', 'desc');

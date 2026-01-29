@@ -6,12 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Incident;
 use App\Models\IncidentType;
-use App\Models\BusRoute;
-use App\Models\LivingInBus;
 use App\Models\BusEscortAssignment;
-use App\Models\BusDriverAssignment;
-use App\Models\BusRouteAssignment;
-use App\Models\SlcmpInchargeAssignment;
+use App\Models\Trip;
 use App\Models\Escort;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -60,7 +56,7 @@ class IncidentApiController extends Controller
 
         // Get escort's current active assignment
         $escortAssignment = BusEscortAssignment::where('escort_id', $escort->id)
-            ->where('status', 'active')
+            ->active()
             ->first();
 
         if (!$escortAssignment) {
@@ -70,7 +66,40 @@ class IncidentApiController extends Controller
             ], 400);
         }
 
-        // Get assignment details
+        // Determine the route ID based on route type
+        $routeId = $escortAssignment->route_type === 'living_out'
+            ? $escortAssignment->bus_route_id
+            : $escortAssignment->living_in_bus_id;
+
+        // Determine current time period (morning: before 12 PM, evening: 12 PM and after)
+        $now = now();
+        $isMorning = $now->hour < 12;
+        $startOfDay = $now->copy()->startOfDay();
+
+        if ($isMorning) {
+            $periodStart = $startOfDay;
+            $periodEnd = $startOfDay->copy()->setHour(11)->setMinute(59)->setSecond(59);
+        } else {
+            $periodStart = $startOfDay->copy()->setHour(12)->setMinute(0)->setSecond(0);
+            $periodEnd = $startOfDay->copy()->endOfDay();
+        }
+
+        // Find the current active trip for this route and time period
+        $currentTrip = Trip::where('bus_route_id', $routeId)
+            ->where('route_type', $escortAssignment->route_type)
+            ->whereBetween('trip_start_time', [$periodStart, $periodEnd])
+            ->whereNull('trip_end_time')
+            ->first();
+
+        // Incident reporting is only allowed during valid ongoing trips
+        if (!$currentTrip) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Incident reporting is only allowed during active trips. Please start a trip first.'
+            ], 400);
+        }
+
+        // Get assignment details from the current trip
         $busRouteId = null;
         $routeType = $escortAssignment->route_type;
 
@@ -78,55 +107,6 @@ class IncidentApiController extends Controller
             $busRouteId = $escortAssignment->bus_route_id;
         } elseif ($routeType === 'living_in') {
             $busRouteId = $escortAssignment->living_in_bus_id;
-        }
-
-        // Get driver assignment for the same route
-        $driverId = null;
-        $busId = null;
-        $slcmpInchargeId = null;
-
-        if ($routeType === 'living_out') {
-            $driverAssignment = BusDriverAssignment::where('bus_route_id', $busRouteId)
-                ->where('route_type', 'living_out')
-                ->where('status', 'active')
-                ->first();
-
-            $busRouteAssignment = BusRouteAssignment::where('route_id', $busRouteId)
-                ->where('route_type', 'living_out')
-                ->where('status', 'active')
-                ->first();
-
-            $slcmpAssignment = SlcmpInchargeAssignment::where('bus_route_id', $busRouteId)
-                ->where('route_type', 'living_out')
-                ->where('status', 'active')
-                ->first();
-        } elseif ($routeType === 'living_in') {
-            $driverAssignment = BusDriverAssignment::where('living_in_bus_id', $busRouteId)
-                ->where('route_type', 'living_in')
-                ->where('status', 'active')
-                ->first();
-
-            $busRouteAssignment = BusRouteAssignment::where('route_id', $busRouteId)
-                ->where('route_type', 'living_in')
-                ->where('status', 'active')
-                ->first();
-
-            $slcmpAssignment = SlcmpInchargeAssignment::where('living_in_bus_id', $busRouteId)
-                ->where('route_type', 'living_in')
-                ->where('status', 'active')
-                ->first();
-        }
-
-        if ($driverAssignment) {
-            $driverId = $driverAssignment->driver_id;
-        }
-
-        if ($busRouteAssignment) {
-            $busId = $busRouteAssignment->bus_id;
-        }
-
-        if ($slcmpAssignment) {
-            $slcmpInchargeId = $slcmpAssignment->slcmp_incharge_id;
         }
 
         $imagePaths = [];
@@ -139,18 +119,13 @@ class IncidentApiController extends Controller
 
         $incident = Incident::create([
             'incident_type_id' => $request->incident_type_id,
+            'trip_id' => $currentTrip->id, // Always link to the active trip
             'description' => $request->description,
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
             'image1' => $imagePaths[0] ?? null,
             'image2' => $imagePaths[1] ?? null,
             'image3' => $imagePaths[2] ?? null,
-            'escort_id' => $escort->id,
-            'bus_route_id' => $busRouteId,
-            'route_type' => $routeType,
-            'slcmp_incharge_id' => $slcmpInchargeId,
-            'driver_id' => $driverId,
-            'bus_id' => $busId,
         ]);
 
         return response()->json([
