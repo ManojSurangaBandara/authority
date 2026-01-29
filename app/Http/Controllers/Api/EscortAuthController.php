@@ -6,6 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponseTrait;
 use App\Models\BusPassApplication;
 use App\Models\BusRoute;
+use App\Models\BusEscortAssignment;
+use App\Models\BusDriverAssignment;
+use App\Models\BusRouteAssignment;
+use App\Models\SlcmpInchargeAssignment;
+use App\Models\Trip;
 use App\Models\Escort;
 use App\Models\Onboarding;
 use Illuminate\Http\Request;
@@ -529,12 +534,36 @@ class EscortAuthController extends Controller
                 ], 403);
             }
 
+            // Find the current active trip for this route and time period
+            $routeId = $activeAssignment->route_type === 'living_out'
+                ? $activeAssignment->bus_route_id
+                : $activeAssignment->living_in_bus_id;
+
+            $now = now();
+            $isMorning = $now->hour < 12;
+            $startOfDay = $now->copy()->startOfDay();
+
+            if ($isMorning) {
+                $periodStart = $startOfDay;
+                $periodEnd = $startOfDay->copy()->setHour(11)->setMinute(59)->setSecond(59);
+            } else {
+                $periodStart = $startOfDay->copy()->setHour(12)->setMinute(0)->setSecond(0);
+                $periodEnd = $startOfDay->copy()->endOfDay();
+            }
+
+            $currentTrip = Trip::where('bus_route_id', $routeId)
+                ->where('route_type', $activeAssignment->route_type)
+                ->whereBetween('trip_start_time', [$periodStart, $periodEnd])
+                ->whereNull('trip_end_time')
+                ->first();
+
             // Create onboarding record
             $onboarding = Onboarding::create([
                 'bus_pass_application_id' => $busPassApplication->id,
                 'escort_id' => $escort->id,
                 'bus_route_id' => $activeAssignment->busRoute?->id,
                 'living_in_bus_id' => $activeAssignment->livingInBus?->id,
+                'trip_id' => $currentTrip?->id,
                 'route_type' => $activeAssignment->busRoute ? 'living_out' : 'living_in',
                 'branch_card_id' => $busPassApplication->branch_card_id ?: $busPassApplication->temp_card_qr,
                 'serial_number' => $busPassApplication->temp_card_qr,
@@ -929,6 +958,217 @@ class EscortAuthController extends Controller
                 'status' => 'error',
                 'message' => 'Failed to retrieve onboarded passengers'
             ], 500);
+        }
+    }
+
+    /**
+     * Start a trip for the authenticated escort
+     */
+    public function startTrip(Request $request): JsonResponse
+    {
+        try {
+            // Get authenticated escort using JWT token
+            $token = JWTAuth::parseToken();
+            $payload = $token->getPayload();
+
+            // Verify this is an escort token
+            if ($payload->get('type') !== 'escort') {
+                return $this->forbiddenResponse('Invalid token type');
+            }
+
+            $escortId = $payload->get('escort_id');
+
+            // Get escort's active assignment
+            $assignment = BusEscortAssignment::where('escort_id', $escortId)
+                ->active()
+                ->first();
+
+            if (!$assignment) {
+                return $this->errorResponse('No active escort assignment found', 400);
+            }
+
+            // Determine the route ID based on route type
+            $routeId = $assignment->route_type === 'living_out'
+                ? $assignment->bus_route_id
+                : $assignment->living_in_bus_id;
+
+            // Determine current time period (morning: before 12 PM, evening: 12 PM and after)
+            $now = now();
+            $isMorning = $now->hour < 12;
+            $timePeriod = $isMorning ? 'morning' : 'evening';
+
+            // Set time range for the current period
+            $startOfDay = $now->copy()->startOfDay();
+            if ($isMorning) {
+                // Morning: 00:00 to 11:59
+                $periodStart = $startOfDay;
+                $periodEnd = $startOfDay->copy()->setHour(11)->setMinute(59)->setSecond(59);
+            } else {
+                // Evening: 12:00 to 23:59
+                $periodStart = $startOfDay->copy()->setHour(12)->setMinute(0)->setSecond(0);
+                $periodEnd = $startOfDay->copy()->endOfDay();
+            }
+
+            // Check if there's already a trip for this route in the current time period today
+            $existingTripInPeriod = Trip::where('bus_route_id', $routeId)
+                ->where('route_type', $assignment->route_type)
+                ->whereBetween('trip_start_time', [$periodStart, $periodEnd])
+                ->first();
+
+            if ($existingTripInPeriod) {
+                return $this->errorResponse("A trip already exists for this route in the {$timePeriod} period today", 400);
+            }
+
+            // Get related assignments for the route
+            $driverAssignment = BusDriverAssignment::where('route_id', $routeId)
+                ->where('route_type', $assignment->route_type)
+                ->active()
+                ->first();
+
+            $busAssignment = BusRouteAssignment::where('route_id', $routeId)
+                ->where('route_type', $assignment->route_type)
+                ->active()
+                ->first();
+
+            $slcmpAssignment = SlcmpInchargeAssignment::where('route_id', $routeId)
+                ->where('route_type', $assignment->route_type)
+                ->active()
+                ->first();
+
+            // Validate that all required assignments exist
+            if (!$driverAssignment) {
+                return $this->errorResponse('No active driver assigned to this route', 400);
+            }
+
+            if (!$busAssignment) {
+                // return $this->errorResponse('No active bus assigned to this route', 400);
+                return $this->errorResponse('No active bus assigned to this route', 400);
+            }
+
+            if (!$slcmpAssignment) {
+                return $this->errorResponse('No active SLCMP incharge assigned to this route', 400);
+            }
+
+            // Create trip record
+            $trip = Trip::create([
+                'escort_id' => $escortId,
+                'bus_route_id' => $routeId,
+                'route_type' => $assignment->route_type,
+                'driver_id' => $driverAssignment->driver_id ?? null,
+                'bus_id' => $busAssignment->bus_id ?? null,
+                'slcmp_incharge_id' => $slcmpAssignment->slcmp_incharge_id ?? null,
+                'trip_start_time' => now(),
+            ]);
+
+            // Update any existing onboardings for this route and time period that don't have a trip_id
+            $onboardingsToUpdate = Onboarding::where(function ($query) use ($routeId, $assignment) {
+                if ($assignment->route_type === 'living_out') {
+                    $query->where('bus_route_id', $routeId);
+                } else {
+                    $query->where('living_in_bus_id', $routeId);
+                }
+            })
+                ->where('route_type', $assignment->route_type)
+                ->whereBetween('onboarded_at', [$periodStart, $periodEnd])
+                ->whereNull('trip_id')
+                ->update(['trip_id' => $trip->id]);
+
+            if ($onboardingsToUpdate > 0) {
+                Log::info("Updated {$onboardingsToUpdate} existing onboardings with trip_id", [
+                    'trip_id' => $trip->id,
+                    'route_id' => $routeId,
+                    'route_type' => $assignment->route_type,
+                    'time_period' => $timePeriod,
+                ]);
+            }
+
+            return $this->successResponse('Trip started successfully', $trip, 201);
+        } catch (JWTException $e) {
+            return $this->unauthorizedResponse('Token invalid or expired');
+        } catch (\Exception $e) {
+            Log::error('Error starting trip', [
+                'error' => $e->getMessage(),
+                'escort_id' => $escortId ?? null,
+            ]);
+
+            return $this->errorResponse('Failed to start trip', 500);
+        }
+    }
+
+    /**
+     * End an active trip for the authenticated escort
+     */
+    public function endTrip(Request $request): JsonResponse
+    {
+        try {
+            // Get authenticated escort using JWT token
+            $token = JWTAuth::parseToken();
+            $payload = $token->getPayload();
+
+            // Verify this is an escort token
+            if ($payload->get('type') !== 'escort') {
+                return $this->forbiddenResponse('Invalid token type');
+            }
+
+            $escortId = $payload->get('escort_id');
+
+            // Get escort's active assignment
+            $assignment = BusEscortAssignment::where('escort_id', $escortId)
+                ->active()
+                ->first();
+
+            if (!$assignment) {
+                return $this->errorResponse('No active escort assignment found', 400);
+            }
+
+            // Determine the route ID based on route type
+            $routeId = $assignment->route_type === 'living_out'
+                ? $assignment->bus_route_id
+                : $assignment->living_in_bus_id;
+
+            // Determine current time period (morning: before 12 PM, evening: 12 PM and after)
+            $now = now();
+            $isMorning = $now->hour < 12;
+            $timePeriod = $isMorning ? 'morning' : 'evening';
+
+            // Set time range for the current period
+            $startOfDay = $now->copy()->startOfDay();
+            if ($isMorning) {
+                // Morning: 00:00 to 11:59
+                $periodStart = $startOfDay;
+                $periodEnd = $startOfDay->copy()->setHour(11)->setMinute(59)->setSecond(59);
+            } else {
+                // Evening: 12:00 to 23:59
+                $periodStart = $startOfDay->copy()->setHour(12)->setMinute(0)->setSecond(0);
+                $periodEnd = $startOfDay->copy()->endOfDay();
+            }
+
+            // Find the active trip for this route in the current time period
+            $activeTrip = Trip::where('bus_route_id', $routeId)
+                ->where('route_type', $assignment->route_type)
+                ->whereBetween('trip_start_time', [$periodStart, $periodEnd])
+                ->whereNull('trip_end_time')
+                ->first();
+
+            if (!$activeTrip) {
+                return $this->errorResponse("No active trip found for this route in the {$timePeriod} period today", 400);
+            }
+
+            // End the trip
+            $activeTrip->update([
+                'trip_end_time' => now(),
+            ]);
+
+            return $this->successResponse('Trip ended successfully', $activeTrip);
+        } catch (JWTException $e) {
+            return $this->unauthorizedResponse('Token invalid or expired');
+        } catch (\Exception $e) {
+            Log::error('Error ending trip', [
+                'error' => $e->getMessage(),
+                'escort_id' => $escortId ?? null,
+            ]);
+
+            return $this->errorResponse('Failed to end trip', 500);
         }
     }
 }

@@ -75,6 +75,10 @@ Route::middleware(['escort.auth'])->prefix('escort')->group(function () {
     Route::get('/incident-types', [IncidentApiController::class, 'getIncidentTypes']);
     Route::post('/report-incident', [IncidentApiController::class, 'report']);
 
+    // Trip management
+    Route::post('/start-trip', [EscortAuthController::class, 'startTrip']);
+    Route::post('/end-trip', [EscortAuthController::class, 'endTrip']);
+
     // Future escort-specific endpoints can be added here
     // Route::post('/scan-qr', [EscortController::class, 'scanQr']);
     // Route::get('/onboard-persons', [EscortController::class, 'getOnboardPersons']);

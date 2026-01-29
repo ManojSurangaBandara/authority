@@ -91,4 +91,12 @@ class SlcmpInchargeAssignment extends Model
     {
         return $this->end_date ? $this->end_date->format('Y-m-d') : null;
     }
+
+    /**
+     * Scope for active assignments
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
 }

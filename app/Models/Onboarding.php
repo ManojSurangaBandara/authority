@@ -12,6 +12,7 @@ class Onboarding extends Model
         'escort_id',
         'bus_route_id',
         'living_in_bus_id',
+        'trip_id',
         'route_type',
         'branch_card_id',
         'serial_number',
@@ -38,6 +39,14 @@ class Onboarding extends Model
     public function escort(): BelongsTo
     {
         return $this->belongsTo(Escort::class);
+    }
+
+    /**
+     * Relationship with Trip
+     */
+    public function trip(): BelongsTo
+    {
+        return $this->belongsTo(Trip::class);
     }
 
     /**
