@@ -55,7 +55,14 @@ class IncidentReportsDataTable extends DataTable
             })
             ->addColumn('action', function ($row) {
                 $viewBtn = '<a href="' . route('incident-reports.show', $row->id) . '" class="btn btn-xs btn-info" title="View"><i class="fas fa-eye"></i></a>';
-                return $viewBtn;
+
+                $mapsBtn = '';
+                if ($row->latitude && $row->longitude) {
+                    $mapsUrl = "https://www.google.com/maps?q={$row->latitude},{$row->longitude}";
+                    $mapsBtn = '<a href="' . $mapsUrl . '" target="_blank" class="btn btn-xs btn-success" title="View on Map"><i class="fas fa-map-marker-alt"></i></a>';
+                }
+
+                return $viewBtn . ' ' . $mapsBtn;
             })
             ->filter(function ($query) {
                 // Handle global search
