@@ -32,15 +32,6 @@ class BusDriverAssignmentDataTable extends DataTable
                     $row->driver_rank . ' ' . $row->driver_name . '<br>' .
                     '<small class="text-muted">' . $row->driver_contact_no . '</small>';
             })
-            ->addColumn('assignment_period', function ($row) {
-                $period = $row->assigned_date->format('d M Y');
-                if ($row->end_date) {
-                    $period .= ' to ' . $row->end_date->format('d M Y');
-                } else {
-                    $period .= ' (Ongoing)';
-                }
-                return $period;
-            })
             ->addColumn('status', function ($row) {
                 return $row->status_badge;
             })
@@ -102,7 +93,6 @@ class BusDriverAssignmentDataTable extends DataTable
             Column::make('bus_route_name')->title('Bus Route')->searchable(true)->orderable(false),
             Column::make('bus_no')->title('Bus No')->searchable(true)->orderable(false),
             Column::make('driver_details')->title('Driver Details')->searchable(true)->orderable(false),
-            Column::make('assignment_period')->title('Assignment Period')->searchable(false)->orderable(false),
             Column::make('status')->title('Status')->searchable(false)->orderable(false),
             Column::computed('action')
                 ->exportable(false)

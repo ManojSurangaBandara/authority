@@ -140,8 +140,6 @@ class BusEscortAssignmentController extends Controller
         $assignmentData = [
             'route_type' => $request->route_type,
             'escort_id' => $request->escort_id,
-            'assigned_date' => now()->format('Y-m-d'),
-            'end_date' => null,
             'status' => 'active',
             'created_by' => Auth::user()->name ?? 'System'
         ];
@@ -197,8 +195,7 @@ class BusEscortAssignmentController extends Controller
 
         // Mark as inactive instead of deleting
         $assignment->update([
-            'status' => 'inactive',
-            'end_date' => now()->format('Y-m-d')
+            'status' => 'inactive'
         ]);
 
         return response()->json([

@@ -14,16 +14,11 @@ class BusFillingStationAssignment extends Model
     protected $fillable = [
         'bus_id',
         'filling_station_id',
-        'assigned_date',
-        'end_date',
         'status',
         'created_by',
     ];
 
-    protected $casts = [
-        'assigned_date' => 'date',
-        'end_date' => 'date',
-    ];
+    protected $casts = [];
 
     /**
      * Get the bus that this filling station is assigned to.
@@ -85,7 +80,7 @@ class BusFillingStationAssignment extends Model
      */
     public function getFormattedAssignedDateAttribute()
     {
-        return $this->assigned_date ? $this->assigned_date->format('d M Y') : 'N/A';
+        return 'N/A';
     }
 
     /**
@@ -93,6 +88,6 @@ class BusFillingStationAssignment extends Model
      */
     public function getFormattedEndDateAttribute()
     {
-        return $this->end_date ? $this->end_date->format('d M Y') : 'Ongoing';
+        return 'Ongoing';
     }
 }

@@ -32,15 +32,6 @@ class SlcmpInchargeAssignmentDataTable extends DataTable
                     $row->slcmp_rank . ' ' . $row->slcmp_name . '<br>' .
                     '<small class="text-muted">' . $row->slcmp_contact_no . '</small>';
             })
-            ->addColumn('assignment_period', function ($row) {
-                $period = $row->assigned_date->format('d M Y');
-                if ($row->end_date) {
-                    $period .= ' to ' . $row->end_date->format('d M Y');
-                } else {
-                    $period .= ' (Ongoing)';
-                }
-                return $period;
-            })
             ->addColumn('status', function ($row) {
                 return $row->status_badge;
             })
@@ -57,22 +48,22 @@ class SlcmpInchargeAssignmentDataTable extends DataTable
 
                 return $viewBtn . $editBtn . $deleteBtn;
             })
-            ->filterColumn('bus_route_name', function($query, $keyword) {
-                $query->whereHas('busRoute', function($q) use ($keyword) {
+            ->filterColumn('bus_route_name', function ($query, $keyword) {
+                $query->whereHas('busRoute', function ($q) use ($keyword) {
                     $q->where('name', 'like', "%{$keyword}%");
                 });
             })
-            ->filterColumn('bus_no', function($query, $keyword) {
-                $query->whereHas('busRoute.bus', function($q) use ($keyword) {
+            ->filterColumn('bus_no', function ($query, $keyword) {
+                $query->whereHas('busRoute.bus', function ($q) use ($keyword) {
                     $q->where('no', 'like', "%{$keyword}%");
                 });
             })
-            ->filterColumn('slcmp_details', function($query, $keyword) {
-                $query->where(function($q) use ($keyword) {
+            ->filterColumn('slcmp_details', function ($query, $keyword) {
+                $query->where(function ($q) use ($keyword) {
                     $q->where('slcmp_regiment_no', 'like', "%{$keyword}%")
-                      ->orWhere('slcmp_rank', 'like', "%{$keyword}%")
-                      ->orWhere('slcmp_name', 'like', "%{$keyword}%")
-                      ->orWhere('slcmp_contact_no', 'like', "%{$keyword}%");
+                        ->orWhere('slcmp_rank', 'like', "%{$keyword}%")
+                        ->orWhere('slcmp_name', 'like', "%{$keyword}%")
+                        ->orWhere('slcmp_contact_no', 'like', "%{$keyword}%");
                 });
             })
             ->rawColumns(['slcmp_details', 'status', 'action'])
@@ -137,7 +128,6 @@ class SlcmpInchargeAssignmentDataTable extends DataTable
             Column::make('bus_route_name')->title('Bus Route')->searchable(true)->orderable(false),
             Column::make('bus_no')->title('Bus No')->searchable(true)->orderable(false),
             Column::make('slcmp_details')->title('SLCMP Details')->searchable(true)->orderable(false),
-            Column::make('assignment_period')->title('Assignment Period')->searchable(false)->orderable(false),
             Column::make('status')->title('Status')->searchable(false)->orderable(false),
             Column::computed('action')
                 ->exportable(false)

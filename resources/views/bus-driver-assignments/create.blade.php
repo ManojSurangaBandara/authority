@@ -140,34 +140,6 @@
                             </div>
 
                             <div class="row">
-                                <!-- Assignment Date -->
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label for="assigned_date">Assignment Date <span
-                                                class="text-danger">*</span></label>
-                                        <input type="date"
-                                            class="form-control @error('assigned_date') is-invalid @enderror"
-                                            id="assigned_date" name="assigned_date"
-                                            value="{{ old('assigned_date', date('Y-m-d')) }}" required>
-                                        @error('assigned_date')
-                                            <span class="invalid-feedback">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                </div>
-
-                                <!-- End Date -->
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label for="end_date">End Date (Optional)</label>
-                                        <input type="date" class="form-control @error('end_date') is-invalid @enderror"
-                                            id="end_date" name="end_date" value="{{ old('end_date') }}">
-                                        @error('end_date')
-                                            <span class="invalid-feedback">{{ $message }}</span>
-                                        @enderror
-                                        <small class="form-text text-muted">Leave empty for ongoing assignment</small>
-                                    </div>
-                                </div>
-
                                 <!-- Status -->
                                 <div class="col-md-4">
                                     <div class="form-group">

@@ -13,16 +13,11 @@ class BusDriverAssignment extends Model
         'route_type',
         'living_in_bus_id',
         'driver_id',
-        'assigned_date',
-        'end_date',
         'status',
         'created_by'
     ];
 
-    protected $casts = [
-        'assigned_date' => 'date',
-        'end_date' => 'date',
-    ];
+    protected $casts = [];
 
     /**
      * Relationship with BusRoute

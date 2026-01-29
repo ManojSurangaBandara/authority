@@ -29,15 +29,6 @@ class BusFillingStationAssignmentDataTable extends DataTable
             ->addColumn('filling_station_name', function ($row) {
                 return $row->fillingStation ? $row->fillingStation->name : 'N/A';
             })
-            ->addColumn('assignment_period', function ($row) {
-                $period = $row->assigned_date->format('d M Y');
-                if ($row->end_date) {
-                    $period .= ' to ' . $row->end_date->format('d M Y');
-                } else {
-                    $period .= ' (Ongoing)';
-                }
-                return $period;
-            })
             ->addColumn('status', function ($row) {
                 return $row->status_badge;
             })
@@ -111,7 +102,6 @@ class BusFillingStationAssignmentDataTable extends DataTable
             Column::make('DT_RowIndex')->title('#')->searchable(false)->orderable(false),
             Column::make('bus_details')->title('Bus Details')->searchable(true)->orderable(false),
             Column::make('filling_station_name')->title('Filling Station')->searchable(true)->orderable(false),
-            Column::make('assignment_period')->title('Assignment Period')->searchable(false)->orderable(false),
             Column::make('status')->title('Status')->searchable(false)->orderable(false),
             Column::computed('action')
                 ->exportable(false)

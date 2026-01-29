@@ -50,17 +50,6 @@
                                 </select>
                             </div>
 
-                            <div class="form-group">
-                                <label for="assigned_date">Assignment Date:</label>
-                                <input type="date" id="assigned_date" name="assigned_date" class="form-control"
-                                    value="{{ date('Y-m-d') }}" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="end_date">End Date (Optional):</label>
-                                <input type="date" id="end_date" name="end_date" class="form-control">
-                            </div>
-
                             <button type="submit" class="btn btn-primary btn-block">
                                 <i class="fas fa-gas-pump"></i> Assign Filling Station to Bus
                             </button>
@@ -89,7 +78,6 @@
                                         <th>Bus No</th>
                                         <th>Bus Type</th>
                                         <th>Filling Station</th>
-                                        <th>Assignment Date</th>
                                         <th>Status</th>
                                         <th>Actions</th>
                                     </tr>
@@ -113,7 +101,6 @@
                                                     <span class="text-muted">No filling station</span>
                                                 @endif
                                             </td>
-                                            <td>{{ $bus->fillingStationAssignment->assigned_date->format('d M Y') }}</td>
                                             <td>
                                                 <span class="badge badge-success">Active</span>
                                             </td>
@@ -132,7 +119,7 @@
                                         </tr>
                                     @empty
                                         <tr id="no-assignments">
-                                            <td colspan="7" class="text-center text-muted">
+                                            <td colspan="6" class="text-center text-muted">
                                                 No filling station-bus assignments found
                                             </td>
                                         </tr>
@@ -235,11 +222,9 @@
 
                 let fillingStationId = $('#filling_station_select').val();
                 let busId = $('#bus_select').val();
-                let assignedDate = $('#assigned_date').val();
-                let endDate = $('#end_date').val();
 
-                if (!fillingStationId || !busId || !assignedDate) {
-                    showAlert('Please select a filling station, bus, and assignment date.', 'warning');
+                if (!fillingStationId || !busId) {
+                    showAlert('Please select a filling station and bus.', 'warning');
                     return;
                 }
 
@@ -249,9 +234,7 @@
                     data: {
                         _token: $('meta[name="csrf-token"]').attr('content'),
                         filling_station_id: fillingStationId,
-                        bus_id: busId,
-                        assigned_date: assignedDate,
-                        end_date: endDate
+                        bus_id: busId
                     },
                     beforeSend: function() {
                         $('#assignmentForm button[type="submit"]').prop('disabled', true)
@@ -274,7 +257,7 @@
                         $('#assignmentForm button[type="submit"]').prop('disabled', false)
                             .html(
                                 '<i class="fas fa-gas-pump"></i> Assign Filling Station to Bus'
-                                );
+                            );
                     }
                 });
             });
@@ -287,7 +270,7 @@
 
                 if (confirm(
                         `Are you sure you want to unassign filling station "${fillingStationName}" from bus "${busName}"?`
-                        )) {
+                    )) {
                     $.ajax({
                         url: '{{ route('bus-filling-station-assignments.unassign') }}',
                         method: 'POST',
@@ -331,7 +314,6 @@
             $('#assignmentForm')[0].reset();
             $('#filling_station_select').val('');
             $('#bus_select').val('');
-            $('#assigned_date').val('{{ date('Y-m-d') }}');
         }
 
         function showAlert(message, type) {

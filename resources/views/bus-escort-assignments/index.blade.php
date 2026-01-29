@@ -78,7 +78,6 @@
                                         <th>Bus</th>
                                         <th>Escort</th>
                                         <th>Regiment No</th>
-                                        <th>Assignment Date</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -121,7 +120,6 @@
                                                     <span class="text-muted">N/A</span>
                                                 @endif
                                             </td>
-                                            <td>{{ $assignment->assigned_date->format('d M Y') }}</td>
                                             <td>
                                                 @if ($assignment->escort)
                                                     <button type="button" class="btn btn-sm btn-warning unassign-btn"
@@ -137,7 +135,7 @@
                                         </tr>
                                     @empty
                                         <tr id="no-assignments">
-                                            <td colspan="6" class="text-center text-muted">
+                                            <td colspan="5" class="text-center text-muted">
                                                 No escort-route assignments found
                                             </td>
                                         </tr>

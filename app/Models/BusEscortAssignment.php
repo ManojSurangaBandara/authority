@@ -14,23 +14,16 @@ class BusEscortAssignment extends Model
         'route_type',
         'living_in_bus_id',
         'escort_id',
-        'assigned_date',
-        'end_date',
         'status',
         'created_by'
     ];
 
     protected $dates = [
-        'assigned_date',
-        'end_date',
         'created_at',
         'updated_at'
     ];
 
-    protected $casts = [
-        'assigned_date' => 'date',
-        'end_date' => 'date',
-    ];
+    protected $casts = [];
 
     public function busRoute()
     {
@@ -72,12 +65,12 @@ class BusEscortAssignment extends Model
 
     public function getFormattedAssignedDateAttribute()
     {
-        return $this->assigned_date ? $this->assigned_date->format('Y-m-d') : null;
+        return null;
     }
 
     public function getFormattedEndDateAttribute()
     {
-        return $this->end_date ? $this->end_date->format('Y-m-d') : null;
+        return null;
     }
 
     /**

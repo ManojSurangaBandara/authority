@@ -94,8 +94,6 @@ class SlcmpInchargeAssignmentController extends Controller
             'slcmp_rank' => 'required|string|max:100',
             'slcmp_name' => 'required|string|max:200',
             'slcmp_contact_no' => 'required|string|max:20',
-            'assigned_date' => 'required|date',
-            'end_date' => 'nullable|date|after:assigned_date',
             'status' => 'required|in:active,inactive',
         ]);
 
@@ -145,8 +143,6 @@ class SlcmpInchargeAssignmentController extends Controller
             'route_type' => $validatedData['route_type'],
             'living_in_bus_id' => $validatedData['route_type'] === 'living_in' ? $validatedData['route_id'] : null,
             'slcmp_incharge_id' => $slcmpIncharge->id,
-            'assigned_date' => $validatedData['assigned_date'],
-            'end_date' => $validatedData['end_date'],
             'status' => $validatedData['status'],
             'created_by' => Auth::user()->name ?? 'System'
         ];
@@ -196,8 +192,6 @@ class SlcmpInchargeAssignmentController extends Controller
             'slcmp_rank' => 'required|string|max:100',
             'slcmp_name' => 'required|string|max:200',
             'slcmp_contact_no' => 'required|string|max:20',
-            'assigned_date' => 'required|date',
-            'end_date' => 'nullable|date|after:assigned_date',
             'status' => 'required|in:active,inactive',
         ]);
 
@@ -248,8 +242,6 @@ class SlcmpInchargeAssignmentController extends Controller
             'route_type' => $validatedData['route_type'],
             'living_in_bus_id' => $validatedData['route_type'] === 'living_in' ? $validatedData['route_id'] : null,
             'slcmp_incharge_id' => $slcmpIncharge->id,
-            'assigned_date' => $validatedData['assigned_date'],
-            'end_date' => $validatedData['end_date'],
             'status' => $validatedData['status']
         ];
 
@@ -284,8 +276,6 @@ class SlcmpInchargeAssignmentController extends Controller
             'slcmp_incharge_id' => 'required|exists:slcmp_incharges,id',
             'route_type' => 'required|in:living_out,living_in',
             'route_id' => 'required|integer',
-            'assigned_date' => 'required|date',
-            'end_date' => 'nullable|date|after:assigned_date',
         ]);
 
         // Validate route exists based on type
@@ -331,8 +321,6 @@ class SlcmpInchargeAssignmentController extends Controller
             'route_type' => $request->route_type,
             'living_in_bus_id' => $request->route_type === 'living_in' ? $request->route_id : null,
             'slcmp_incharge_id' => $request->slcmp_incharge_id,
-            'assigned_date' => $request->assigned_date,
-            'end_date' => $request->end_date,
             'status' => 'active',
             'created_by' => Auth::user()->name ?? 'System'
         ];

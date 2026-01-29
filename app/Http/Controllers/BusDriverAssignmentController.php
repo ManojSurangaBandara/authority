@@ -105,8 +105,6 @@ class BusDriverAssignmentController extends Controller
             'driver_rank' => 'required|string|max:100',
             'driver_name' => 'required|string|max:200',
             'driver_contact_no' => 'required|string|max:20',
-            'assigned_date' => 'required|date',
-            'end_date' => 'nullable|date|after:assigned_date',
             'status' => 'required|in:active,inactive',
         ]);
 
@@ -146,8 +144,6 @@ class BusDriverAssignmentController extends Controller
         $assignmentData = [
             'bus_route_id' => $validatedData['bus_route_id'],
             'driver_id' => $driver->id,
-            'assigned_date' => $validatedData['assigned_date'],
-            'end_date' => $validatedData['end_date'],
             'status' => $validatedData['status'],
             'created_by' => Auth::user()->name ?? 'System'
         ];
@@ -187,8 +183,6 @@ class BusDriverAssignmentController extends Controller
             'driver_rank' => 'required|string|max:100',
             'driver_name' => 'required|string|max:200',
             'driver_contact_no' => 'required|string|max:20',
-            'assigned_date' => 'required|date',
-            'end_date' => 'nullable|date|after:assigned_date',
             'status' => 'required|in:active,inactive',
         ]);
 
@@ -229,8 +223,6 @@ class BusDriverAssignmentController extends Controller
         $assignmentData = [
             'bus_route_id' => $validatedData['bus_route_id'],
             'driver_id' => $driver->id,
-            'assigned_date' => $validatedData['assigned_date'],
-            'end_date' => $validatedData['end_date'],
             'status' => $validatedData['status']
         ];
 
@@ -260,8 +252,6 @@ class BusDriverAssignmentController extends Controller
             'driver_id' => 'required|exists:drivers,id',
             'route_id' => 'required',
             'route_type' => 'required|in:living_out,living_in',
-            'assigned_date' => 'required|date',
-            'end_date' => 'nullable|date|after:assigned_date',
         ]);
 
         $driver = Driver::findOrFail($request->driver_id);
@@ -306,8 +296,6 @@ class BusDriverAssignmentController extends Controller
             'driver_id' => $request->driver_id,
             'route_id' => $request->route_id,
             'route_type' => $request->route_type,
-            'assigned_date' => $request->assigned_date,
-            'end_date' => $request->end_date,
             'status' => 'active',
             'created_by' => Auth::user()->name ?? 'System'
         ];

@@ -51,8 +51,6 @@ class BusFillingStationAssignmentController extends Controller
         $validatedData = $request->validate([
             'bus_id' => 'required|exists:buses,id',
             'filling_station_id' => 'required|exists:filling_stations,id',
-            'assigned_date' => 'required|date',
-            'end_date' => 'nullable|date|after:assigned_date',
             'status' => 'required|in:active,inactive',
         ]);
 
@@ -106,8 +104,6 @@ class BusFillingStationAssignmentController extends Controller
         $validatedData = $request->validate([
             'bus_id' => 'required|exists:buses,id',
             'filling_station_id' => 'required|exists:filling_stations,id',
-            'assigned_date' => 'required|date',
-            'end_date' => 'nullable|date|after:assigned_date',
             'status' => 'required|in:active,inactive',
         ]);
 
@@ -149,8 +145,6 @@ class BusFillingStationAssignmentController extends Controller
         $request->validate([
             'filling_station_id' => 'required|exists:filling_stations,id',
             'bus_id' => 'required|exists:buses,id',
-            'assigned_date' => 'required|date',
-            'end_date' => 'nullable|date|after:assigned_date',
         ]);
 
         $fillingStation = FillingStation::findOrFail($request->filling_station_id);
@@ -175,8 +169,6 @@ class BusFillingStationAssignmentController extends Controller
         BusFillingStationAssignment::create([
             'bus_id' => $request->bus_id,
             'filling_station_id' => $request->filling_station_id,
-            'assigned_date' => $request->assigned_date,
-            'end_date' => $request->end_date,
             'status' => 'active',
             'created_by' => Auth::user()->name ?? 'System'
         ]);

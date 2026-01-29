@@ -45,17 +45,6 @@
                                 </select>
                             </div>
 
-                            <div class="form-group">
-                                <label for="assigned_date">Assignment Date:</label>
-                                <input type="date" id="assigned_date" name="assigned_date" class="form-control"
-                                    value="{{ date('Y-m-d') }}" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="end_date">End Date (Optional):</label>
-                                <input type="date" id="end_date" name="end_date" class="form-control">
-                            </div>
-
                             <button type="submit" class="btn btn-primary btn-block">
                                 <i class="fas fa-user-plus"></i> Assign Driver to Route
                             </button>
@@ -84,7 +73,6 @@
                                         <th>Bus</th>
                                         <th>Driver</th>
                                         <th>Regiment No</th>
-                                        <th>Assignment Date</th>
                                         <th>Status</th>
                                         <th>Actions</th>
                                     </tr>
@@ -116,7 +104,6 @@
                                                     <span class="text-muted">N/A</span>
                                                 @endif
                                             </td>
-                                            <td>{{ $route->driverAssignment->assigned_date->format('d M Y') }}</td>
                                             <td>
                                                 <span class="badge badge-success">Active</span>
                                             </td>
@@ -135,7 +122,7 @@
                                         </tr>
                                     @empty
                                         <tr id="no-assignments">
-                                            <td colspan="7" class="text-center text-muted">
+                                            <td colspan="6" class="text-center text-muted">
                                                 No driver-route assignments found
                                             </td>
                                         </tr>
@@ -239,11 +226,9 @@
                 let driverId = $('#driver_select').val();
                 let routeId = $('#route_select').val();
                 let routeType = $('#route_select option:selected').data('type');
-                let assignedDate = $('#assigned_date').val();
-                let endDate = $('#end_date').val();
 
-                if (!driverId || !routeId || !assignedDate) {
-                    showAlert('Please select a driver, route, and assignment date.', 'warning');
+                if (!driverId || !routeId) {
+                    showAlert('Please select a driver and route.', 'warning');
                     return;
                 }
 
@@ -254,9 +239,7 @@
                         _token: $('meta[name="csrf-token"]').attr('content'),
                         driver_id: driverId,
                         route_id: routeId,
-                        route_type: routeType,
-                        assigned_date: assignedDate,
-                        end_date: endDate
+                        route_type: routeType
                     },
                     beforeSend: function() {
                         $('#assignmentForm button[type="submit"]').prop('disabled', true)
@@ -332,7 +315,6 @@
             $('#assignmentForm')[0].reset();
             $('#driver_select').val('');
             $('#route_select').val('');
-            $('#assigned_date').val('{{ date('Y-m-d') }}');
         }
 
         function showAlert(message, type) {

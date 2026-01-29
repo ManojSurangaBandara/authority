@@ -96,34 +96,6 @@
                             </div>
 
                             <div class="row">
-                                <!-- Assigned Date -->
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label for="assigned_date">Assigned Date <span class="text-danger">*</span></label>
-                                        <input type="date"
-                                            class="form-control @error('assigned_date') is-invalid @enderror"
-                                            id="assigned_date" name="assigned_date"
-                                            value="{{ old('assigned_date', $busFillingStationAssignment->assigned_date ? $busFillingStationAssignment->assigned_date->format('Y-m-d') : '') }}"
-                                            required>
-                                        @error('assigned_date')
-                                            <span class="invalid-feedback">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                </div>
-
-                                <!-- End Date -->
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label for="end_date">End Date (Optional)</label>
-                                        <input type="date" class="form-control @error('end_date') is-invalid @enderror"
-                                            id="end_date" name="end_date"
-                                            value="{{ old('end_date', $busFillingStationAssignment->end_date ? $busFillingStationAssignment->end_date->format('Y-m-d') : '') }}">
-                                        @error('end_date')
-                                            <span class="invalid-feedback">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                </div>
-
                                 <!-- Status -->
                                 <div class="col-md-4">
                                     <div class="form-group">
@@ -264,7 +236,7 @@
                             } else {
                                 $('#bus_no_display').html(
                                     '<span class="text-muted">Bus details not available</span>'
-                                    );
+                                );
                                 toastr.warning('Bus details not found for this bus.');
                             }
                         },
@@ -272,7 +244,7 @@
                             console.log('AJAX Error:', xhr.responseText);
                             $('#bus_no_display').html(
                                 '<span class="text-danger">Error loading bus details</span>'
-                                );
+                            );
 
                             let message = 'Error loading bus details.';
                             if (xhr.responseJSON && xhr.responseJSON.message) {
