@@ -1039,6 +1039,8 @@ class EscortAuthController extends Controller
                 'driver_id' => $driverAssignment->driver_id ?? null,
                 'bus_id' => $busAssignment->bus_id ?? null,
                 'slcmp_incharge_id' => $slcmpAssignment->slcmp_incharge_id ?? null,
+                'start_latitude' => $request->input('latitude'),
+                'start_longitude' => $request->input('longitude'),
                 'trip_start_time' => now(),
             ]);
 
@@ -1134,6 +1136,8 @@ class EscortAuthController extends Controller
 
             // End the trip
             $activeTrip->update([
+                'end_latitude' => $request->input('latitude'),
+                'end_longitude' => $request->input('longitude'),
                 'trip_end_time' => now(),
             ]);
 

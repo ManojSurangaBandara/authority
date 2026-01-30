@@ -13,13 +13,21 @@ class Trip extends Model
         'driver_id',
         'bus_id',
         'slcmp_incharge_id',
+        'start_latitude',
+        'start_longitude',
         'trip_start_time',
+        'end_latitude',
+        'end_longitude',
         'trip_end_time'
     ];
 
     protected $casts = [
         'trip_start_time' => 'datetime',
         'trip_end_time' => 'datetime',
+        'start_latitude' => 'float',
+        'start_longitude' => 'float',
+        'end_latitude' => 'float',
+        'end_longitude' => 'float',
     ];
 
     // Relationships
