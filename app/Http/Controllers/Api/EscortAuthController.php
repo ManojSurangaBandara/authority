@@ -277,7 +277,6 @@ class EscortAuthController extends Controller
                     'assignment' => $escort->escortAssignment ? [
                         'id' => $escort->escortAssignment->id,
                         'status' => $escort->escortAssignment->status,
-                        'assigned_date' => $escort->escortAssignment->assigned_date,
                     ] : null,
                 ]
             ], 'Escort profile retrieved successfully');
@@ -1043,16 +1042,10 @@ class EscortAuthController extends Controller
                 'trip_start_time' => now(),
             ]);
 
-            // Update any existing onboardings for this route and time period that don't have a trip_id
-            $onboardingsToUpdate = Onboarding::where(function ($query) use ($routeId, $assignment) {
-                if ($assignment->route_type === 'living_out') {
-                    $query->where('bus_route_id', $routeId);
-                } else {
-                    $query->where('living_in_bus_id', $routeId);
-                }
-            })
-                ->where('route_type', $assignment->route_type)
-                ->whereBetween('onboarded_at', [$periodStart, $periodEnd])
+            // Update any existing onboardings in this time period that don't have a trip_id
+            // Since onboardings are validated against the escort's route, we can assume
+            // unassigned onboardings in this time period belong to this route
+            $onboardingsToUpdate = Onboarding::whereBetween('onboarded_at', [$periodStart, $periodEnd])
                 ->whereNull('trip_id')
                 ->update(['trip_id' => $trip->id]);
 
@@ -1065,7 +1058,9 @@ class EscortAuthController extends Controller
                 ]);
             }
 
-            return $this->successResponse('Trip started successfully', $trip, 201);
+            return $this->successResponse([
+                'trip' => $trip->toArray()
+            ], 'Trip started successfully', 201);
         } catch (JWTException $e) {
             return $this->unauthorizedResponse('Token invalid or expired');
         } catch (\Exception $e) {
@@ -1142,7 +1137,9 @@ class EscortAuthController extends Controller
                 'trip_end_time' => now(),
             ]);
 
-            return $this->successResponse('Trip ended successfully', $activeTrip);
+            return $this->successResponse([
+                'trip' => $activeTrip->toArray()
+            ], 'Trip ended successfully', 200);
         } catch (JWTException $e) {
             return $this->unauthorizedResponse('Token invalid or expired');
         } catch (\Exception $e) {
