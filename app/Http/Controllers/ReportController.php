@@ -22,6 +22,7 @@ use App\Models\IncidentType;
 use App\Models\Incident;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\DataTables\TripsDataTable;
 
 class ReportController extends Controller
 {
@@ -139,6 +140,21 @@ class ReportController extends Controller
         $incident = Incident::with(['incidentType', 'trip.escort', 'trip.driver', 'trip.bus', 'trip.slcmpIncharge'])->findOrFail($id);
 
         return view('reports.incident-detail', compact('incident'));
+    }
+
+    public function trips(TripsDataTable $dataTable)
+    {
+        $busRoutes = BusRoute::all()->map(function ($r) {
+            return ['id' => 'route_' . $r->id, 'name' => $r->name . ' (Living Out)'];
+        });
+        $livingInRoutes = LivingInBuses::all()->map(function ($l) {
+            return ['id' => 'living_' . $l->id, 'name' => $l->name . ' (Living In)'];
+        });
+        $routes = $busRoutes->merge($livingInRoutes);
+
+        $tripTypes = ['morning' => 'Morning', 'evening' => 'Evening'];
+
+        return $dataTable->render('reports.trips', compact('routes', 'tripTypes'));
     }
 
     public function pending(PendingBusPassApplicationDataTable $dataTable)

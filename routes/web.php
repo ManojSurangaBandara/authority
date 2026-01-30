@@ -233,6 +233,8 @@ Route::middleware('auth')->group(function () {
     Route::get('incident-reports', [ReportController::class, 'incident_reports'])->name('incident-reports.index');
     Route::get('incident-reports/{id}', [ReportController::class, 'show_incident'])->name('incident-reports.show');
 
+    Route::get('trips', [ReportController::class, 'trips'])->name('trips.index');
+
     // Profile routes (All authenticated users)
     Route::get('profile', [ProfileController::class, 'show'])->name('profile.show');
 

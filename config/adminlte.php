@@ -733,6 +733,15 @@ return [
                         'incident-reports*',
                     ],
                 ],
+                [
+                    'text' => 'Trips',
+                    'url' => 'trips',
+                    'icon' => 'fas fa-fw fa-route',
+                    // 'can' => 'manage_user_accounts',
+                    'active' => [
+                        'trips*',
+                    ],
+                ],
 
             ],
 

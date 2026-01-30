@@ -60,6 +60,11 @@ class Trip extends Model
         }
     }
 
+    public function livingInBus()
+    {
+        return $this->belongsTo(LivingInBuses::class, 'bus_route_id');
+    }
+
     /**
      * Relationship with Onboardings
      */
