@@ -29,43 +29,43 @@ class Incident extends Model
     }
 
     /**
-     * Get escort from trip
+     * Get escort model from trip (attribute accessor)
      */
-    public function escort()
+    public function getEscortAttribute()
     {
-        return $this->trip ? $this->trip->escort() : null;
+        return $this->trip ? $this->trip->escort : null;
     }
 
     /**
-     * Get driver from trip
+     * Get driver model from trip (attribute accessor)
      */
-    public function driver()
+    public function getDriverAttribute()
     {
-        return $this->trip ? $this->trip->driver() : null;
+        return $this->trip ? $this->trip->driver : null;
     }
 
     /**
-     * Get bus from trip
+     * Get bus model from trip (attribute accessor)
      */
-    public function bus()
+    public function getBusAttribute()
     {
-        return $this->trip ? $this->trip->bus() : null;
+        return $this->trip ? $this->trip->bus : null;
     }
 
     /**
-     * Get SLCMP incharge from trip
+     * Get SLCMP incharge model from trip (attribute accessor)
      */
-    public function slcmpIncharge()
+    public function getSlcmpInchargeAttribute()
     {
-        return $this->trip ? $this->trip->slcmpIncharge() : null;
+        return $this->trip ? $this->trip->slcmpIncharge : null;
     }
 
     /**
-     * Get bus route from trip
+     * Get bus route model from trip (attribute accessor)
      */
-    public function busRoute()
+    public function getBusRouteAttribute()
     {
-        return $this->trip ? $this->trip->busRoute() : null;
+        return $this->trip ? $this->trip->busRoute : null;
     }
 
     /**
