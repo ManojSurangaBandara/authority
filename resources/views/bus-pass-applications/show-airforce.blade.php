@@ -472,10 +472,7 @@
                             }
                         }
                     @endphp
-                    }
-                    }
-                    }
-                    @endphp
+                   
 
                     @if ($showFooterButtons)
                         @if ($showEditButton)
