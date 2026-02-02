@@ -13,6 +13,7 @@ use App\Models\SlcmpInchargeAssignment;
 use App\Models\Trip;
 use App\Models\Escort;
 use App\Models\Onboarding;
+use App\Models\LivingInBuses;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Crypt;
@@ -882,33 +883,72 @@ class EscortAuthController extends Controller
                 $timePeriod = 'evening';
             }
 
+            // Get route name for filtering onboardings without a trip
+            $routeName = null;
+            if ($routeType === 'living_out') {
+                $route = BusRoute::find($routeId);
+                $routeName = $route?->name;
+            } else {
+                $livingInBus = LivingInBuses::find($routeId);
+                $routeName = $livingInBus?->name;
+            }
+
             // Query onboardings based on route type and time period
-            $query = Onboarding::whereHas('trip', function ($trip) use ($escortId, $routeType, $routeId) {
-                $trip->where('escort_id', $escortId)
-                    ->where('route_type', $routeType)
-                    ->where('bus_route_id', $routeId);
+            // Include both: onboardings with matching trip OR onboardings without trip but matching route
+            $query = Onboarding::where(function ($q) use ($escortId, $routeType, $routeId, $routeName) {
+                // Onboardings with a matching trip
+                $q->whereHas('trip', function ($trip) use ($escortId, $routeType, $routeId) {
+                    $trip->where('escort_id', $escortId)
+                        ->where('route_type', $routeType)
+                        ->where('bus_route_id', $routeId);
+                })
+                // OR onboardings without a trip but matching the route via bus pass application
+                ->orWhere(function ($subQ) use ($routeType, $routeName) {
+                    $subQ->whereNull('trip_id')
+                        ->whereHas('busPassApplication', function ($appQ) use ($routeType, $routeName) {
+                            if ($routeType === 'living_out') {
+                                $appQ->where(function ($routeQ) use ($routeName) {
+                                    $routeQ->where('requested_bus_name', $routeName)
+                                        ->orWhere('weekend_bus_name', $routeName);
+                                });
+                            } else {
+                                $appQ->where('living_in_bus', $routeName);
+                            }
+                        });
+                });
             })
                 ->whereBetween('onboarded_at', [$startTime, $endTime])
                 ->with([
                     'busPassApplication.person',
                     'busPassApplication.establishment',
-                    'trip.escort'
+                    'trip.escort',
+                    'trip.busRoute',
+                    'trip.livingInBus'
                 ]);
 
             $onboardings = $query->orderBy('onboarded_at', 'desc')->get();
 
             // Format passenger details
-            $passengers = $onboardings->map(function ($onboarding) {
+            $passengers = $onboardings->map(function ($onboarding) use ($routeName) {
+                $tripRouteName = null;
+                if ($onboarding->trip) {
+                    $tripRouteName = $onboarding->trip->route_type === 'living_out'
+                        ? $onboarding->trip->busRoute?->name
+                        : $onboarding->trip->livingInBus?->name;
+                } else {
+                    $tripRouteName = $routeName;
+                }
+
                 return [
                     'onboarding_id' => $onboarding->id,
                     'passenger_name' => $onboarding->busPassApplication->person?->name ?? 'N/A',
-                    'regiment_no' => $onboarding->busPassApplication->person->regiment_no,
+                    'regiment_no' => $onboarding->busPassApplication->person?->regiment_no ?? 'N/A',
                     'establishment_name' => $onboarding->busPassApplication->establishment?->name ?? 'N/A',
                     'bus_pass_type' => $onboarding->busPassApplication->bus_pass_type,
-                    'branch_card_id' => $onboarding->branch_card_id,
-                    'serial_number' => $onboarding->serial_number,
+                    'branch_card_id' => $onboarding->busPassApplication->branch_card_id,
+                    'serial_number' => $onboarding->busPassApplication->temp_card_qr,
                     'onboarded_at' => $onboarding->onboarded_at->format('Y-m-d H:i:s'),
-                    'route_name' => $onboarding->route_name ?? 'N/A',
+                    'route_name' => $tripRouteName,
                 ];
             });
 
