@@ -59,6 +59,20 @@ class TripsDataTable extends DataTable
             ->addColumn('onboardings_count', function ($row) {
                 return $row->onboardings->count();
             })
+            ->addColumn('start_location', function ($row) {
+                if ($row->start_latitude && $row->start_longitude) {
+                    $url = "https://www.google.com/maps?q={$row->start_latitude},{$row->start_longitude}";
+                    return '<a href="' . $url . '" target="_blank" class="btn btn-xs btn-info" title="View Start Location"><i class="fas fa-map-marker-alt"></i></a>';
+                }
+                return 'N/A';
+            })
+            ->addColumn('end_location', function ($row) {
+                if ($row->end_latitude && $row->end_longitude) {
+                    $url = "https://www.google.com/maps?q={$row->end_latitude},{$row->end_longitude}";
+                    return '<a href="' . $url . '" target="_blank" class="btn btn-xs btn-success" title="View End Location"><i class="fas fa-map-marker-alt"></i></a>';
+                }
+                return 'N/A';
+            })
             ->filter(function ($query) {
                 if ($date = request('date')) {
                     $query->whereDate('trips.trip_start_time', $date);
@@ -82,7 +96,7 @@ class TripsDataTable extends DataTable
                     }
                 }
             })
-            ->rawColumns(['escort_name', 'driver_name', 'bus_number', 'route_name', 'slcmp_incharge_name', 'trip_start_time_formatted', 'trip_end_time_formatted', 'duration', 'onboardings_count'])
+            ->rawColumns(['escort_name', 'driver_name', 'bus_number', 'route_name', 'slcmp_incharge_name', 'trip_start_time_formatted', 'trip_end_time_formatted', 'duration', 'onboardings_count', 'start_location', 'end_location'])
             ->setRowId('id');
     }
 
@@ -140,6 +154,8 @@ class TripsDataTable extends DataTable
             Column::make('trip_end_time_formatted')->title('End Time')->searchable(true),
             Column::make('duration')->title('Duration')->searchable(false),
             Column::make('onboardings_count')->title('Passengers')->searchable(false),
+            Column::make('start_location')->title('Start Location')->searchable(false)->orderable(false),
+            Column::make('end_location')->title('End Location')->searchable(false)->orderable(false),
         ];
     }
 
