@@ -23,6 +23,7 @@ use App\Http\Controllers\EstablishmentController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\BranchCardSwitchController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\LivingInBusController;
@@ -96,6 +97,10 @@ Route::middleware('auth')->group(function () {
     // QR Download routes
     Route::get('qr-download', [QrDownloadController::class, 'index'])->name('qr-download.index');
     Route::get('qr-download/{id}/download', [QrDownloadController::class, 'download'])->name('qr-download.download');
+
+    // Branch Card Switch routes
+    Route::get('branch-card-switch', [BranchCardSwitchController::class, 'index'])->name('branch-card-switch.index');
+    Route::post('branch-card-switch', [BranchCardSwitchController::class, 'switch'])->name('branch-card-switch.switch');
 
     // Bus Pass Status routes (Master Data)
     Route::resource('bus-pass-statuses', BusPassStatusController::class);

@@ -77,6 +77,12 @@ class BusPassApplication extends Model
         return $this->hasMany(BusPassApprovalHistory::class)->ordered();
     }
 
+    // Relationship with branch card switch history
+    public function branchCardSwitchHistory()
+    {
+        return $this->hasMany(BranchCardSwitchHistory::class);
+    }
+
     // Relationship with destination location
     public function destinationLocation()
     {
