@@ -600,6 +600,16 @@ return [
             ],
         ],
 
+        [
+            'text' => 'Switch Branch Card',
+            'url' => 'switch-branch-card',
+            'icon' => 'fas fa-fw fa-exchange-alt',
+            'can' => 'access_qr_download',
+            'active' => [
+                'switch-branch-card*',
+            ],
+        ],
+
         // System Administration (System Administrator only)
         [
             'text' => 'System Administration',

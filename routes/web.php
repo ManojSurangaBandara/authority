@@ -98,9 +98,12 @@ Route::middleware('auth')->group(function () {
     Route::get('qr-download', [QrDownloadController::class, 'index'])->name('qr-download.index');
     Route::get('qr-download/{id}/download', [QrDownloadController::class, 'download'])->name('qr-download.download');
 
-    // Branch Card Switch routes
+    // Branch Card Switch routes (From Temporary card to branch card)
     Route::get('branch-card-switch', [BranchCardSwitchController::class, 'index'])->name('branch-card-switch.index');
     Route::post('branch-card-switch', [BranchCardSwitchController::class, 'switch'])->name('branch-card-switch.switch');
+    // Switch existing branch card to anther branch card
+    Route::get('switch-branch-card', [BranchCardSwitchController::class, 'switchBranchCardIndex'])->name('branch-card-switch.switch-branch-card.index');
+    Route::post('switch-branch-card', [BranchCardSwitchController::class, 'switchBranchCard'])->name('branch-card-switch.switch-branch-card');
 
     // Bus Pass Status routes (Master Data)
     Route::resource('bus-pass-statuses', BusPassStatusController::class);

@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Switch to Branch Card')
+@section('title', 'Switch Branch Card')
 
 @section('content_header')
-    <h1>Switch From Temporary Card to Branch Card</h1>
+    <h1>Switch Branch Card</h1>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 @stop
 
@@ -12,7 +12,6 @@
 @endsection
 
 @section('content')
-
     <div class="container mt-5">
         <div class="row justify-content-center">
             <div class="col-md-6">
@@ -27,30 +26,32 @@
 
                 <div class="card">
                     <div class="card-header">
-                        <i class="nav-icon fas fa-exchange-alt"></i> Switch From Temporary Card to Branch Card
+                        <i class="nav-icon fas fa-exchange-alt"></i> Switch Branch Card
                     </div>
 
                     <div class="card-body">
-                        <form id="branchCardSwitchForm">
+                        <form id="switchBranchCardForm">
                             @csrf
 
                             <div class="form-group">
                                 <label for="regiment_no">Regiment Number <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="regiment_no" name="regiment_no"
                                     placeholder="Enter regiment number" required>
-                                <small class="form-text text-muted">Enter the regiment number of the application</small>
+                                <small class="form-text text-muted">Enter the regiment number of the application with
+                                    existing branch card</small>
                             </div>
 
                             <div class="form-group">
-                                <label for="branch_card_id">Branch Card ID <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="branch_card_id" name="branch_card_id"
-                                    placeholder="Enter branch card ID" required>
-                                <small class="form-text text-muted">Enter the branch card ID to switch to</small>
+                                <label for="new_branch_card_id">New Branch Card ID <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="new_branch_card_id" name="new_branch_card_id"
+                                    placeholder="Enter new branch card ID" required>
+                                <small class="form-text text-muted">Enter the new branch card ID to switch to</small>
                             </div>
 
                             <div class="form-group">
                                 <button type="submit" class="btn btn-primary" id="switchBtn">
-                                    <i class="fas fa-exchange-alt"></i> Switch
+                                    <i class="fas fa-exchange-alt"></i> Switch Branch Card
                                 </button>
                             </div>
                         </form>
@@ -60,32 +61,33 @@
         </div>
     </div>
     @include('footer')
+
 @endsection
 
 @section('js')
     <script src="{{ asset('js/toastr.min.js') }}"></script>
     <script>
-        // Toastr configuration
-        toastr.options = {
-            "closeButton": true,
-            "debug": false,
-            "newestOnTop": true,
-            "progressBar": true,
-            "positionClass": "toast-top-right",
-            "preventDuplicates": false,
-            "onclick": null,
-            "showDuration": "300",
-            "hideDuration": "1000",
-            "timeOut": "5000",
-            "extendedTimeOut": "1000",
-            "showEasing": "swing",
-            "hideEasing": "linear",
-            "showMethod": "fadeIn",
-            "hideMethod": "fadeOut"
-        };
-
         $(document).ready(function() {
-            $('#branchCardSwitchForm').on('submit', function(e) {
+            // Configure toastr
+            toastr.options = {
+                "closeButton": true,
+                "debug": false,
+                "newestOnTop": true,
+                "progressBar": true,
+                "positionClass": "toast-top-right",
+                "preventDuplicates": false,
+                "onclick": null,
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "5000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            };
+
+            $('#switchBranchCardForm').on('submit', function(e) {
                 e.preventDefault();
 
                 const $btn = $('#switchBtn');
@@ -95,13 +97,13 @@
                 $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing...');
 
                 $.ajax({
-                    url: '{{ route('branch-card-switch.switch') }}',
+                    url: '{{ route('branch-card-switch.switch-branch-card') }}',
                     method: 'POST',
                     data: $(this).serialize(),
                     success: function(response) {
                         if (response.success) {
                             toastr.success(response.message);
-                            $('#branchCardSwitchForm')[0].reset();
+                            $('#switchBranchCardForm')[0].reset();
                         } else {
                             toastr.error(response.message);
                         }
