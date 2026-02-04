@@ -46,6 +46,7 @@ Route::middleware('auth')->group(function () {
 
     // Dashboard routes
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/applications', [DashboardController::class, 'getApplications'])->name('dashboard.applications');
 
     // API routes for dropdowns (accessible by all authenticated users)
     Route::get('destination-locations-api/all', [App\Http\Controllers\DestinationLocationController::class, 'api'])->name('destination-locations.api');

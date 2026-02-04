@@ -28,6 +28,23 @@
 @stop
 
 @section('adminlte_js')
+    <!-- DataTables Core JS -->
+    <script src="{{ asset('js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('js/dataTables.bootstrap4.min.js') }}"></script>
+
+    <!-- DataTables Buttons JS -->
+    <script src="{{ asset('js/dataTables.buttons.min.js') }}"></script>
+    <script src="{{ asset('js/buttons.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('js/buttons.html5.min.js') }}"></script>
+    <script src="{{ asset('js/buttons.print.min.js') }}"></script>
+
+    <!-- Required for Excel export -->
+    <script src="{{ asset('js/jszip.min.js') }}"></script>
+
+    <!-- Required for PDF export -->
+    <script src="{{ asset('js/pdfmake.min.js') }}"></script>
+    <script src="{{ asset('js/vfs_fonts.js') }}"></script>
+
     <script src="{{ asset('js/chart.umd.min.js') }}"></script>
 
     @if (Auth::user() && Auth::user()->hasRole('Subject Clerk (DMOV)'))
@@ -80,9 +97,38 @@
                                     stepSize: 1
                                 }
                             }
+                        },
+                        onClick: function(evt, elements) {
+                            if (elements.length > 0) {
+                                const index = elements[0].index;
+                                const labels = this.data.labels;
+                                const level = labels[index];
+
+                                // Map chart labels to correct status codes
+                                const statusMapping = {
+                                    'Branch Clerk': 'pending_subject_clerk',
+                                    'Branch Staff Officer': 'pending_staff_officer_branch',
+                                    'DMOV Subject Clerk': 'forwarded_to_movement',
+                                    'DMOV Staff Officer 2': 'pending_staff_officer_2_mov',
+                                    'DMOV Staff Officer 1': 'pending_staff_officer_1_mov',
+                                    'Col Mov (DMOV)': 'pending_col_mov',
+                                    'Director (DMOV)': 'pending_director_mov'
+                                };
+
+                                const status = statusMapping[level];
+                                if (status) {
+                                    loadDashboardApplications(status);
+                                }
+                            }
+                        },
+                        onHover: function(evt, elements) {
+                            evt.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
                         }
                     }
                 });
+
+                // Store chart instance globally
+                window.dmovPendingByUserLevelChart = dmovPendingByUserLevelChart;
             });
         </script>
     @endif
@@ -131,9 +177,39 @@
                                     stepSize: 1
                                 }
                             }
+                        },
+                        onClick: function(evt, elements) {
+                            if (elements.length > 0) {
+                                const index = elements[0].index;
+                                const labels = this.data.labels;
+                                const level = labels[index];
+
+                                // Map chart labels to correct status codes
+                                const statusMapping = {
+                                    'Branch Clerk': 'pending_subject_clerk',
+                                    'Branch Staff Officer': 'pending_staff_officer_branch',
+                                    'DMOV Subject Clerk': 'forwarded_to_movement',
+                                    'DMOV Staff Officer 2': 'pending_staff_officer_2_mov',
+                                    'DMOV Staff Officer 1': 'pending_staff_officer_1_mov',
+                                    'Col Mov (DMOV)': 'pending_col_mov',
+                                    'Director (DMOV)': 'pending_director_mov'
+                                };
+
+                                const status = statusMapping[level];
+                                if (status) {
+                                    loadDashboardApplications(status, null,
+                                        '{{ auth()->user()->establishment_id }}');
+                                }
+                            }
+                        },
+                        onHover: function(evt, elements) {
+                            evt.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
                         }
                     }
                 });
+
+                // Store chart instance globally
+                window.directorPendingByUserLevelChart = directorPendingByUserLevelChart;
             });
         </script>
     @endif
@@ -180,60 +256,40 @@
                                     stepSize: 1
                                 }
                             }
-                        }
-                    }
-                });
-
-
-            });
-        </script>
-    @endif
-
-    @if (Auth::user() && Auth::user()->hasRole('Bus Pass Subject Clerk (Branch)') && !empty($chartData))
-        <script>
-            $(document).ready(function() {
-                console.log('Branch Subject Clerk Dashboard JavaScript Loading...');
-                console.log('Chart.js available:', typeof Chart !== 'undefined');
-                console.log('jQuery available:', typeof $ !== 'undefined');
-
-                // Pending Approvals Chart - All Levels (Vertical Bar)
-                const branchSubjectClerkPendingCtx = document.getElementById('branchClerkPendingChart').getContext(
-                    '2d');
-                const branchApprovalData = @json($chartData['approvalOverview']);
-                const branchSubjectClerkPendingChart = new Chart(branchSubjectClerkPendingCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Branch Clerk', 'Branch Staff Officer'],
-                        datasets: [{
-                            label: 'Pending Applications (My Branch)',
-                            data: [
-                                branchApprovalData.pending_branch_clerk,
-                                branchApprovalData.pending_branch_staff_officer
-                            ],
-                            backgroundColor: [
-                                '#ffc107',
-                                '#28a745'
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
                         },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    stepSize: 1
+                        onClick: function(evt, elements) {
+                            if (elements.length > 0) {
+                                const index = elements[0].index;
+                                const labels = this.data.labels;
+                                const level = labels[index];
+
+                                // Map chart labels to correct status codes
+                                const statusMapping = {
+                                    'Branch Clerk': 'pending_subject_clerk',
+                                    'Branch Staff Officer': 'pending_staff_officer_branch',
+                                    'DMOV Subject Clerk': 'forwarded_to_movement',
+                                    'DMOV Staff Officer 2': 'pending_staff_officer_2_mov',
+                                    'DMOV Staff Officer 1': 'pending_staff_officer_1_mov',
+                                    'Col Mov (DMOV)': 'pending_col_mov',
+                                    'Director (DMOV)': 'pending_director_mov'
+                                };
+
+                                const status = statusMapping[level];
+                                if (status) {
+                                    loadDashboardApplications(status);
                                 }
                             }
+                        },
+                        onHover: function(evt, elements) {
+                            evt.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
                         }
                     }
                 });
+
+                // Store chart instance globally
+                window.branchStaffOfficerPendingChart = branchStaffOfficerPendingChart;
+
+
             });
         </script>
     @endif
@@ -278,6 +334,32 @@
                                     stepSize: 1
                                 }
                             }
+                        },
+                        onClick: function(evt, elements) {
+                            if (elements.length > 0) {
+                                const index = elements[0].index;
+                                const labels = this.data.labels;
+                                const level = labels[index];
+
+                                // Map chart labels to correct status codes
+                                const statusMapping = {
+                                    'Branch Clerk': 'pending_subject_clerk',
+                                    'Branch Staff Officer': 'pending_staff_officer_branch',
+                                    'DMOV Subject Clerk': 'forwarded_to_movement',
+                                    'DMOV Staff Officer 2': 'pending_staff_officer_2_mov',
+                                    'DMOV Staff Officer 1': 'pending_staff_officer_1_mov',
+                                    'Col Mov (DMOV)': 'pending_col_mov',
+                                    'Director (DMOV)': 'pending_director_mov'
+                                };
+
+                                const status = statusMapping[level];
+                                if (status) {
+                                    loadDashboardApplications(status);
+                                }
+                            }
+                        },
+                        onHover: function(evt, elements) {
+                            evt.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
                         }
                     }
                 });
@@ -329,6 +411,32 @@
                                     stepSize: 1
                                 }
                             }
+                        },
+                        onClick: function(evt, elements) {
+                            if (elements.length > 0) {
+                                const index = elements[0].index;
+                                const labels = this.data.labels;
+                                const level = labels[index];
+
+                                // Map chart labels to correct status codes
+                                const statusMapping = {
+                                    'Branch Clerk': 'pending_subject_clerk',
+                                    'Branch Staff Officer': 'pending_staff_officer_branch',
+                                    'DMOV Subject Clerk': 'forwarded_to_movement',
+                                    'DMOV Staff Officer 2': 'pending_staff_officer_2_mov',
+                                    'DMOV Staff Officer 1': 'pending_staff_officer_1_mov',
+                                    'Col Mov (DMOV)': 'pending_col_mov',
+                                    'Director (DMOV)': 'pending_director_mov'
+                                };
+
+                                const status = statusMapping[level];
+                                if (status) {
+                                    loadDashboardApplications(status);
+                                }
+                            }
+                        },
+                        onHover: function(evt, elements) {
+                            evt.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
                         }
                     }
                 });
@@ -376,6 +484,32 @@
                                     stepSize: 1
                                 }
                             }
+                        },
+                        onClick: function(evt, elements) {
+                            if (elements.length > 0) {
+                                const index = elements[0].index;
+                                const labels = this.data.labels;
+                                const level = labels[index];
+
+                                // Map chart labels to correct status codes
+                                const statusMapping = {
+                                    'Branch Clerk': 'pending_subject_clerk',
+                                    'Branch Staff Officer': 'pending_staff_officer_branch',
+                                    'DMOV Subject Clerk': 'forwarded_to_movement',
+                                    'DMOV Staff Officer 2': 'pending_staff_officer_2_mov',
+                                    'DMOV Staff Officer 1': 'pending_staff_officer_1_mov',
+                                    'Col Mov (DMOV)': 'pending_col_mov',
+                                    'Director (DMOV)': 'pending_director_mov'
+                                };
+
+                                const status = statusMapping[level];
+                                if (status) {
+                                    loadDashboardApplications(status);
+                                }
+                            }
+                        },
+                        onHover: function(evt, elements) {
+                            evt.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
                         }
                     }
                 });
@@ -425,6 +559,32 @@
                                     stepSize: 1
                                 }
                             }
+                        },
+                        onClick: function(evt, elements) {
+                            if (elements.length > 0) {
+                                const index = elements[0].index;
+                                const labels = this.data.labels;
+                                const level = labels[index];
+
+                                // Map chart labels to correct status codes
+                                const statusMapping = {
+                                    'Branch Clerk': 'pending_subject_clerk',
+                                    'Branch Staff Officer': 'pending_staff_officer_branch',
+                                    'DMOV Subject Clerk': 'forwarded_to_movement',
+                                    'DMOV Staff Officer 2': 'pending_staff_officer_2_mov',
+                                    'DMOV Staff Officer 1': 'pending_staff_officer_1_mov',
+                                    'Col Mov (DMOV)': 'pending_col_mov',
+                                    'Director (DMOV)': 'pending_director_mov'
+                                };
+
+                                const status = statusMapping[level];
+                                if (status) {
+                                    loadDashboardApplications(status);
+                                }
+                            }
+                        },
+                        onHover: function(evt, elements) {
+                            evt.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
                         }
                     }
                 });
@@ -435,9 +595,21 @@
     @if (Auth::user() && Auth::user()->hasRole('Bus Pass Subject Clerk (Branch)') && !empty($chartData))
         <script>
             $(document).ready(function() {
+                console.log('Branch Clerk Dashboard JavaScript Loading...');
+                console.log('Chart data:', @json($chartData['approvalOverview']));
+
+                // Check if canvas exists
+                const canvas = document.getElementById('branchClerkPendingChart');
+                if (!canvas) {
+                    console.error('Canvas element branchClerkPendingChart not found!');
+                    return;
+                }
+
                 // Pending Approvals Chart - All Levels (Vertical Bar)
-                const branchClerkPendingCtx = document.getElementById('branchClerkPendingChart').getContext('2d');
+                const branchClerkPendingCtx = canvas.getContext('2d');
                 const branchApprovalData = @json($chartData['approvalOverview']);
+                console.log('Branch approval data:', branchApprovalData);
+
                 const branchClerkPendingChart = new Chart(branchClerkPendingCtx, {
                     type: 'bar',
                     data: {
@@ -469,12 +641,180 @@
                                     stepSize: 1
                                 }
                             }
+                        },
+                        onClick: function(evt, elements) {
+                            console.log('Chart clicked, elements:', elements);
+                            if (elements.length > 0) {
+                                const index = elements[0].index;
+                                const labels = this.data.labels;
+                                const level = labels[index];
+                                console.log('Clicked level:', level);
+
+                                // Branch Clerk can see applications pending at their level and the next level
+                                if (level === 'Branch Clerk') {
+                                    loadDashboardApplications('pending_subject_clerk', null,
+                                        '{{ auth()->user()->establishment_id }}');
+                                } else if (level === 'Branch Staff Officer') {
+                                    // Show applications pending staff officer review
+                                    loadDashboardApplications('pending_staff_officer_branch', null,
+                                        '{{ auth()->user()->establishment_id }}');
+                                }
+                            }
                         }
                     }
+                });
+
+                // Store chart instance globally
+                window.branchClerkPendingChart = branchClerkPendingChart;
+                console.log('Branch Clerk chart initialized:', branchClerkPendingChart);
+
+                // Add cursor change on hover
+                canvas.addEventListener('mousemove', function(evt) {
+                    const rect = canvas.getBoundingClientRect();
+                    const x = evt.clientX - rect.left;
+                    const y = evt.clientY - rect.top;
+                    const elements = branchClerkPendingChart.getElementsAtEventForMode(evt, 'nearest', {
+                        intersect: true
+                    }, false);
+                    canvas.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                    console.log('Mouse move, elements found:', elements.length);
+                });
+                canvas.addEventListener('mouseleave', function() {
+                    canvas.style.cursor = 'default';
                 });
             });
         </script>
     @endif
+
+    <!-- DataTable and Chart Click Functionality -->
+    <script>
+        // Global function for loading dashboard applications
+        function loadDashboardApplications(status, level = null, establishmentId = null) {
+            $.ajax({
+                url: '{{ route('dashboard.applications') }}',
+                method: 'GET',
+                data: {
+                    status: status,
+                    level: level,
+                    establishment_id: establishmentId
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Set table title
+                        let title = `${response.title} (${response.applications.length})`;
+                        $('#applicationsTableTitle').text(title);
+
+                        // Clear and populate table
+                        if (window.dashboardApplicationsTable) {
+                            window.dashboardApplicationsTable.clear();
+                            window.dashboardApplicationsTable.rows.add(response.applications);
+                            window.dashboardApplicationsTable.draw();
+                        }
+
+                        // Show the table section
+                        $('#applicationsTableSection').show();
+
+                        // Scroll to table
+                        $('html, body').animate({
+                            scrollTop: $('#applicationsTableSection').offset().top - 100
+                        }, 500);
+                    } else {
+                        alert('Error loading applications: ' + response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading applications:', error);
+                    alert('Error loading applications');
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            let dashboardApplicationsTable;
+
+            // Initialize DataTable
+            function initializeDashboardDataTable() {
+                if (dashboardApplicationsTable) {
+                    dashboardApplicationsTable.destroy();
+                }
+
+                dashboardApplicationsTable = $('#dashboardApplicationsTable').DataTable({
+                    paging: true,
+                    lengthChange: true,
+                    searching: true,
+                    ordering: true,
+                    order: [],
+                    info: true,
+                    autoWidth: false,
+                    responsive: false,
+                    pageLength: 25,
+                    language: {
+                        search: "",
+                        searchPlaceholder: "Search applications...",
+                        lengthMenu: "Show _MENU_ entries",
+                        info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                        infoEmpty: "No applications found",
+                        infoFiltered: "(filtered from _MAX_ total entries)",
+                        paginate: {
+                            first: "First",
+                            last: "Last",
+                            next: "Next",
+                            previous: "Previous"
+                        }
+                    },
+                    columnDefs: [{
+                        orderable: true,
+                        targets: [0, 1, 2, 3, 4, 5, 6, 7]
+                    }, {
+                        orderable: false,
+                        targets: [8]
+                    }],
+                    columns: [{
+                            data: 'id'
+                        },
+                        {
+                            data: 'person_regiment_no'
+                        },
+                        {
+                            data: 'person_name'
+                        },
+                        {
+                            data: 'person_rank'
+                        },
+                        {
+                            data: 'establishment_name'
+                        },
+                        {
+                            data: 'bus_pass_type_label'
+                        },
+                        {
+                            data: 'status_badge'
+                        },
+                        {
+                            data: 'applied_date'
+                        },
+                        {
+                            data: 'actions'
+                        }
+                    ]
+                });
+
+                // Store globally for access from chart callbacks
+                window.dashboardApplicationsTable = dashboardApplicationsTable;
+            }
+
+            // Close applications table
+            $('#closeApplicationsTable').on('click', function() {
+                $('#applicationsTableSection').hide();
+                if (dashboardApplicationsTable) {
+                    dashboardApplicationsTable.clear().draw();
+                }
+            });
+
+            // Initialize DataTable on page load
+            initializeDashboardDataTable();
+        });
+    </script>
 @stop
 
 @section('content')
@@ -674,6 +1014,41 @@
         </div>
     @endif
 
+    <!-- Applications DataTable Section (hidden by default, shown when clicking chart bars) -->
+    <div class="row mt-4" id="applicationsTableSection" style="display: none;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title" id="applicationsTableTitle">Applications</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" id="closeApplicationsTable">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="dashboardApplicationsTable" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Application ID</th>
+                                    <th>Regiment No</th>
+                                    <th>Person Name</th>
+                                    <th>Rank</th>
+                                    <th>Establishment</th>
+                                    <th>Bus Pass Type</th>
+                                    <th>Status</th>
+                                    <th>Applied Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @include('footer')
 
 @stop
@@ -681,6 +1056,10 @@
 {{-- @endsection --}}
 
 @section('css')
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="{{ asset('css/dataTables.bootstrap4.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/buttons.bootstrap4.min.css') }}">
+
     <style>
         .small-box .icon {
             color: rgba(255, 255, 255, 0.8);
@@ -698,6 +1077,24 @@
 
         .card-body canvas {
             max-height: 250px !important;
+        }
+
+        /* DataTable styling */
+        #dashboardApplicationsTable {
+            width: 100% !important;
+        }
+
+        #dashboardApplicationsTable thead th {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .clickable-chart {
+            cursor: pointer;
+        }
+
+        .clickable-chart:hover {
+            opacity: 0.8;
         }
     </style>
 @stop

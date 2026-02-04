@@ -1469,4 +1469,90 @@ class DashboardController extends Controller
             'data' => $data
         ];
     }
+
+    /**
+     * Get applications data for dashboard DataTable
+     */
+    public function getApplications(Request $request)
+    {
+        $status = $request->get('status');
+        $level = $request->get('level');
+        $establishmentId = $request->get('establishment_id');
+
+        // Build query based on user role and requested data
+        $query = BusPassApplication::with(['person', 'establishment'])
+            ->select('bus_pass_applications.*');
+
+        // Apply status filter
+        if ($status) {
+            // Handle special cases where one status represents multiple database statuses
+            if ($status === 'pending_staff_officer_branch') {
+                $query->whereIn('status', ['pending_staff_officer_branch', 'rejected_for_integration']);
+            } else {
+                $query->where('status', $status);
+            }
+        }
+
+        // Apply establishment filter for branch users
+        $user = Auth::user();
+        if ($user && $user->hasRole(['Bus Pass Subject Clerk (Branch)', 'Staff Officer (Branch)', 'Director (Branch)']) && $user->establishment_id) {
+            $query->where('establishment_id', $user->establishment_id);
+        } elseif ($establishmentId) {
+            $query->where('establishment_id', $establishmentId);
+        }
+
+        // Apply additional filters based on user role permissions
+        if ($user) {
+            if ($user->hasRole('Bus Pass Subject Clerk (Branch)')) {
+                // Branch clerk can only see their establishment's applications
+                $query->where('establishment_id', $user->establishment_id);
+            } elseif ($user->hasRole('Staff Officer (Branch)')) {
+                // Branch staff officer can see their establishment's applications
+                $query->where('establishment_id', $user->establishment_id);
+            } elseif ($user->hasRole('Director (Branch)')) {
+                // Branch director can see all applications in their branch
+                $query->where('establishment_id', $user->establishment_id);
+            }
+            // DMOV users can see all applications (no additional filter needed)
+        }
+
+        $applications = $query->orderBy('bus_pass_applications.created_at', 'desc')->get();
+
+        // Format applications for DataTable
+        $formattedApplications = $applications->map(function ($app) {
+            return [
+                'id' => $app->id,
+                'person_regiment_no' => $app->person ? $app->person->regiment_no : 'N/A',
+                'person_name' => $app->person ? $app->person->name : 'N/A',
+                'person_rank' => $app->person ? $app->person->rank : 'N/A',
+                'establishment_name' => $app->establishment ? $app->establishment->name : 'N/A',
+                'bus_pass_type_label' => $app->type_label,
+                'status_badge' => $app->status_badge,
+                'applied_date' => $app->created_at ? $app->created_at->format('d M Y') : 'N/A',
+                'actions' => '<a href="' . route('bus-pass-applications.show', $app->id) . '" class="btn btn-xs btn-info" title="View"><i class="fas fa-eye"></i></a>'
+            ];
+        });
+
+        // Determine title based on filters
+        $title = 'Applications';
+        if ($status) {
+            $statusLabels = [
+                'pending_subject_clerk' => 'Pending Branch Clerk Approval',
+                'pending_staff_officer_branch' => 'Pending Branch Staff Officer Approval / Returned from Integration',
+                'pending_director_branch' => 'Pending Branch Director Approval',
+                'forwarded_to_movement' => 'Forwarded to Movement',
+                'pending_staff_officer_2_mov' => 'Pending DMOV Staff Officer 2 Approval',
+                'pending_staff_officer_1_mov' => 'Pending DMOV Staff Officer 1 Approval',
+                'pending_col_mov' => 'Pending Col MOV Approval',
+                'pending_director_mov' => 'Pending DMOV Director Approval'
+            ];
+            $title = $statusLabels[$status] ?? 'Applications';
+        }
+
+        return response()->json([
+            'success' => true,
+            'applications' => $formattedApplications,
+            'title' => $title
+        ]);
+    }
 }
