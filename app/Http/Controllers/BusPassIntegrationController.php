@@ -320,6 +320,81 @@ class BusPassIntegrationController extends Controller
     }
 
     /**
+     * Bulk integrate multiple applications
+     */
+    public function bulkIntegrate(Request $request): JsonResponse
+    {
+        // Only Director and Col MOV can perform bulk integration
+        if (!auth()->user()->hasRole(['Col Mov (DMOV)', 'Director (DMOV)'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Access denied. Only Director and Col MOV can perform bulk integration.'
+            ], 403);
+        }
+
+        $request->validate([
+            'application_ids' => 'required|array|min:1',
+            'application_ids.*' => 'required|integer|exists:bus_pass_applications,id'
+        ]);
+
+        $applicationIds = $request->application_ids;
+        $successful = 0;
+        $failed = 0;
+        $errors = [];
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($applicationIds as $id) {
+                try {
+                    $application = BusPassApplication::findOrFail($id);
+
+                    if ($application->status === 'approved_for_integration') {
+                        // Branch card integration
+                        $application->status = 'integrated_to_branch_card';
+                    } elseif ($application->status === 'approved_for_temp_card') {
+                        // Temp card integration - generate QR code
+                        $application->status = 'integrated_to_temp_card';
+                        $application->temp_card_qr = $this->generateTempCardQR();
+                    } else {
+                        $failed++;
+                        $errors[] = "Application {$id} is not in a valid status for integration";
+                        continue;
+                    }
+
+                    $application->save();
+                    $successful++;
+                } catch (\Exception $e) {
+                    $failed++;
+                    $errors[] = "Application {$id}: " . $e->getMessage();
+                }
+            }
+
+            DB::commit();
+
+            $message = "Bulk integration completed. {$successful} application(s) integrated successfully.";
+            if ($failed > 0) {
+                $message .= " {$failed} application(s) failed.";
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'successful' => $successful,
+                'failed' => $failed,
+                'errors' => $errors
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Bulk integration failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Undo integration (revert status)
      */
     public function undoIntegrate(Request $request, $id): JsonResponse

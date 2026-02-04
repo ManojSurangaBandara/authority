@@ -84,11 +84,25 @@
                                     <option value="">All Ranks</option>
                                 </select>
                             </div>
+                            <div class="col-md-6 text-right">
+                                <button class="btn-sm btn-success" id="bulkIntegrateBtn" style="display: none;">
+                                    <i class="fas fa-arrow-up"></i> Bulk Integrate Selected (<span
+                                        id="selectedCount">0</span>)
+                                </button>
+                                <button class="btn-sm btn-secondary ml-2" id="selectAllBtn">
+                                    <i class="fas fa-check-square"></i> Select All
+                                </button>
+                                <button class="btn-sm btn-outline-secondary ml-2" id="clearSelectionBtn"
+                                    style="display: none;">
+                                    <i class="fas fa-times"></i> Clear Selection
+                                </button>
+                            </div>
                         </div>
                         <div class="applications-table-wrapper">
                             <table id="applicationsTable" class="table table-bordered table-striped">
                                 <thead>
                                     <tr>
+                                        <th><input type="checkbox" id="selectAllCheckbox"></th>
                                         <th>Application ID</th>
                                         <th>Regiment No</th>
                                         <th>Person Name</th>
@@ -381,13 +395,13 @@
                     }
                 },
                 columnDefs: [{
-                        orderable: true,
-                        targets: [0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12]
+                        orderable: false,
+                        targets: [0, 7] // Checkbox and Actions columns not sortable
                     },
                     {
-                        orderable: false,
-                        targets: [6]
-                    } // Actions column not sortable
+                        orderable: true,
+                        targets: [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13]
+                    } // Other columns sortable
                 ],
                 dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rt<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
                 initComplete: function() {
@@ -694,18 +708,19 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                                                                            <i class="fas fa-arrow-up"></i>
-                                                                                                        </button>
-                                                                                                        <button class="btn btn-danger btn-xs reject-application ml-1" data-id="${app.id}" title="Reject Application">
-                                                                                                            <i class="fas fa-times"></i>
-                                                                                                        </button>` :
+                                                                                                                <i class="fas fa-arrow-up"></i>
+                                                                                                            </button>
+                                                                                                            <button class="btn btn-danger btn-xs reject-application ml-1" data-id="${app.id}" title="Reject Application">
+                                                                                                                <i class="fas fa-times"></i>
+                                                                                                            </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                                                                            <i class="fas fa-arrow-down"></i>
-                                                                                                        </button>` : ''
+                                                                                                                <i class="fas fa-arrow-down"></i>
+                                                                                                            </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
+                    `<input type="checkbox" class="application-checkbox" value="${app.id}" ${app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card' ? '' : 'disabled'}>`,
                     app.id,
                     app.person_regiment_no,
                     app.person_name,
@@ -731,6 +746,7 @@
             }
 
             $('#applicationsTable').show();
+            updateBulkButtons(); // Update bulk action buttons
         }
 
         function displayAllApplications(applications) {
@@ -812,18 +828,19 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                                                                            <i class="fas fa-arrow-up"></i>
-                                                                                                        </button>
-                                                                                                        <button class="btn btn-danger btn-xs reject-application ml-1" data-id="${app.id}" title="Reject Application">
-                                                                                                            <i class="fas fa-times"></i>
-                                                                                                        </button>` :
+                                                                                                                <i class="fas fa-arrow-up"></i>
+                                                                                                            </button>
+                                                                                                            <button class="btn btn-danger btn-xs reject-application ml-1" data-id="${app.id}" title="Reject Application">
+                                                                                                                <i class="fas fa-times"></i>
+                                                                                                            </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                                                                            <i class="fas fa-arrow-down"></i>
-                                                                                                        </button>` : ''
+                                                                                                                <i class="fas fa-arrow-down"></i>
+                                                                                                            </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
+                    `<input type="checkbox" class="application-checkbox" value="${app.id}" ${app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card' ? '' : 'disabled'}>`,
                     app.id,
                     app.person_regiment_no,
                     app.person_name,
@@ -849,6 +866,7 @@
             }
 
             $('#applicationsTable').show();
+            updateBulkButtons(); // Update bulk action buttons
         }
 
         function hideApplicationsTable() {
@@ -1079,7 +1097,7 @@
                         } else {
                             alert('Error: ' + response.message);
                             $('#confirmReject').prop('disabled', false).text(
-                            'Reject & Forward');
+                                'Reject & Forward');
                         }
                     },
                     error: function(xhr, status, error) {
@@ -1121,5 +1139,104 @@
                 loadChartData();
             }
         };
+
+        // Bulk selection functionality
+        $(document).on('change', '#selectAllCheckbox', function() {
+            const isChecked = $(this).is(':checked');
+            $('.application-checkbox:not(:disabled)').prop('checked', isChecked);
+            updateBulkButtons();
+        });
+
+        $(document).on('change', '.application-checkbox', function() {
+            updateBulkButtons();
+        });
+
+        $('#selectAllBtn').on('click', function() {
+            $('.application-checkbox:not(:disabled)').prop('checked', true);
+            $('#selectAllCheckbox').prop('checked', true);
+            updateBulkButtons();
+        });
+
+        $('#clearSelectionBtn').on('click', function() {
+            $('.application-checkbox').prop('checked', false);
+            $('#selectAllCheckbox').prop('checked', false);
+            updateBulkButtons();
+        });
+
+        function updateBulkButtons() {
+            const selectedCount = $('.application-checkbox:checked').length;
+            $('#selectedCount').text(selectedCount);
+
+            if (selectedCount > 0) {
+                $('#bulkIntegrateBtn').show();
+                $('#clearSelectionBtn').show();
+            } else {
+                $('#bulkIntegrateBtn').hide();
+                $('#clearSelectionBtn').hide();
+            }
+
+            // Update select all checkbox state
+            const totalEnabled = $('.application-checkbox:not(:disabled)').length;
+            const totalChecked = $('.application-checkbox:checked').length;
+            $('#selectAllCheckbox').prop('checked', totalEnabled > 0 && totalChecked === totalEnabled);
+        }
+
+        // Bulk integrate functionality
+        $('#bulkIntegrateBtn').on('click', function() {
+            const selectedIds = $('.application-checkbox:checked').map(function() {
+                return $(this).val();
+            }).get();
+
+            if (selectedIds.length === 0) {
+                alert('Please select at least one application to integrate.');
+                return;
+            }
+
+            if (confirm(`Are you sure you want to integrate ${selectedIds.length} application(s)?`)) {
+                // Disable button to prevent double submission
+                $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Integrating...');
+
+                $.ajax({
+                    url: '{{ route('bus-pass-integration.bulk-integrate') }}',
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    data: {
+                        application_ids: selectedIds
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            // Clear selections
+                            $('.application-checkbox').prop('checked', false);
+                            $('#selectAllCheckbox').prop('checked', false);
+                            updateBulkButtons();
+
+                            // Reload data
+                            loadChartData();
+                            if (currentEstablishmentId && currentEstablishmentType &&
+                                currentEstablishmentName) {
+                                loadApplications(currentEstablishmentId, currentEstablishmentType,
+                                    currentEstablishmentName);
+                            } else {
+                                loadAllApplications();
+                            }
+                        } else {
+                            alert('Error: ' + response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error bulk integrating applications:', error);
+                        alert('Error bulk integrating applications');
+                    },
+                    complete: function() {
+                        $('#bulkIntegrateBtn').prop('disabled', false).html(
+                            '<i class="fas fa-arrow-up"></i> Bulk Integrate Selected (<span id="selectedCount">0</span>)'
+                            );
+                    }
+                });
+            }
+        });
     </script>
 @stop

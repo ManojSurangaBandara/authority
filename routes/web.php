@@ -127,6 +127,7 @@ Route::middleware('auth')->group(function () {
     Route::post('bus-pass-integration/{id}/integrate', [BusPassIntegrationController::class, 'integrate'])->name('bus-pass-integration.integrate');
     Route::post('bus-pass-integration/{id}/undo-integrate', [BusPassIntegrationController::class, 'undoIntegrate'])->name('bus-pass-integration.undo-integrate');
     Route::post('bus-pass-integration/{id}/reject', [BusPassIntegrationController::class, 'reject'])->name('bus-pass-integration.reject');
+    Route::post('bus-pass-integration/bulk-integrate', [BusPassIntegrationController::class, 'bulkIntegrate'])->name('bus-pass-integration.bulk-integrate');
 
     // Bus Driver Assignment routes
     Route::resource('bus-driver-assignments', BusDriverAssignmentController::class);
