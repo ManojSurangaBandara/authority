@@ -601,7 +601,7 @@ return [
         ],
 
         [
-            'text' => 'Switch Branch Card',
+            'text' => 'Change Branch Card',
             'url' => 'switch-branch-card',
             'icon' => 'fas fa-fw fa-exchange-alt',
             'can' => 'access_qr_download',
