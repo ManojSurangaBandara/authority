@@ -81,6 +81,7 @@ Route::middleware(['escort.auth'])->prefix('escort')->group(function () {
     // Trip management
     Route::post('/start-trip', [EscortAuthController::class, 'startTrip']);
     Route::post('/end-trip', [EscortAuthController::class, 'endTrip']);
+    Route::post('/update-location', [EscortAuthController::class, 'updateLocation']);
 
     // Future escort-specific endpoints can be added here
     // Route::post('/scan-qr', [EscortController::class, 'scanQr']);

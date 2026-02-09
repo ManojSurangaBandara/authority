@@ -73,6 +73,10 @@ class TripsDataTable extends DataTable
                 }
                 return 'N/A';
             })
+            ->addColumn('action', function ($row) {
+                $btn = '<a href="' . route('trips.map', $row->id) . '" class="btn btn-sm btn-primary" title="View Trip Map"><i class="fas fa-map"></i></a>';
+                return $btn;
+            })
             ->filter(function ($query) {
                 if ($date = request('date')) {
                     $query->whereDate('trips.trip_start_time', $date);
@@ -96,7 +100,7 @@ class TripsDataTable extends DataTable
                     }
                 }
             })
-            ->rawColumns(['escort_name', 'driver_name', 'bus_number', 'route_name', 'slcmp_incharge_name', 'trip_start_time_formatted', 'trip_end_time_formatted', 'duration', 'onboardings_count', 'start_location', 'end_location'])
+            ->rawColumns(['escort_name', 'driver_name', 'bus_number', 'route_name', 'slcmp_incharge_name', 'trip_start_time_formatted', 'trip_end_time_formatted', 'duration', 'onboardings_count', 'start_location', 'end_location', 'action'])
             ->setRowId('id');
     }
 
@@ -156,6 +160,7 @@ class TripsDataTable extends DataTable
             Column::make('onboardings_count')->title('Passengers')->searchable(false),
             Column::make('start_location')->title('Start Location')->searchable(false)->orderable(false),
             Column::make('end_location')->title('End Location')->searchable(false)->orderable(false),
+            Column::make('action')->title('Action')->searchable(false)->orderable(false)->width(50),
         ];
     }
 

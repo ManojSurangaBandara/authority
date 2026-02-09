@@ -20,6 +20,7 @@ use App\Models\PersonType;
 use App\Models\LivingInBuses;
 use App\Models\IncidentType;
 use App\Models\Incident;
+use App\Models\Trip;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\DataTables\TripsDataTable;
@@ -155,6 +156,35 @@ class ReportController extends Controller
         $tripTypes = ['morning' => 'Morning', 'evening' => 'Evening'];
 
         return $dataTable->render('reports.trips', compact('routes', 'tripTypes'));
+    }
+
+    public function tripMap($id)
+    {
+        $trip = Trip::with(['escort', 'driver', 'bus', 'slcmpIncharge', 'tripLocations'])
+            ->leftJoin('bus_routes', function ($join) {
+                $join->on('trips.bus_route_id', '=', 'bus_routes.id')
+                    ->where('trips.route_type', '=', 'living_out');
+            })
+            ->leftJoin('living_in_buses', function ($join) {
+                $join->on('trips.bus_route_id', '=', 'living_in_buses.id')
+                    ->where('trips.route_type', '=', 'living_in');
+            })
+            ->select('trips.*', 'bus_routes.name as bus_route_name', 'living_in_buses.name as living_in_bus_name')
+            ->findOrFail($id);
+        $isOngoing = is_null($trip->trip_end_time);
+
+        return view('reports.trip-map', compact('trip', 'isOngoing'));
+    }
+
+    public function getTripLocations($id)
+    {
+        $trip = Trip::findOrFail($id);
+        $locations = $trip->tripLocations()->select('latitude', 'longitude', 'recorded_at')->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $locations
+        ]);
     }
 
     public function pending(PendingBusPassApplicationDataTable $dataTable)

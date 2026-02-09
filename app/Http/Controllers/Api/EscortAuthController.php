@@ -11,6 +11,7 @@ use App\Models\BusDriverAssignment;
 use App\Models\BusRouteAssignment;
 use App\Models\SlcmpInchargeAssignment;
 use App\Models\Trip;
+use App\Models\TripLocation;
 use App\Models\Escort;
 use App\Models\Onboarding;
 use App\Models\LivingInBuses;
@@ -902,20 +903,20 @@ class EscortAuthController extends Controller
                         ->where('route_type', $routeType)
                         ->where('bus_route_id', $routeId);
                 })
-                // OR onboardings without a trip but matching the route via bus pass application
-                ->orWhere(function ($subQ) use ($routeType, $routeName) {
-                    $subQ->whereNull('trip_id')
-                        ->whereHas('busPassApplication', function ($appQ) use ($routeType, $routeName) {
-                            if ($routeType === 'living_out') {
-                                $appQ->where(function ($routeQ) use ($routeName) {
-                                    $routeQ->where('requested_bus_name', $routeName)
-                                        ->orWhere('weekend_bus_name', $routeName);
-                                });
-                            } else {
-                                $appQ->where('living_in_bus', $routeName);
-                            }
-                        });
-                });
+                    // OR onboardings without a trip but matching the route via bus pass application
+                    ->orWhere(function ($subQ) use ($routeType, $routeName) {
+                        $subQ->whereNull('trip_id')
+                            ->whereHas('busPassApplication', function ($appQ) use ($routeType, $routeName) {
+                                if ($routeType === 'living_out') {
+                                    $appQ->where(function ($routeQ) use ($routeName) {
+                                        $routeQ->where('requested_bus_name', $routeName)
+                                            ->orWhere('weekend_bus_name', $routeName);
+                                    });
+                                } else {
+                                    $appQ->where('living_in_bus', $routeName);
+                                }
+                            });
+                    });
             })
                 ->whereBetween('onboarded_at', [$startTime, $endTime])
                 ->with([
@@ -1193,6 +1194,86 @@ class EscortAuthController extends Controller
             ]);
 
             return $this->errorResponse('Failed to end trip', 500);
+        }
+    }
+
+    /**
+     * Update location for an active trip
+     */
+    public function updateLocation(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'latitude' => 'required|numeric|between:-90,90',
+                'longitude' => 'required|numeric|between:-180,180',
+            ]);
+
+            // Get authenticated escort using JWT token
+            $token = JWTAuth::parseToken();
+            $payload = $token->getPayload();
+
+            // Verify this is an escort token
+            if ($payload->get('type') !== 'escort') {
+                return $this->forbiddenResponse('Invalid token type');
+            }
+
+            $escortId = $payload->get('escort_id');
+
+            // Get escort's active assignment
+            $assignment = BusEscortAssignment::where('escort_id', $escortId)
+                ->active()
+                ->first();
+
+            if (!$assignment) {
+                return $this->errorResponse('No active escort assignment found', 400);
+            }
+
+            // Determine the route ID based on route type
+            $routeId = $assignment->route_type === 'living_out'
+                ? $assignment->bus_route_id
+                : $assignment->living_in_bus_id;
+
+            // Determine current time period
+            $now = now();
+            $isMorning = $now->hour < 12;
+            $startOfDay = $now->copy()->startOfDay();
+            if ($isMorning) {
+                $periodStart = $startOfDay;
+                $periodEnd = $startOfDay->copy()->setHour(11)->setMinute(59)->setSecond(59);
+            } else {
+                $periodStart = $startOfDay->copy()->setHour(12)->setMinute(0)->setSecond(0);
+                $periodEnd = $startOfDay->copy()->endOfDay();
+            }
+
+            // Find the active trip
+            $activeTrip = Trip::where('bus_route_id', $routeId)
+                ->where('route_type', $assignment->route_type)
+                ->whereBetween('trip_start_time', [$periodStart, $periodEnd])
+                ->whereNull('trip_end_time')
+                ->first();
+
+            if (!$activeTrip) {
+                return $this->errorResponse('No active trip found', 400);
+            }
+
+            // Store location update
+            TripLocation::create([
+                'trip_id' => $activeTrip->id,
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                'recorded_at' => now(),
+            ]);
+
+            return $this->successResponse([], 'Location updated successfully');
+        } catch (JWTException $e) {
+            return $this->unauthorizedResponse('Token invalid or expired');
+        } catch (\Exception $e) {
+            Log::error('Error updating location', [
+                'error' => $e->getMessage(),
+                'escort_id' => $escortId ?? null,
+            ]);
+
+            return $this->errorResponse('Failed to update location', 500);
         }
     }
 }

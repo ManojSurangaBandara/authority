@@ -72,4 +72,12 @@ class Trip extends Model
     {
         return $this->hasMany(Onboarding::class);
     }
+
+    /**
+     * Relationship with Trip Locations
+     */
+    public function tripLocations()
+    {
+        return $this->hasMany(TripLocation::class)->orderBy('recorded_at');
+    }
 }
