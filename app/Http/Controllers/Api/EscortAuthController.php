@@ -1033,14 +1033,14 @@ class EscortAuthController extends Controller
             }
 
             // Check if there's already a trip for this route in the current time period today
-            $existingTripInPeriod = Trip::where('bus_route_id', $routeId)
-                ->where('route_type', $assignment->route_type)
-                ->whereBetween('trip_start_time', [$periodStart, $periodEnd])
-                ->first();
+            // $existingTripInPeriod = Trip::where('bus_route_id', $routeId)
+            //     ->where('route_type', $assignment->route_type)
+            //     ->whereBetween('trip_start_time', [$periodStart, $periodEnd])
+            //     ->first();
 
-            if ($existingTripInPeriod) {
-                return $this->errorResponse("A trip already exists for this route in the {$timePeriod} period today", 400);
-            }
+            // if ($existingTripInPeriod) {
+            //     return $this->errorResponse("A trip already exists for this route in the {$timePeriod} period today", 400);
+            // }
 
             // Get related assignments for the route
             $driverAssignment = BusDriverAssignment::where('route_id', $routeId)
