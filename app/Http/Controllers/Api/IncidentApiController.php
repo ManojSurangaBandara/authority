@@ -12,6 +12,7 @@ use App\Models\Escort;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use GuzzleHttp\Client;
 
 class IncidentApiController extends Controller
 {
@@ -111,9 +112,41 @@ class IncidentApiController extends Controller
 
         $imagePaths = [];
         if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('incidents', 'public');
-                $imagePaths[] = $path;
+            // Get the web server URL from environment, default to localhost for development
+            $webServerUrl = env('WEB_SERVER_URL', 'http://127.0.0.1:8000');
+
+            // Check if the web server is on localhost to avoid HTTP calls to self
+            if (in_array($webServerUrl, ['http://localhost', 'http://127.0.0.1', 'http://127.0.0.1:8000'])) {
+                // On localhost, store images directly in local storage
+                foreach ($request->file('images') as $image) {
+                    $path = $image->store('incidents', 'public');
+                    $imagePaths[] = $path;
+                }
+            } else {
+                // On remote servers, upload images via HTTP to the web server
+                $client = new Client(['timeout' => 10]);
+                foreach ($request->file('images') as $image) {
+                    try {
+                        $response = $client->post($webServerUrl . '/api/internal/upload-incident-image', [
+                            'multipart' => [
+                                [
+                                    'name' => 'image',
+                                    'contents' => fopen($image->getPathname(), 'r'),
+                                    'filename' => $image->getClientOriginalName(),
+                                ]
+                            ]
+                        ]);
+                        $data = json_decode($response->getBody(), true);
+                        if ($data['success']) {
+                            $imagePaths[] = $data['path'];
+                        }
+                    } catch (\Exception $e) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Failed to upload image to web server: ' . $e->getMessage()
+                        ], 500);
+                    }
+                }
             }
         }
 
@@ -133,5 +166,22 @@ class IncidentApiController extends Controller
             'message' => 'Incident reported successfully',
             'data' => $incident
         ], 201);
+    }
+
+    /**
+     * Upload incident image (internal use by API server)
+     */
+    public function uploadImage(Request $request)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB max
+        ]);
+
+        $path = $request->file('image')->store('incidents', 'public');
+
+        return response()->json([
+            'success' => true,
+            'path' => $path
+        ]);
     }
 }
