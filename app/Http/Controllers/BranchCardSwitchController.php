@@ -39,25 +39,21 @@ class BranchCardSwitchController extends Controller
         ]);
 
         try {
-            // Find application by regiment number
+
+             // Look for applications that can be switched
             $application = BusPassApplication::whereHas('person', function ($query) use ($request) {
                 $query->where('regiment_no', $request->regiment_no);
-            })->first();
+            })
+                ->where('status', 'integrated_to_temp_card')
+                ->where('branch_card_availability', 'no_branch_card')
+                ->first();
 
             if (!$application) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No application found for the given regiment number.'
+                    'message' => 'Temporary Card not found for the regiment number.'
                 ], 404);
             }
-
-            // Look for applications that can be switched
-            // $application = BusPassApplication::whereHas('person', function ($query) use ($request) {
-            //     $query->where('regiment_no', $request->regiment_no);
-            // })
-            //     ->where('status', 'integrated_to_temp_card')
-            //     ->where('branch_card_availability', 'no_branch_card')
-            //     ->first();
 
             // Check if branch user can only access applications from their establishment
             $user = Auth::user();
@@ -68,20 +64,6 @@ class BranchCardSwitchController extends Controller
                         'message' => 'You can only switch applications from your own establishment.'
                     ], 403);
                 }
-            }
-
-            if ($application->status === "integrated_to_branch_card") {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Already Integrated to Branch Card.'
-                ], 404);
-            }
-
-            if (!$application->status === "integrated_to_temp_card") {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No temporary card found for the given regiment number.'
-                ], 404);
             }
 
             // Verify branch card
