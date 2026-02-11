@@ -591,7 +591,7 @@ return [
         ],
 
         [
-            'text' => 'Switch to Branch Card',
+            'text' => 'Temp Card to Branch Card',
             'url' => 'branch-card-switch',
             'icon' => 'fas fa-fw fa-exchange-alt',
             'can' => 'access_qr_download',
@@ -601,7 +601,7 @@ return [
         ],
 
         [
-            'text' => 'Change Branch Card',
+            'text' => 'Branch Card to Branch Card',
             'url' => 'switch-branch-card',
             'icon' => 'fas fa-fw fa-exchange-alt',
             'can' => 'access_qr_download',
