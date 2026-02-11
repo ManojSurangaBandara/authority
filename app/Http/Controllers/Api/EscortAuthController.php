@@ -1068,9 +1068,9 @@ class EscortAuthController extends Controller
                 return $this->errorResponse('No active bus assigned to this route', 400);
             }
 
-            if (!$slcmpAssignment) {
-                return $this->errorResponse('No active SLCMP incharge assigned to this route', 400);
-            }
+            // if (!$slcmpAssignment) {
+            //     return $this->errorResponse('No active SLCMP incharge assigned to this route', 400);
+            // }
 
             // Create trip record
             $trip = Trip::create([
