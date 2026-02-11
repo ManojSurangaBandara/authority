@@ -116,14 +116,16 @@ class IncidentApiController extends Controller
             $webServerUrl = env('WEB_SERVER_URL', 'http://127.0.0.1:8000');
 
             // Check if the web server is on localhost to avoid HTTP calls to self
-            if (in_array($webServerUrl, ['http://localhost', 'http://127.0.0.1', 'http://127.0.0.1:8000'])) {
+            // (Web server and API server are the same)
+            if (in_array($webServerUrl, ['http://localhost', 'http://127.0.0.1', 'http://127.0.0.1:8000', 'https://testappv2.army.lk/ahqams'])) {
                 // On localhost, store images directly in local storage
                 foreach ($request->file('images') as $image) {
                     $path = $image->store('incidents', 'public');
                     $imagePaths[] = $path;
                 }
             } else {
-                // On remote servers, upload images via HTTP to the web server
+                // On Live api server, upload images via HTTP to the web server
+                // (API code is hosted in a seperate server)
                 $client = new Client(['timeout' => 10]);
                 foreach ($request->file('images') as $image) {
                     try {
