@@ -88,6 +88,11 @@ $dailyStats[
     $dmovStatuses,
     $application->requested_bus_name,
     'living_out',
+);
+$dailyPendingIntegrationCount = $application->getPendingCountForRouteByStatuses(
+    ['approved_for_integration', 'approved_for_temp_card'],
+    $application->requested_bus_name,
+    'living_out',
                                         );
                                     @endphp
                                     <div class="row mb-2" data-route-section="daily">
@@ -98,15 +103,15 @@ $dailyStats[
                                             <div class="mt-1">
                                                 <span class="badge badge-primary">
                                                     <i class="fas fa-list"></i> All:
-                                                    {{ $dailyStats['all_pending_count'] }}
+                                                    {{ $dailyStats['dmov_pending_count'] + $dailyStats['integrated_count'] + $dailyPendingIntegrationCount }}
                                                 </span>
                                                 <span class="badge badge-info">
                                                     <i class="fas fa-id-card"></i> Integrated:
                                                     {{ $dailyStats['integrated_count'] }}
                                                 </span>
                                                 <span class="badge badge-success">
-                                                    <i class="fas fa-check"></i> Approved:
-                                                    {{ $dailyStats['approved_count'] }}
+                                                    <i class="fas fa-clock"></i> Pending Integration:
+                                                    {{ $dailyPendingIntegrationCount }}
                                                 </span>
                                                 <span class="badge badge-warning">
                                                     <i class="fas fa-clock"></i> DMOV Pending:
@@ -142,6 +147,11 @@ $livingInStats[
     $dmovStatuses,
     $application->living_in_bus,
     'living_in',
+);
+$livingInPendingIntegrationCount = $application->getPendingCountForRouteByStatuses(
+    ['approved_for_integration', 'approved_for_temp_card'],
+    $application->living_in_bus,
+    'living_in',
                                         );
                                     @endphp
                                     <div class="row mb-2" data-route-section="living-in">
@@ -152,15 +162,15 @@ $livingInStats[
                                             <div class="mt-1">
                                                 <span class="badge badge-primary">
                                                     <i class="fas fa-list"></i> All:
-                                                    {{ $livingInStats['all_pending_count'] }}
+                                                    {{ $livingInStats['dmov_pending_count'] + $livingInStats['integrated_count'] + $livingInPendingIntegrationCount }}
                                                 </span>
                                                 <span class="badge badge-info">
                                                     <i class="fas fa-id-card"></i> Integrated:
                                                     {{ $livingInStats['integrated_count'] }}
                                                 </span>
                                                 <span class="badge badge-success">
-                                                    <i class="fas fa-check"></i> Approved:
-                                                    {{ $livingInStats['approved_count'] }}
+                                                    <i class="fas fa-clock"></i> Pending Integration:
+                                                    {{ $livingInPendingIntegrationCount }}
                                                 </span>
                                                 <span class="badge badge-warning">
                                                     <i class="fas fa-clock"></i> DMOV Pending:
@@ -196,6 +206,11 @@ $weekendStats[
     $dmovStatuses,
     $application->weekend_bus_name,
     'weekend',
+);
+$weekendPendingIntegrationCount = $application->getPendingCountForRouteByStatuses(
+    ['approved_for_integration', 'approved_for_temp_card'],
+    $application->weekend_bus_name,
+    'weekend',
                                         );
                                     @endphp
                                     <div class="row mb-2" data-route-section="weekend">
@@ -206,15 +221,15 @@ $weekendStats[
                                             <div class="mt-1">
                                                 <span class="badge badge-primary">
                                                     <i class="fas fa-list"></i> All:
-                                                    {{ $weekendStats['all_pending_count'] }}
+                                                    {{ $weekendStats['dmov_pending_count'] + $weekendStats['integrated_count'] + $weekendPendingIntegrationCount }}
                                                 </span>
                                                 <span class="badge badge-info">
                                                     <i class="fas fa-id-card"></i> Integrated:
                                                     {{ $weekendStats['integrated_count'] }}
                                                 </span>
                                                 <span class="badge badge-success">
-                                                    <i class="fas fa-check"></i> Approved:
-                                                    {{ $weekendStats['approved_count'] }}
+                                                    <i class="fas fa-clock"></i> Pending Integration:
+                                                    {{ $weekendPendingIntegrationCount }}
                                                 </span>
                                                 <span class="badge badge-warning">
                                                     <i class="fas fa-clock"></i> DMOV Pending:
@@ -397,7 +412,8 @@ $weekendStats[
                                 movement approval.
                                 <br><strong>Note:</strong> You must specify SLTB Season availability before forwarding.
                             @elseif(auth()->user()->hasRole('Staff Officer 2 (DMOV)'))
-                                This approval will send the application to Col Mov (DMOV) / Director (DMOV) for final authorization.
+                                This approval will send the application to Col Mov (DMOV) / Director (DMOV) for final
+                                authorization.
                             @elseif(auth()->user()->hasAnyRole(['Col Mov (DMOV)', 'Director (DMOV)']))
                                 This is the final approval. The application will be approved for integration into the
                                 system.

@@ -486,7 +486,7 @@ class BusPassApplication extends Model
             return 0;
         }
 
-        $query = self::whereIn('status', ['integrated_to_branch_card', 'integrated_to_temp_card', 'temp_card_printed', 'temp_card_handed_over']);
+        $query = self::whereIn('status', ['integrated_to_branch_card', 'integrated_to_temp_card']);
 
         if ($routeType === 'living_out') {
             $query->where('requested_bus_name', $routeName);
