@@ -361,11 +361,17 @@ class BusPassApplication extends Model
         $query = self::whereIn('status', ['approved', 'approved_for_integration', 'approved_for_temp_card']);
 
         if ($routeType === 'living_out') {
-            $query->where('requested_bus_name', $routeName);
+            $query->where(function ($q) use ($routeName) {
+                $q->where('requested_bus_name', $routeName)
+                    ->orWhere('weekend_bus_name', $routeName);
+            });
         } elseif ($routeType === 'living_in') {
             $query->where('living_in_bus', $routeName);
         } elseif ($routeType === 'weekend') {
-            $query->where('weekend_bus_name', $routeName);
+            $query->where(function ($q) use ($routeName) {
+                $q->where('weekend_bus_name', $routeName)
+                    ->orWhere('requested_bus_name', $routeName);
+            });
         }
 
         return $query->count();
@@ -391,11 +397,17 @@ class BusPassApplication extends Model
             });
 
         if ($routeType === 'living_out') {
-            $query->where('requested_bus_name', $routeName);
+            $query->where(function ($q) use ($routeName) {
+                $q->where('requested_bus_name', $routeName)
+                    ->orWhere('weekend_bus_name', $routeName);
+            });
         } elseif ($routeType === 'living_in') {
             $query->where('living_in_bus', $routeName);
         } elseif ($routeType === 'weekend') {
-            $query->where('weekend_bus_name', $routeName);
+            $query->where(function ($q) use ($routeName) {
+                $q->where('weekend_bus_name', $routeName)
+                    ->orWhere('requested_bus_name', $routeName);
+            });
         }
 
         return $query->count();
@@ -423,11 +435,17 @@ class BusPassApplication extends Model
         ]);
 
         if ($routeType === 'living_out') {
-            $query->where('requested_bus_name', $routeName);
+            $query->where(function ($q) use ($routeName) {
+                $q->where('requested_bus_name', $routeName)
+                    ->orWhere('weekend_bus_name', $routeName);
+            });
         } elseif ($routeType === 'living_in') {
             $query->where('living_in_bus', $routeName);
         } elseif ($routeType === 'weekend') {
-            $query->where('weekend_bus_name', $routeName);
+            $query->where(function ($q) use ($routeName) {
+                $q->where('weekend_bus_name', $routeName)
+                    ->orWhere('requested_bus_name', $routeName);
+            });
         }
 
         return $query->count();
@@ -445,11 +463,17 @@ class BusPassApplication extends Model
         $query = self::where('status', $status);
 
         if ($routeType === 'living_out') {
-            $query->where('requested_bus_name', $routeName);
+            $query->where(function ($q) use ($routeName) {
+                $q->where('requested_bus_name', $routeName)
+                    ->orWhere('weekend_bus_name', $routeName);
+            });
         } elseif ($routeType === 'living_in') {
             $query->where('living_in_bus', $routeName);
         } elseif ($routeType === 'weekend') {
-            $query->where('weekend_bus_name', $routeName);
+            $query->where(function ($q) use ($routeName) {
+                $q->where('weekend_bus_name', $routeName)
+                    ->orWhere('requested_bus_name', $routeName);
+            });
         }
 
         return $query->count();
@@ -467,11 +491,17 @@ class BusPassApplication extends Model
         $query = self::whereIn('status', $statuses);
 
         if ($routeType === 'living_out') {
-            $query->where('requested_bus_name', $routeName);
+            $query->where(function ($q) use ($routeName) {
+                $q->where('requested_bus_name', $routeName)
+                    ->orWhere('weekend_bus_name', $routeName);
+            });
         } elseif ($routeType === 'living_in') {
             $query->where('living_in_bus', $routeName);
         } elseif ($routeType === 'weekend') {
-            $query->where('weekend_bus_name', $routeName);
+            $query->where(function ($q) use ($routeName) {
+                $q->where('weekend_bus_name', $routeName)
+                    ->orWhere('requested_bus_name', $routeName);
+            });
         }
 
         return $query->count();
@@ -489,11 +519,17 @@ class BusPassApplication extends Model
         $query = self::whereIn('status', ['integrated_to_branch_card', 'integrated_to_temp_card']);
 
         if ($routeType === 'living_out') {
-            $query->where('requested_bus_name', $routeName);
+            $query->where(function ($q) use ($routeName) {
+                $q->where('requested_bus_name', $routeName)
+                    ->orWhere('weekend_bus_name', $routeName);
+            });
         } elseif ($routeType === 'living_in') {
             $query->where('living_in_bus', $routeName);
         } elseif ($routeType === 'weekend') {
-            $query->where('weekend_bus_name', $routeName);
+            $query->where(function ($q) use ($routeName) {
+                $q->where('weekend_bus_name', $routeName)
+                    ->orWhere('requested_bus_name', $routeName);
+            });
         }
 
         return $query->count();
