@@ -44,6 +44,7 @@ class BusPassApplication extends Model
         'declaration_1',
         'declaration_2',
         'status',
+        'previous_status',
         'remarks',
         'created_by',
         'temp_card_qr',

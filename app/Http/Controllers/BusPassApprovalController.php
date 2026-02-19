@@ -742,4 +742,98 @@ class BusPassApprovalController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Deactivate a bus pass application
+     */
+    public function deactivate(Request $request, BusPassApplication $application)
+    {
+        $request->validate([
+            'remarks' => 'required|string|max:500'
+        ]);
+
+        $user = Auth::user();
+
+        // Check if user has permission to deactivate (DMOV SO2 and COL MOV)
+        if (!$user->hasAnyRole(['Staff Officer 2 (DMOV)', 'Col Mov (DMOV)'])) {
+            return redirect()->back()->with('error', 'You do not have permission to deactivate applications.');
+        }
+
+        // Check if application is in integrated status
+        if (!in_array($application->status, ['integrated_to_branch_card', 'integrated_to_temp_card'])) {
+            return redirect()->back()->with('error', 'Only integrated applications can be deactivated.');
+        }
+
+        DB::transaction(function () use ($application, $user, $request) {
+            // Store current status as previous status
+            $application->previous_status = $application->status;
+
+            // Set status to deactivated
+            $application->status = 'deactivated';
+            $application->save();
+
+            // Record deactivation in history
+            BusPassApprovalHistory::create([
+                'bus_pass_application_id' => $application->id,
+                'user_id' => $user->id,
+                'action' => 'deactivated',
+                'previous_status' => $application->previous_status,
+                'new_status' => 'deactivated',
+                'remarks' => $request->remarks,
+                'action_date' => now()
+            ]);
+        });
+
+        return redirect()->back()->with('success', 'Application deactivated successfully.');
+    }
+
+    /**
+     * Reactivate a deactivated bus pass application
+     */
+    public function reactivate(Request $request, BusPassApplication $application)
+    {
+        $request->validate([
+            'remarks' => 'required|string|max:500'
+        ]);
+
+        $user = Auth::user();
+
+        // Check if user has permission to reactivate (DMOV SO2 and COL MOV)
+        if (!$user->hasAnyRole(['Staff Officer 2 (DMOV)', 'Col Mov (DMOV)'])) {
+            return redirect()->back()->with('error', 'You do not have permission to reactivate applications.');
+        }
+
+        // Check if application is deactivated
+        if ($application->status !== 'deactivated') {
+            return redirect()->back()->with('error', 'Only deactivated applications can be reactivated.');
+        }
+
+        // Check if previous status exists
+        if (!$application->previous_status) {
+            return redirect()->back()->with('error', 'Cannot reactivate: previous status not found.');
+        }
+
+        DB::transaction(function () use ($application, $user, $request) {
+            // Get the previous status
+            $previousStatus = $application->previous_status;
+
+            // Clear previous status and restore
+            $application->status = $previousStatus;
+            $application->previous_status = null;
+            $application->save();
+
+            // Record reactivation in history
+            BusPassApprovalHistory::create([
+                'bus_pass_application_id' => $application->id,
+                'user_id' => $user->id,
+                'action' => 'reactivated',
+                'previous_status' => 'deactivated',
+                'new_status' => $previousStatus,
+                'remarks' => $request->remarks,
+                'action_date' => now()
+            ]);
+        });
+
+        return redirect()->back()->with('success', 'Application reactivated successfully.');
+    }
 }

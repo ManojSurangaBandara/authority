@@ -13,7 +13,7 @@ use Yajra\DataTables\Html\Editor\Editor;
 use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
-class IntegratedBusPassApplicationDataTable extends DataTable
+class DeactivatedBusPassApplicationDataTable extends DataTable
 {
     /**
      * Build the DataTable class.
@@ -24,6 +24,15 @@ class IntegratedBusPassApplicationDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addIndexColumn()
+            ->addColumn('regiment_no_display', function ($row) {
+                if (!$row->person || is_null($row->person->regiment_no)) {
+                    return '<span class="badge badge-success">Civil</span>';
+                }
+                return $row->person->regiment_no;
+            })
+            ->addColumn('person_name', function ($row) {
+                return $row->person ? $row->person->name : 'N/A';
+            })
             ->addColumn('type_label', function ($row) {
                 return $row->type_label;
             })
@@ -34,7 +43,10 @@ class IntegratedBusPassApplicationDataTable extends DataTable
                 return $row->created_at ? $row->created_at->format('d M Y') : '';
             })
             ->addColumn('person_rank', function ($row) {
-                return $row->person ? $row->person->rank : '';
+                if (!$row->person || is_null($row->person->regiment_no)) {
+                    return '<span class="badge badge-success">Civil</span>';
+                }
+                return $row->person->rank ?: 'Not specified';
             })
             ->addColumn('allowed_route', function ($row) {
                 $routes = [];
@@ -59,15 +71,19 @@ class IntegratedBusPassApplicationDataTable extends DataTable
                 }
                 return '';
             })
+            ->addColumn('deactivated_date', function ($row) {
+                $deactivatedHistory = $row->approvalHistory()->where('action', 'deactivated')->latest('action_date')->first();
+                return $deactivatedHistory ? $deactivatedHistory->action_date->format('d M Y H:i') : '';
+            })
             ->addColumn('action', function ($row) {
                 $viewBtn = '<a href="' . route('bus-pass-applications.show', $row->id) . '" class="btn btn-xs btn-info" title="View"><i class="fas fa-eye"></i></a>';
 
                 $user = Auth::user();
                 $actionBtns = $viewBtn;
 
-                // Add deactivate button for DMOV SO2 and COL MOV
+                // Add reactivate button for DMOV SO2 and COL MOV
                 if ($user && $user->hasAnyRole(['Staff Officer 2 (DMOV)', 'Col Mov (DMOV)'])) {
-                    $actionBtns .= ' <button type="button" class="btn btn-xs btn-danger" data-toggle="modal" data-target="#deactivateModal" data-application-id="' . $row->id . '" title="Deactivate"><i class="fas fa-ban"></i></button>';
+                    $actionBtns .= ' <button type="button" class="btn btn-xs btn-success" data-toggle="modal" data-target="#reactivateModal" data-application-id="' . $row->id . '" title="Reactivate"><i class="fas fa-check"></i></button>';
                 }
 
                 return $actionBtns;
@@ -106,7 +122,7 @@ class IntegratedBusPassApplicationDataTable extends DataTable
             ->setRowClass(function ($row) {
                 return $row->hasRouteBeenUpdated() ? 'table-warning' : '';
             })
-            ->rawColumns(['action', 'status_badge', 'type_label', 'allowed_route', 'route_changed_indicator']);
+            ->rawColumns(['action', 'status_badge', 'type_label', 'allowed_route', 'route_changed_indicator', 'regiment_no_display', 'person_rank']);
     }
 
     /**
@@ -116,7 +132,7 @@ class IntegratedBusPassApplicationDataTable extends DataTable
      */
     public function query(BusPassApplication $model): QueryBuilder
     {
-        $query = $model->newQuery()->with(['person', 'establishment', 'approvalHistory'])->whereIn('status', ['integrated_to_branch_card', 'integrated_to_temp_card']);
+        $query = $model->newQuery()->with(['person', 'establishment', 'approvalHistory'])->where('status', 'deactivated');
 
         // Filter by establishment for branch users
         $user = Auth::user();
@@ -139,7 +155,7 @@ class IntegratedBusPassApplicationDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-            ->setTableId('bus-pass-application-table')
+            ->setTableId('deactivated-bus-pass-application-table')
             ->columns($this->getColumns())
             ->minifiedAjax()
             ->selectStyleSingle()
@@ -167,18 +183,21 @@ class IntegratedBusPassApplicationDataTable extends DataTable
         return [
             Column::make('DT_RowIndex')->title('#')->searchable(false)->orderable(false),
             Column::make('id')->title('Application ID')->searchable(true)->orderable(true),
-            Column::make('person.regiment_no')->title('Regiment No')->name('person.regiment_no')->searchable(true),
-            Column::make('person.name')->title('Name')->name('person.name')->searchable(true),
-            Column::make('person_rank')->title('Rank')->searchable(false),
-            Column::make('type_label')->title('Pass Type')->searchable(false),
-            Column::make('allowed_route')->title('Allowed Route')->searchable(false)->orderable(false),
-            Column::make('status_badge')->title('Status')->searchable(false)->orderable(false),
-            Column::make('applied_date')->title('Applied Date')->searchable(false)->orderable(false),
-            Column::make('route_changed_indicator')->title('Route Status')->searchable(false)->orderable(false),
+            Column::computed('regiment_no_display')->title('Regiment No')->name('person.regiment_no')->searchable(true)->orderable(false),
+            Column::computed('person_name')->title('Name')->name('person.name')->searchable(true),
+            Column::computed('person_rank')->title('Rank')->searchable(false),
+            Column::computed('type_label')->title('Pass Type')->searchable(false),
+            Column::computed('allowed_route')->title('Allowed Route')->searchable(false)->orderable(false),
+            Column::computed('status_badge')->title('Status')->searchable(false)->orderable(false),
+            Column::computed('applied_date')->title('Applied Date')->searchable(false)->orderable(false),
+            Column::computed('deactivated_date')->title('Deactivated Date')->searchable(false)->orderable(false),
+            Column::computed('route_changed_indicator')->title('Route Status')->searchable(false)->orderable(false),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
-                ->width(60)
+                ->orderable(false)
+                ->searchable(false)
+                ->width('120px')
                 ->addClass('text-center'),
         ];
     }
@@ -188,6 +207,6 @@ class IntegratedBusPassApplicationDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'BusPassApplication_' . date('YmdHis');
+        return 'DeactivatedBusPassApplications_' . date('YmdHis');
     }
 }

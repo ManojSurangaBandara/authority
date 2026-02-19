@@ -569,6 +569,15 @@ return [
             ],
         ],
 
+        [
+            'text' => 'Deactivated Applications',
+            'url' => 'deactivated-applications',
+            'icon' => 'fas fa-fw fa-ban',
+            'active' => [
+                'deactivated-applications*',
+            ],
+        ],
+
 
 
         [

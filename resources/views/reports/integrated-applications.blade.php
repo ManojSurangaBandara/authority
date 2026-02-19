@@ -253,4 +253,45 @@
 
         });
     </script>
+
+    <!-- Deactivate Modal -->
+    <div class="modal fade" id="deactivateModal" tabindex="-1" role="dialog" aria-labelledby="deactivateModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deactivateModalLabel">Deactivate Bus Pass Application</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="deactivateForm" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <p>Are you sure you want to deactivate this bus pass application? The applicant will not be able to
+                            onboard until reactivated.</p>
+                        <div class="form-group">
+                            <label for="deactivate_remarks">Remarks <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="deactivate_remarks" name="remarks" rows="3" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Deactivate</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Handle deactivate modal
+        $('#deactivateModal').on('show.bs.modal', function(event) {
+            var button = $(event.relatedTarget);
+            var applicationId = button.data('application-id');
+            var modal = $(this);
+            var form = modal.find('#deactivateForm');
+            form.attr('action', '/bus-pass-approvals/' + applicationId + '/deactivate');
+        });
+    </script>
 @stop
