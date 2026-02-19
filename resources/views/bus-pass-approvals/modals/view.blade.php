@@ -50,14 +50,16 @@
                                 <td><strong>Blood Group:</strong></td>
                                 <td>{{ $application->person->blood_group ?: 'Not specified' }}</td>
                             </tr>
-                            <tr>
-                                <td><strong>NOK Name:</strong></td>
-                                <td>{{ $application->person->nok_name ?: 'Not specified' }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>NOK Contact:</strong></td>
-                                <td>{{ $application->person->nok_telephone_no ?: 'Not specified' }}</td>
-                            </tr>
+                            @if (!Auth::user()->hasRole('Subject Clerk (DMOV)'))
+                                <tr>
+                                    <td><strong>NOK Name:</strong></td>
+                                    <td>{{ $application->person->nok_name ?: 'Not specified' }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>NOK Contact:</strong></td>
+                                    <td>{{ $application->person->nok_telephone_no ?: 'Not specified' }}</td>
+                                </tr>
+                            @endif
                         </table>
                     </div>
 

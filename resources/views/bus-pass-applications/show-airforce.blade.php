@@ -85,17 +85,21 @@
                                 <strong>Blood Group:</strong><br>
                                 {{ $bus_pass_application->person->blood_group ?: 'Not specified' }}
                             </div>
-                            <div class="col-md-4">
-                                <strong>NOK Name:</strong><br>
-                                {{ $bus_pass_application->person->nok_name ?: 'Not specified' }}
-                            </div>
+                            @if (!Auth::user()->hasRole('Subject Clerk (DMOV)'))
+                                <div class="col-md-4">
+                                    <strong>NOK Name:</strong><br>
+                                    {{ $bus_pass_application->person->nok_name ?: 'Not specified' }}
+                                </div>
+                            @endif
                         </div>
 
                         <div class="row mt-3">
-                            <div class="col-md-4">
-                                <strong>NOK Telephone No:</strong><br>
-                                {{ $bus_pass_application->person->nok_telephone_no ?: 'Not specified' }}
-                            </div>
+                            @if (!Auth::user()->hasRole('Subject Clerk (DMOV)'))
+                                <div class="col-md-4">
+                                    <strong>NOK Telephone No:</strong><br>
+                                    {{ $bus_pass_application->person->nok_telephone_no ?: 'Not specified' }}
+                                </div>
+                            @endif
                             <div class="col-md-4">
                                 <strong>Grama Seva Division:</strong><br>
                                 {{ $bus_pass_application->person->gsDivision->name ?? 'Not specified' }}
@@ -472,7 +476,7 @@
                             }
                         }
                     @endphp
-                   
+
 
                     @if ($showFooterButtons)
                         @if ($showEditButton)
