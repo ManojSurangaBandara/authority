@@ -578,6 +578,15 @@ return [
             ],
         ],
 
+        [
+            'text' => 'Clearance Applications',
+            'url' => 'clearance-applications',
+            'icon' => 'fas fa-fw fa-user-times',
+            'active' => [
+                'clearance-applications*',
+            ],
+        ],
+
 
 
         [

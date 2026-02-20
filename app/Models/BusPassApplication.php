@@ -171,6 +171,7 @@ class BusPassApplication extends Model
             'temp_card_handed_over' => 'success',
             'rejected' => 'danger',
             'deactivated' => 'dark',
+            'clearance' => 'warning',
             // Legacy statuses
             'pending' => 'warning',
             'approved_by_staff' => 'info',

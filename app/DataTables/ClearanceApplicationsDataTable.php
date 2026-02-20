@@ -13,7 +13,7 @@ use Yajra\DataTables\Html\Editor\Editor;
 use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
-class DeactivatedBusPassApplicationDataTable extends DataTable
+class ClearanceApplicationsDataTable extends DataTable
 {
     /**
      * Build the DataTable class.
@@ -65,23 +65,14 @@ class DeactivatedBusPassApplicationDataTable extends DataTable
 
                 return !empty($routes) ? implode(' ', $routes) : '<small class="text-muted">N/A</small>';
             })
-            ->addColumn('deactivated_date', function ($row) {
-                $deactivatedHistory = $row->approvalHistory()->where('action', 'deactivated')->latest('action_date')->first();
-                return $deactivatedHistory ? $deactivatedHistory->action_date->format('d M Y H:i') : '';
+            ->addColumn('clearance_date', function ($row) {
+                $clearanceHistory = $row->approvalHistory()->where('action', 'clearance')->latest('action_date')->first();
+                return $clearanceHistory ? $clearanceHistory->action_date->format('d M Y H:i') : '';
             })
             ->addColumn('action', function ($row) {
                 $viewBtn = '<a href="' . route('bus-pass-applications.show', $row->id) . '" class="btn btn-xs btn-info" title="View"><i class="fas fa-eye"></i></a>';
 
-                $user = Auth::user();
-                $actionBtns = $viewBtn;
-
-                // Add reactivate button for DMOV SO2 and COL MOV
-                if ($user && $user->hasAnyRole(['Staff Officer 2 (DMOV)', 'Col Mov (DMOV)'])) {
-                    $actionBtns .= ' <button type="button" class="btn btn-xs btn-success" data-toggle="modal" data-target="#reactivateModal" data-application-id="' . $row->id . '" title="Reactivate"><i class="fas fa-check"></i></button>';
-                    $actionBtns .= ' <button type="button" class="btn btn-xs btn-warning" data-toggle="modal" data-target="#clearanceModal" data-application-id="' . $row->id . '" title="Clearance"><i class="fas fa-user-times"></i></button>';
-                }
-
-                return $actionBtns;
+                return $viewBtn;
             })
             ->filterColumn('person.regiment_no', function ($query, $keyword) {
                 $query->whereHas('person', function ($q) use ($keyword) {
@@ -127,7 +118,7 @@ class DeactivatedBusPassApplicationDataTable extends DataTable
      */
     public function query(BusPassApplication $model): QueryBuilder
     {
-        $query = $model->newQuery()->with(['person', 'establishment', 'approvalHistory'])->where('status', 'deactivated');
+        $query = $model->newQuery()->with(['person', 'establishment', 'approvalHistory'])->where('status', 'clearance');
 
         // Filter by establishment for branch users
         $user = Auth::user();
@@ -150,7 +141,7 @@ class DeactivatedBusPassApplicationDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-            ->setTableId('deactivated-bus-pass-application-table')
+            ->setTableId('clearance-applications-table')
             ->columns($this->getColumns())
             ->minifiedAjax()
             ->selectStyleSingle()
@@ -185,7 +176,7 @@ class DeactivatedBusPassApplicationDataTable extends DataTable
             Column::computed('allowed_route')->title('Allowed Route')->searchable(false)->orderable(false),
             Column::computed('status_badge')->title('Status')->searchable(false)->orderable(false),
             Column::computed('applied_date')->title('Applied Date')->searchable(false)->orderable(false),
-            Column::computed('deactivated_date')->title('Deactivated Date')->searchable(false)->orderable(false),
+            Column::computed('clearance_date')->title('Clearance Date')->searchable(false)->orderable(false),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
@@ -201,6 +192,6 @@ class DeactivatedBusPassApplicationDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'DeactivatedBusPassApplications_' . date('YmdHis');
+        return 'ClearanceApplications_' . date('YmdHis');
     }
 }

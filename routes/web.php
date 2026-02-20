@@ -121,6 +121,7 @@ Route::middleware('auth')->group(function () {
     Route::post('bus-pass-approvals/{application}/update-route', [BusPassApprovalController::class, 'updateRoute'])->name('bus-pass-approvals.update-route');
     Route::post('bus-pass-approvals/{application}/deactivate', [BusPassApprovalController::class, 'deactivate'])->name('bus-pass-approvals.deactivate');
     Route::post('bus-pass-approvals/{application}/reactivate', [BusPassApprovalController::class, 'reactivate'])->name('bus-pass-approvals.reactivate');
+    Route::post('bus-pass-approvals/{application}/clearance', [BusPassApprovalController::class, 'clearance'])->name('bus-pass-approvals.clearance');
 
     // Bus Pass Integration routes (DMOV access only)
     Route::get('bus-pass-integration', [BusPassIntegrationController::class, 'index'])->name('bus-pass-integration.index');
@@ -226,6 +227,8 @@ Route::middleware('auth')->group(function () {
     Route::get('integrated-applications', [ReportController::class, 'integrated'])->name('integrated-applications.index');
 
     Route::get('deactivated-applications', [ReportController::class, 'deactivated'])->name('deactivated-applications.index');
+
+    Route::get('clearance-applications', [ReportController::class, 'clearance'])->name('clearance-applications.index');
 
     Route::get('pending-applications', [ReportController::class, 'pending'])->name('pending-applications.index');
 

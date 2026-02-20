@@ -836,4 +836,48 @@ class BusPassApprovalController extends Controller
 
         return redirect()->back()->with('success', 'Application reactivated successfully.');
     }
+
+    /**
+     * Clear a deactivated bus pass application (for resigned personnel)
+     */
+    public function clearance(Request $request, BusPassApplication $application)
+    {
+        $request->validate([
+            'remarks' => 'required|string|max:500'
+        ]);
+
+        $user = Auth::user();
+
+        // Check if user has permission to clear applications (DMOV SO2 and COL MOV)
+        if (!$user->hasAnyRole(['Staff Officer 2 (DMOV)', 'Col Mov (DMOV)'])) {
+            return redirect()->back()->with('error', 'You do not have permission to clear applications.');
+        }
+
+        // Check if application is deactivated
+        if ($application->status !== 'deactivated') {
+            return redirect()->back()->with('error', 'Only deactivated applications can be cleared.');
+        }
+
+        DB::transaction(function () use ($application, $user, $request) {
+            // Store current status as previous status for clearance
+            $application->previous_status = $application->status;
+
+            // Set status to clearance
+            $application->status = 'clearance';
+            $application->save();
+
+            // Record clearance in history
+            BusPassApprovalHistory::create([
+                'bus_pass_application_id' => $application->id,
+                'user_id' => $user->id,
+                'action' => 'clearance',
+                'previous_status' => $application->previous_status,
+                'new_status' => 'clearance',
+                'remarks' => $request->remarks,
+                'action_date' => now()
+            ]);
+        });
+
+        return redirect()->back()->with('success', 'Application cleared successfully.');
+    }
 }

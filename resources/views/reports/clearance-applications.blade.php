@@ -48,9 +48,9 @@
                 </div>
 
                 <div class="card mt-3">
-                    <div class="card card-teal">
-                        <div class="card-header"><i class="nav-icon fas fa-ban nav-icon"></i>
-                            {{ __('Deactivated Bus Pass Applications') }}
+                    <div class="card card-warning">
+                        <div class="card-header"><i class="nav-icon fas fa-user-times nav-icon"></i>
+                            {{ __('Clearance Applications') }}
                         </div>
 
                         <div class="card-body">
@@ -67,65 +67,6 @@
     @include('footer')
 
 @endsection
-
-<!-- Reactivate Modal -->
-<div class="modal fade" id="reactivateModal" tabindex="-1" role="dialog" aria-labelledby="reactivateModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="reactivateModalLabel">Reactivate Bus Pass Application</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form id="reactivateForm" method="POST">
-                @csrf
-                <div class="modal-body">
-                    <p>Are you sure you want to reactivate this bus pass application?</p>
-                    <div class="form-group">
-                        <label for="reactivate_remarks">Remarks <span class="text-danger">*</span></label>
-                        <textarea class="form-control" id="reactivate_remarks" name="remarks" rows="3" required></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success">Reactivate</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Clearance Modal -->
-<div class="modal fade" id="clearanceModal" tabindex="-1" role="dialog" aria-labelledby="clearanceModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="clearanceModalLabel">Clear Bus Pass Application</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form id="clearanceForm" method="POST">
-                @csrf
-                <div class="modal-body">
-                    <p>Are you sure you want to clear this bus pass application? This action is for resigned personnel.
-                    </p>
-                    <div class="form-group">
-                        <label for="clearance_remarks">Remarks <span class="text-danger">*</span></label>
-                        <textarea class="form-control" id="clearance_remarks" name="remarks" rows="3" required></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-warning">Clear Application</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
 @push('js')
     <!-- DataTables Core JS -->
@@ -148,27 +89,9 @@
     {{ $dataTable->scripts() }}
 
     <script>
-        // Handle reactivate modal
-        $('#reactivateModal').on('show.bs.modal', function(event) {
-            var button = $(event.relatedTarget);
-            var applicationId = button.data('application-id');
-            var modal = $(this);
-            var form = modal.find('#reactivateForm');
-            form.attr('action', '{{ url('bus-pass-approvals') }}/' + applicationId + '/reactivate');
-        });
-
-        // Handle clearance modal
-        $('#clearanceModal').on('show.bs.modal', function(event) {
-            var button = $(event.relatedTarget);
-            var applicationId = button.data('application-id');
-            var modal = $(this);
-            var form = modal.find('#clearanceForm');
-            form.attr('action', '{{ url('bus-pass-approvals') }}/' + applicationId + '/clearance');
-        });
-
         // Reload DataTable when establishment changes
         $('#establishment_id').on('change', function() {
-            window.LaravelDataTables['deactivated-bus-pass-application-table'].draw();
+            window.LaravelDataTables['clearance-applications-table'].draw();
         });
     </script>
 @endpush
@@ -247,4 +170,4 @@
             border-bottom-right-radius: 0.375rem;
         }
     </style>
-@stop
+@endsection
