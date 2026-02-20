@@ -291,7 +291,7 @@
             var applicationId = button.data('application-id');
             var modal = $(this);
             var form = modal.find('#deactivateForm');
-            form.attr('action', '/bus-pass-approvals/' + applicationId + '/deactivate');
+            form.attr('action', '{{ url('bus-pass-approvals') }}/' + applicationId + '/deactivate');
         });
     </script>
 @stop

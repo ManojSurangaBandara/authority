@@ -124,7 +124,7 @@
             var applicationId = button.data('application-id');
             var modal = $(this);
             var form = modal.find('#reactivateForm');
-            form.attr('action', '/bus-pass-approvals/' + applicationId + '/reactivate');
+            form.attr('action', '{{ url('bus-pass-approvals') }}/' + applicationId + '/reactivate');
         });
 
         // Reload DataTable when establishment changes
