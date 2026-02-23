@@ -85,17 +85,19 @@
                                 </select>
                             </div>
                             <div class="col-md-6 text-right">
-                                <button class="btn-sm btn-success" id="bulkIntegrateBtn" style="display: none;">
-                                    <i class="fas fa-arrow-up"></i> Bulk Integrate Selected (<span
-                                        id="selectedCount">0</span>)
-                                </button>
-                                <button class="btn-sm btn-secondary ml-2" id="selectAllBtn">
-                                    <i class="fas fa-check-square"></i> Select All
-                                </button>
-                                <button class="btn-sm btn-outline-secondary ml-2" id="clearSelectionBtn"
-                                    style="display: none;">
-                                    <i class="fas fa-times"></i> Clear Selection
-                                </button>
+                                @if (auth()->user()->hasRole(['Col Mov (DMOV)', 'Director (DMOV)']))
+                                    <button class="btn-sm btn-success" id="bulkIntegrateBtn" style="display: none;">
+                                        <i class="fas fa-arrow-up"></i> Bulk Integrate Selected (<span
+                                            id="selectedCount">0</span>)
+                                    </button>
+                                    <button class="btn-sm btn-secondary ml-2" id="selectAllBtn">
+                                        <i class="fas fa-check-square"></i> Select All
+                                    </button>
+                                    <button class="btn-sm btn-outline-secondary ml-2" id="clearSelectionBtn"
+                                        style="display: none;">
+                                        <i class="fas fa-times"></i> Clear Selection
+                                    </button>
+                                @endif
                             </div>
                         </div>
                         <div class="applications-table-wrapper">
@@ -109,7 +111,11 @@
                                         <th>Establishment</th>
                                         <th>Bus Pass Type</th>
                                         <th>Actions</th>
-                                        <th><input type="checkbox" id="selectAllCheckbox"></th>
+                                        @if (auth()->user()->hasRole(['Col Mov (DMOV)', 'Director (DMOV)']))
+                                            <th><input type="checkbox" id="selectAllCheckbox"></th>
+                                        @else
+                                            <th></th>
+                                        @endif
                                         <th>Daily Travel Bus</th>
                                         <th>Daily Travel Destination</th>
                                         <th>Weekend Bus</th>
@@ -786,15 +792,15 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                                                                                        <i class="fas fa-arrow-up"></i>
-                                                                                                                    </button>
-                                                                                                                    <button class="btn btn-danger btn-xs reject-application ml-1" data-id="${app.id}" title="Reject Application">
-                                                                                                                        <i class="fas fa-times"></i>
-                                                                                                                    </button>` :
+                                                                                                                            <i class="fas fa-arrow-up"></i>
+                                                                                                                        </button>
+                                                                                                                        <button class="btn btn-danger btn-xs reject-application ml-1" data-id="${app.id}" title="Reject Application">
+                                                                                                                            <i class="fas fa-times"></i>
+                                                                                                                        </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                                                                                        <i class="fas fa-arrow-down"></i>
-                                                                                                                    </button>` : ''
+                                                                                                                            <i class="fas fa-arrow-down"></i>
+                                                                                                                        </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
@@ -808,7 +814,9 @@
                     `<span class="badge ${busPassTypeBadgeClass}">${app.bus_pass_type.replace(/_/g, ' ')}</span>` :
                     'N/A',
                     actionsHtml,
-                    `<input type="checkbox" class="application-checkbox" value="${app.id}" ${app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card' ? '' : 'disabled'}>`,
+                    (canIntegrate ?
+                        `<input type="checkbox" class="application-checkbox" value="${app.id}" ${app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card' ? '' : 'disabled'}>` :
+                        ''),
                     app.requested_bus_name || 'N/A',
                     app.destination_from_ahq || 'N/A',
                     app.weekend_bus_name || 'N/A',
@@ -908,15 +916,15 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                                                                                        <i class="fas fa-arrow-up"></i>
-                                                                                                                    </button>
-                                                                                                                    <button class="btn btn-danger btn-xs reject-application ml-1" data-id="${app.id}" title="Reject Application">
-                                                                                                                        <i class="fas fa-times"></i>
-                                                                                                                    </button>` :
+                                                                                                                            <i class="fas fa-arrow-up"></i>
+                                                                                                                        </button>
+                                                                                                                        <button class="btn btn-danger btn-xs reject-application ml-1" data-id="${app.id}" title="Reject Application">
+                                                                                                                            <i class="fas fa-times"></i>
+                                                                                                                        </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                                                                                        <i class="fas fa-arrow-down"></i>
-                                                                                                                    </button>` : ''
+                                                                                                                            <i class="fas fa-arrow-down"></i>
+                                                                                                                        </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
@@ -930,7 +938,9 @@
                     `<span class="badge ${busPassTypeBadgeClass}">${app.bus_pass_type.replace(/_/g, ' ')}</span>` :
                     'N/A',
                     actionsHtml,
-                    `<input type="checkbox" class="application-checkbox" value="${app.id}" ${app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card' ? '' : 'disabled'}>`,
+                    (canIntegrate ?
+                        `<input type="checkbox" class="application-checkbox" value="${app.id}" ${app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card' ? '' : 'disabled'}>` :
+                        ''),
                     app.requested_bus_name || 'N/A',
                     app.destination_from_ahq || 'N/A',
                     app.weekend_bus_name || 'N/A',
