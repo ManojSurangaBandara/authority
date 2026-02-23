@@ -99,14 +99,23 @@ class BusDriverAssignmentController extends Controller
      */
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
+        // dynamic validation based on driver type
+        $rules = [
             'bus_route_id' => 'required|exists:bus_routes,id',
-            'driver_regiment_no' => 'required|string|max:50',
-            'driver_rank' => 'required|string|max:100',
+            'driver_type' => 'required|in:Army,Civil',
             'driver_name' => 'required|string|max:200',
             'driver_contact_no' => 'required|string|max:20',
             'status' => 'required|in:active,inactive',
-        ]);
+        ];
+
+        if ($request->driver_type === 'Army') {
+            $rules['driver_regiment_no'] = 'required|string|max:50';
+            $rules['driver_rank'] = 'required|string|max:100';
+        } else {
+            $rules['driver_nic'] = 'required|string|max:50';
+        }
+
+        $validatedData = $request->validate($rules);
 
         // Check if there's already an active assignment for this route
         if ($validatedData['status'] === 'active') {
@@ -120,24 +129,37 @@ class BusDriverAssignmentController extends Controller
             }
         }
 
-        // Check if driver exists by regiment number
-        $driver = Driver::where('regiment_no', $request->driver_regiment_no)->first();
+        // Determine search field based on driver type
+        if ($request->driver_type === 'Army') {
+            $driver = Driver::where('regiment_no', $request->driver_regiment_no)->first();
+        } else {
+            $driver = Driver::where('nic', $request->driver_nic)->first();
+        }
 
         if (!$driver) {
             // Create new driver if doesn't exist
-            $driver = Driver::create([
-                'regiment_no' => $request->driver_regiment_no,
-                'rank' => $request->driver_rank,
+            $driverData = [
+                'driver_type' => $request->driver_type,
                 'name' => $request->driver_name,
                 'contact_no' => $request->driver_contact_no,
-            ]);
+            ];
+            if ($request->driver_type === 'Army') {
+                $driverData['regiment_no'] = $request->driver_regiment_no;
+                $driverData['rank'] = $request->driver_rank;
+            } else {
+                $driverData['nic'] = $request->driver_nic;
+            }
+            $driver = Driver::create($driverData);
         } else {
             // Update existing driver information
-            $driver->update([
-                'rank' => $request->driver_rank,
+            $updateData = [
                 'name' => $request->driver_name,
                 'contact_no' => $request->driver_contact_no,
-            ]);
+            ];
+            if ($request->driver_type === 'Army') {
+                $updateData['rank'] = $request->driver_rank;
+            }
+            $driver->update($updateData);
         }
 
         // Create assignment with driver_id instead of individual fields
@@ -177,14 +199,23 @@ class BusDriverAssignmentController extends Controller
      */
     public function update(Request $request, BusDriverAssignment $bus_driver_assignment)
     {
-        $validatedData = $request->validate([
+        // dynamic validation based on driver type
+        $rules = [
             'bus_route_id' => 'required|exists:bus_routes,id',
-            'driver_regiment_no' => 'required|string|max:50',
-            'driver_rank' => 'required|string|max:100',
+            'driver_type' => 'required|in:Army,Civil',
             'driver_name' => 'required|string|max:200',
             'driver_contact_no' => 'required|string|max:20',
             'status' => 'required|in:active,inactive',
-        ]);
+        ];
+
+        if ($request->driver_type === 'Army') {
+            $rules['driver_regiment_no'] = 'required|string|max:50';
+            $rules['driver_rank'] = 'required|string|max:100';
+        } else {
+            $rules['driver_nic'] = 'required|string|max:50';
+        }
+
+        $validatedData = $request->validate($rules);
 
         // Check if there's already an active assignment for this route (excluding current assignment)
         if ($validatedData['status'] === 'active') {
@@ -199,24 +230,35 @@ class BusDriverAssignmentController extends Controller
             }
         }
 
-        // Update or create driver information
-        $driver = Driver::where('regiment_no', $request->driver_regiment_no)->first();
+        // Update or create driver information based on type
+        if ($request->driver_type === 'Army') {
+            $driver = Driver::where('regiment_no', $request->driver_regiment_no)->first();
+        } else {
+            $driver = Driver::where('nic', $request->driver_nic)->first();
+        }
 
         if (!$driver) {
-            // Create new driver if doesn't exist
-            $driver = Driver::create([
-                'regiment_no' => $request->driver_regiment_no,
-                'rank' => $request->driver_rank,
+            $driverData = [
+                'driver_type' => $request->driver_type,
                 'name' => $request->driver_name,
                 'contact_no' => $request->driver_contact_no,
-            ]);
+            ];
+            if ($request->driver_type === 'Army') {
+                $driverData['regiment_no'] = $request->driver_regiment_no;
+                $driverData['rank'] = $request->driver_rank;
+            } else {
+                $driverData['nic'] = $request->driver_nic;
+            }
+            $driver = Driver::create($driverData);
         } else {
-            // Update existing driver information
-            $driver->update([
-                'rank' => $request->driver_rank,
+            $updateData = [
                 'name' => $request->driver_name,
                 'contact_no' => $request->driver_contact_no,
-            ]);
+            ];
+            if ($request->driver_type === 'Army') {
+                $updateData['rank'] = $request->driver_rank;
+            }
+            $driver->update($updateData);
         }
 
         // Update assignment with driver_id instead of individual fields
@@ -398,6 +440,11 @@ class BusDriverAssignmentController extends Controller
      */
     public function getDriverDetails(Request $request)
     {
+        // Only applicable for army drivers
+        if ($request->input('driver_type') !== 'Army') {
+            return response()->json(['success' => false, 'message' => 'Invalid driver type'], 400);
+        }
+
         $regimentNo = $request->input('regiment_no');
 
         if (empty($regimentNo)) {

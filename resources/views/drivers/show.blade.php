@@ -18,13 +18,26 @@
                             <table class="table table-bordered">
                                 <tbody>
                                     <tr>
-                                        <th style="width: 30%">Regiment Number</th>
-                                        <td>{{ $driver->regiment_no }}</td>
+                                        <th style="width: 30%">Driver Type</th>
+                                        <td>{{ $driver->driver_type }}</td>
                                     </tr>
-                                    <tr>
-                                        <th>Rank</th>
-                                        <td>{{ $driver->rank }}</td>
-                                    </tr>
+
+                                    @if ($driver->driver_type === 'Army')
+                                        <tr>
+                                            <th>Regiment Number</th>
+                                            <td>{{ $driver->regiment_no }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Rank</th>
+                                            <td>{{ $driver->rank }}</td>
+                                        </tr>
+                                    @else
+                                        <tr>
+                                            <th>NIC</th>
+                                            <td>{{ $driver->nic }}</td>
+                                        </tr>
+                                    @endif
+
                                     <tr>
                                         <th>Name</th>
                                         <td>{{ $driver->name }}</td>

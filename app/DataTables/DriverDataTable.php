@@ -23,6 +23,9 @@ class DriverDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addIndexColumn()
+            ->addColumn('identification', function ($row) {
+                return $row->identification;
+            })
             ->addColumn('action', function ($row) {
                 // Check if driver has active assignments
                 $activeAssignmentsCount = $row->driverAssignments()->where('status', 'active')->count();
@@ -100,7 +103,8 @@ class DriverDataTable extends DataTable
     {
         return [
             Column::make('DT_RowIndex')->title('#')->searchable(false)->orderable(false),
-            Column::make('regiment_no')->title('Regiment No'),
+            Column::make('driver_type')->title('Type'),
+            Column::make('identification')->title('Identifier'),
             Column::make('rank')->title('Rank'),
             Column::make('name')->title('Name'),
             Column::make('contact_no')->title('Contact No'),

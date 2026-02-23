@@ -25,9 +25,11 @@
                                 <select id="driver_select" name="driver_id" class="form-control">
                                     <option value="">Choose a driver...</option>
                                     @foreach ($availableDrivers as $driver)
-                                        <option value="{{ $driver->id }}" data-regiment="{{ $driver->regiment_no }}"
+                                        <option value="{{ $driver->id }}" data-type="{{ $driver->driver_type }}"
+                                            data-identification="{{ $driver->identification }}"
                                             data-rank="{{ $driver->rank }}" data-name="{{ $driver->name }}">
-                                            {{ $driver->rank }} {{ $driver->name }} ({{ $driver->regiment_no }})
+                                            {{ $driver->rank ? $driver->rank . ' ' : '' }}{{ $driver->name }}
+                                            ({{ $driver->identification }})
                                         </option>
                                     @endforeach
                                 </select>
@@ -72,7 +74,7 @@
                                         <th>Route Name</th>
                                         <th>Bus</th>
                                         <th>Driver</th>
-                                        <th>Regiment No</th>
+                                        <th>Identifier</th>
                                         <th>Status</th>
                                         <th>Actions</th>
                                     </tr>
@@ -99,7 +101,7 @@
                                             </td>
                                             <td>
                                                 @if ($route->driverAssignment && $route->driverAssignment->driver)
-                                                    {{ $route->driverAssignment->driver->regiment_no ?? 'N/A' }}
+                                                    {{ $route->driverAssignment->driver->identification ?? 'N/A' }}
                                                 @else
                                                     <span class="text-muted">N/A</span>
                                                 @endif

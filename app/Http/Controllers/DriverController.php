@@ -31,14 +31,44 @@ class DriverController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'regiment_no' => 'required|unique:drivers,regiment_no|max:20',
-            'rank' => 'required|max:50',
+        // Validate input depending on driver type
+        $type = $request->input('driver_type');
+
+        $rules = [
+            'driver_type' => 'required|in:Army,Civil',
             'name' => 'required|max:100',
             'contact_no' => 'required|max:20',
-        ]);
+        ];
 
-        Driver::create($request->all());
+        if ($type === 'Army') {
+            $rules['regiment_no'] = 'required|unique:drivers,regiment_no|max:20';
+            $rules['rank'] = 'required|max:50';
+        } else {
+            // Civil driver
+            $rules['nic'] = 'required|unique:drivers,nic|max:20';
+            // rank and regiment_no are not required for civil
+        }
+
+        $request->validate($rules);
+
+        // Prepare data array for creation; ensure fields not relevant to the type are null
+        $data = [
+            'driver_type' => $type,
+            'name' => $request->name,
+            'contact_no' => $request->contact_no,
+        ];
+
+        if ($type === 'Army') {
+            $data['regiment_no'] = $request->regiment_no;
+            $data['rank'] = $request->rank;
+            $data['nic'] = null;
+        } else {
+            $data['nic'] = $request->nic;
+            $data['regiment_no'] = null;
+            $data['rank'] = null;
+        }
+
+        Driver::create($data);
 
         return redirect()->route('drivers.index')
             ->with('success', 'Driver created successfully.');
@@ -78,29 +108,55 @@ class DriverController extends Controller
         $activeAssignmentsCount = $driver->driverAssignments()->where('status', 'active')->count();
         $isUsed = $activeAssignmentsCount > 0;
 
-        // Validation rules
+        // Determine driver type; if not supplied fallback to existing
+        $type = $request->input('driver_type', $driver->driver_type);
+
+        // Basic rules
         $rules = [
-            'rank' => 'required|max:50',
+            'driver_type' => 'required|in:Army,Civil',
             'name' => 'required|max:100',
             'contact_no' => 'required|max:20',
         ];
 
-        // Only validate regiment_no if it's not in use (allowing changes)
-        if (!$isUsed) {
-            $rules['regiment_no'] = 'required|max:20|unique:drivers,regiment_no,' . $id;
+        if ($type === 'Army') {
+            // regiment_no rules similar to store
+            if (!$isUsed) {
+                $rules['regiment_no'] = 'required|max:20|unique:drivers,regiment_no,' . $id;
+            } else {
+                $rules['regiment_no'] = 'required|max:20|in:' . $driver->regiment_no;
+            }
+            $rules['rank'] = 'required|max:50';
         } else {
-            // If driver is in use, ensure the submitted regiment_no matches the existing one
-            $rules['regiment_no'] = 'required|max:20|in:' . $driver->regiment_no;
+            // Civil
+            if (!$isUsed) {
+                $rules['nic'] = 'required|max:20|unique:drivers,nic,' . $id;
+            } else {
+                $rules['nic'] = 'required|max:20|in:' . $driver->nic;
+            }
+            // rank and regiment_no not required
         }
 
         $request->validate($rules);
 
-        // Prepare data for update
-        $updateData = $request->only(['rank', 'name', 'contact_no']);
+        // Build update array
+        $updateData = [
+            'driver_type' => $type,
+            'name' => $request->name,
+            'contact_no' => $request->contact_no,
+        ];
 
-        // Only update regiment_no if not in use
-        if (!$isUsed) {
-            $updateData['regiment_no'] = $request->regiment_no;
+        if ($type === 'Army') {
+            $updateData['rank'] = $request->rank;
+            if (!$isUsed) {
+                $updateData['regiment_no'] = $request->regiment_no;
+            }
+            // clear civil fields
+            $updateData['nic'] = null;
+        } else {
+            $updateData['nic'] = $request->nic;
+            // clear army-specific fields when switching type or updating civil
+            $updateData['regiment_no'] = null;
+            $updateData['rank'] = null;
         }
 
         $driver->update($updateData);
@@ -126,6 +182,12 @@ class DriverController extends Controller
      */
     public function getDriverDetails(Request $request)
     {
+        // only valid for army drivers
+        $type = $request->input('driver_type');
+        if ($type !== 'Army') {
+            return response()->json(['success' => false, 'message' => 'Invalid driver type'], 400);
+        }
+
         $regimentNo = $request->input('regiment_no');
 
         if (empty($regimentNo)) {

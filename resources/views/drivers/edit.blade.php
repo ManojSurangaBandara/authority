@@ -24,37 +24,68 @@
                             <form action="{{ route('drivers.update', $driver->id) }}" method="POST" id="driverForm">
                                 @csrf
                                 @method('PUT')
+
                                 <div class="mb-3">
-                                    <label for="regiment_no">Regiment Number:</label>
-                                    <div class="input-group">
-                                        <input type="text" name="regiment_no" id="regiment_no" required
-                                            class="form-control" value="{{ $driver->regiment_no }}"
-                                            {{ $isUsed ?? false ? 'readonly' : '' }}>
-                                        @if (!($isUsed ?? false))
-                                            <div class="input-group-append">
-                                                <button type="button" class="btn btn-info" id="fetchDriverBtn">Fetch
-                                                    Details</button>
-                                            </div>
-                                        @endif
-                                    </div>
-                                    @if ($isUsed ?? false)
-                                        <small class="form-text text-muted">
-                                            <i class="fas fa-lock"></i> Regiment number is locked because this driver has
-                                            active assignments.
-                                        </small>
-                                    @endif
-                                    @error('regiment_no')
+                                    <label for="driver_type">Driver Type:</label>
+                                    <select name="driver_type" id="driver_type" class="form-control" required>
+                                        <option value="Army"
+                                            {{ old('driver_type', $driver->driver_type) == 'Army' ? 'selected' : '' }}>Army
+                                        </option>
+                                        <option value="Civil"
+                                            {{ old('driver_type', $driver->driver_type) == 'Civil' ? 'selected' : '' }}>
+                                            Civil</option>
+                                    </select>
+                                    @error('driver_type')
                                         <div class="text-danger">{{ $message }}</div>
                                     @enderror
                                 </div>
 
-                                <div class="mb-3">
-                                    <label for="rank">Rank:</label>
-                                    <input type="text" name="rank" id="rank" required class="form-control"
-                                        value="{{ $driver->rank }}">
-                                    @error('rank')
-                                        <div class="text-danger">{{ $message }}</div>
-                                    @enderror
+                                {{-- army fields --}}
+                                <div id="army-fields">
+                                    <div class="mb-3">
+                                        <label for="regiment_no">Regiment Number:</label>
+                                        <div class="input-group">
+                                            <input type="text" name="regiment_no" id="regiment_no" class="form-control"
+                                                value="{{ $driver->regiment_no }}" {{ $isUsed ?? false ? 'readonly' : '' }}>
+                                            @if (!($isUsed ?? false))
+                                                <div class="input-group-append">
+                                                    <button type="button" class="btn btn-info" id="fetchDriverBtn">Fetch
+                                                        Details</button>
+                                                </div>
+                                            @endif
+                                        </div>
+                                        @if ($isUsed ?? false)
+                                            <small class="form-text text-muted">
+                                                <i class="fas fa-lock"></i> Regiment number is locked because this driver
+                                                has
+                                                active assignments.
+                                            </small>
+                                        @endif
+                                        @error('regiment_no')
+                                            <div class="text-danger">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="rank">Rank:</label>
+                                        <input type="text" name="rank" id="rank" class="form-control"
+                                            value="{{ $driver->rank }}">
+                                        @error('rank')
+                                            <div class="text-danger">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                {{-- civil fields --}}
+                                <div id="civil-fields" style="display: none;">
+                                    <div class="mb-3">
+                                        <label for="nic">NIC:</label>
+                                        <input type="text" name="nic" id="nic" class="form-control"
+                                            value="{{ $driver->nic }}">
+                                        @error('nic')
+                                            <div class="text-danger">{{ $message }}</div>
+                                        @enderror
+                                    </div>
                                 </div>
 
                                 <div class="mb-3">
@@ -68,7 +99,10 @@
 
                                 <div class="mb-3">
                                     <label for="contact_no">Contact Number:</label>
-                                    <input type="tel" name="contact_no" id="contact_no" required pattern="[0-9]{10}" maxlength="10" inputmode="numeric" oninvalid="this.setCustomValidity('Please enter a valid 10-digit mobile number')" oninput="this.setCustomValidity('')" class="form-control"
+                                    <input type="tel" name="contact_no" id="contact_no" required pattern="[0-9]{10}"
+                                        maxlength="10" inputmode="numeric"
+                                        oninvalid="this.setCustomValidity('Please enter a valid 10-digit mobile number')"
+                                        oninput="this.setCustomValidity('')" class="form-control"
                                         value="{{ $driver->contact_no }}">
                                     @error('contact_no')
                                         <div class="text-danger">{{ $message }}</div>
@@ -92,6 +126,35 @@
 @push('js')
     <script>
         $(document).ready(function() {
+            function toggleFields() {
+                const type = $('#driver_type').val();
+                if (type === 'Army') {
+                    $('#army-fields').show();
+                    $('#civil-fields').hide();
+                    $('#nic').val('');
+                    // manage readonly states
+                    $('#name').prop('readonly', true);
+                    $('#rank').prop('readonly', false); // allow editing rank on army
+                    $('#fetchDriverBtn').show();
+                    $('#regiment_no').prop('required', true);
+                    $('#rank').prop('required', true);
+                    $('#nic').prop('required', false);
+                } else {
+                    $('#army-fields').hide();
+                    $('#civil-fields').show();
+                    $('#regiment_no').val('');
+                    $('#rank').val('');
+                    $('#name').prop('readonly', false);
+                    $('#fetchDriverBtn').hide();
+                    $('#regiment_no').prop('required', false);
+                    $('#rank').prop('required', false);
+                    $('#nic').prop('required', true);
+                }
+            }
+
+            toggleFields();
+            $('#driver_type').on('change', toggleFields);
+
             $('#fetchDriverBtn').on('click', function() {
                 const regimentNo = $('#regiment_no').val();
                 if (!regimentNo) {
@@ -108,7 +171,8 @@
                     url: "{{ route('drivers.get-details') }}",
                     type: "GET",
                     data: {
-                        regiment_no: regimentNo
+                        regiment_no: regimentNo,
+                        driver_type: $('#driver_type').val()
                     },
                     dataType: "json",
                     success: function(response) {

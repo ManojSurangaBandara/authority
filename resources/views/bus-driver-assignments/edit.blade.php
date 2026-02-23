@@ -73,6 +73,26 @@
                         </div>
 
                         <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="driver_type">Driver Type <span class="text-danger">*</span></label>
+                                    <select id="driver_type" name="driver_type"
+                                        class="form-control @error('driver_type') is-invalid @enderror" required>
+                                        <option value="Army"
+                                            {{ old('driver_type', $bus_driver_assignment->driver->driver_type ?? 'Army') == 'Army' ? 'selected' : '' }}>
+                                            Army</option>
+                                        <option value="Civil"
+                                            {{ old('driver_type', $bus_driver_assignment->driver->driver_type ?? '') == 'Civil' ? 'selected' : '' }}>
+                                            Civil</option>
+                                    </select>
+                                    @error('driver_type')
+                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row" id="army-ident-row">
                             <!-- Driver Regiment No (Search Box) -->
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -83,7 +103,7 @@
                                             class="form-control @error('driver_regiment_no') is-invalid @enderror"
                                             id="driver_regiment_no" name="driver_regiment_no"
                                             value="{{ old('driver_regiment_no', $bus_driver_assignment->driver_regiment_no) }}"
-                                            placeholder="Enter regiment number" required>
+                                            placeholder="Enter regiment number">
                                         <div class="input-group-append">
                                             <button type="button" class="btn btn-info" id="fetch-driver-details">
                                                 <i class="fas fa-search"></i> Search
@@ -95,94 +115,109 @@
                                     @enderror
                                 </div>
                             </div>
+                        </div>
 
-                            <!-- Driver Rank (Auto Fill) -->
-                            <div class="col-md-6">
+                        <div class="row" id="civil-ident-row" style="display:none;">
+                            <div class="col-md=6">
                                 <div class="form-group">
-                                    <label for="driver_rank">Driver Rank <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('driver_rank') is-invalid @enderror"
-                                        id="driver_rank" name="driver_rank"
-                                        value="{{ old('driver_rank', $bus_driver_assignment->driver_rank) }}"
-                                        placeholder="Auto-filled from API" readonly required>
-                                    @error('driver_rank')
+                                    <label for="driver_nic">Driver NIC <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control @error('driver_nic') is-invalid @enderror"
+                                        id="driver_nic" name="driver_nic"
+                                        value="{{ old('driver_nic', $bus_driver_assignment->driver->nic ?? '') }}"
+                                        placeholder="Enter NIC">
+                                    @error('driver_nic')
                                         <span class="invalid-feedback">{{ $message }}</span>
                                     @enderror
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <!-- Driver Name (Auto Fill) -->
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="driver_name">Driver Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('driver_name') is-invalid @enderror"
-                                        id="driver_name" name="driver_name"
-                                        value="{{ old('driver_name', $bus_driver_assignment->driver_name) }}"
-                                        placeholder="Auto-filled from API" readonly required>
-                                    @error('driver_name')
-                                        <span class="invalid-feedback">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            <!-- Contact Number (Auto Fill) -->
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="driver_contact_no">Contact Number <span class="text-danger">*</span></label>
-                                    <input type="text"
-                                        class="form-control @error('driver_contact_no') is-invalid @enderror"
-                                        id="driver_contact_no" name="driver_contact_no"
-                                        value="{{ old('driver_contact_no', $bus_driver_assignment->driver_contact_no) }}"
-                                        placeholder="Enter manually (not available from API)" required>
-                                    @error('driver_contact_no')
-                                        <span class="invalid-feedback">{{ $message }}</span>
-                                    @enderror
-                                    <small class="form-text text-muted">
-                                        Contact number must be entered manually as it is not available from the API
-                                    </small>
-                                </div>
+                        <!-- Driver Rank (Auto Fill) -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="driver_rank">Driver Rank <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control @error('driver_rank') is-invalid @enderror"
+                                    id="driver_rank" name="driver_rank"
+                                    value="{{ old('driver_rank', $bus_driver_assignment->driver_rank) }}"
+                                    placeholder="Auto-filled from API" readonly required>
+                                @error('driver_rank')
+                                    <span class="invalid-feedback">{{ $message }}</span>
+                                @enderror
                             </div>
                         </div>
-
-                        <div class="row">
-                            <!-- Status -->
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="status">Status <span class="text-danger">*</span></label>
-                                    <select class="form-control @error('status') is-invalid @enderror" id="status"
-                                        name="status" required>
-                                        <option value="active"
-                                            {{ old('status', $bus_driver_assignment->status) == 'active' ? 'selected' : '' }}>
-                                            Active</option>
-                                        <option value="inactive"
-                                            {{ old('status', $bus_driver_assignment->status) == 'inactive' ? 'selected' : '' }}>
-                                            Inactive</option>
-                                    </select>
-                                    @error('status')
-                                        <span class="invalid-feedback">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
 
-                    <div class="card-footer">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Update Assignment
-                        </button>
-                        <a href="{{ route('bus-driver-assignments.show', $bus_driver_assignment) }}"
-                            class="btn btn-info">
-                            <i class="fas fa-eye"></i> View
-                        </a>
-                        <a href="{{ route('bus-driver-assignments.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-times"></i> Cancel
-                        </a>
+                    <div class="row">
+                        <!-- Driver Name (Auto Fill) -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="driver_name">Driver Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control @error('driver_name') is-invalid @enderror"
+                                    id="driver_name" name="driver_name"
+                                    value="{{ old('driver_name', $bus_driver_assignment->driver_name) }}"
+                                    placeholder="Auto-filled from API" readonly required>
+                                @error('driver_name')
+                                    <span class="invalid-feedback">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <!-- Contact Number (Auto Fill) -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="driver_contact_no">Contact Number <span class="text-danger">*</span></label>
+                                <input type="text"
+                                    class="form-control @error('driver_contact_no') is-invalid @enderror"
+                                    id="driver_contact_no" name="driver_contact_no"
+                                    value="{{ old('driver_contact_no', $bus_driver_assignment->driver_contact_no) }}"
+                                    placeholder="Enter manually (not available from API)" required>
+                                @error('driver_contact_no')
+                                    <span class="invalid-feedback">{{ $message }}</span>
+                                @enderror
+                                <small class="form-text text-muted">
+                                    Contact number must be entered manually as it is not available from the API
+                                </small>
+                            </div>
+                        </div>
                     </div>
-                </form>
+
+                    <div class="row">
+                        <!-- Status -->
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="status">Status <span class="text-danger">*</span></label>
+                                <select class="form-control @error('status') is-invalid @enderror" id="status"
+                                    name="status" required>
+                                    <option value="active"
+                                        {{ old('status', $bus_driver_assignment->status) == 'active' ? 'selected' : '' }}>
+                                        Active</option>
+                                    <option value="inactive"
+                                        {{ old('status', $bus_driver_assignment->status) == 'inactive' ? 'selected' : '' }}>
+                                        Inactive</option>
+                                </select>
+                                @error('status')
+                                    <span class="invalid-feedback">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+
             </div>
+
+            <div class="card-footer">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Update Assignment
+                </button>
+                <a href="{{ route('bus-driver-assignments.show', $bus_driver_assignment) }}" class="btn btn-info">
+                    <i class="fas fa-eye"></i> View
+                </a>
+                <a href="{{ route('bus-driver-assignments.index') }}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+            </form>
         </div>
+    </div>
     </div>
     </div>
 @stop
@@ -282,8 +317,36 @@
                 }
             });
 
+            // Driver type switching
+            function toggleDriverType() {
+                const type = $('#driver_type').val();
+                if (type === 'Army') {
+                    $('#army-ident-row').show();
+                    $('#civil-ident-row').hide();
+                    $('#driver_regiment_no').prop('required', true);
+                    $('#driver_nic').prop('required', false);
+                    $('#fetch-driver-details').show();
+                    $('#driver_rank').prop('readonly', true).prop('required', true);
+                    $('#driver_name').prop('readonly', true).prop('required', true);
+                } else {
+                    $('#army-ident-row').hide();
+                    $('#civil-ident-row').show();
+                    $('#driver_regiment_no').prop('required', false).val('');
+                    $('#driver_nic').prop('required', true);
+                    $('#fetch-driver-details').hide();
+                    $('#driver_rank').prop('readonly', false).prop('required', false).val('');
+                    $('#driver_name').prop('readonly', false).prop('required', true).val('');
+                }
+            }
+            $('#driver_type').on('change', toggleDriverType);
+            toggleDriverType();
+
             // Driver Search
             $('#fetch-driver-details').on('click', function() {
+                if ($('#driver_type').val() !== 'Army') {
+                    toastr.warning('Search is only available for Army drivers.');
+                    return;
+                }
                 const regimentNo = $('#driver_regiment_no').val().trim();
 
                 if (!regimentNo) {
