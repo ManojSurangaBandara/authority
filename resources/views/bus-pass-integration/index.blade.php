@@ -102,7 +102,6 @@
                             <table id="applicationsTable" class="table table-bordered table-striped">
                                 <thead>
                                     <tr>
-                                        <th><input type="checkbox" id="selectAllCheckbox"></th>
                                         <th>Application ID</th>
                                         <th>Regiment No</th>
                                         <th>Person Name</th>
@@ -110,6 +109,7 @@
                                         <th>Establishment</th>
                                         <th>Bus Pass Type</th>
                                         <th>Actions</th>
+                                        <th><input type="checkbox" id="selectAllCheckbox"></th>
                                         <th>Daily Travel Bus</th>
                                         <th>Daily Travel Destination</th>
                                         <th>Weekend Bus</th>
@@ -395,14 +395,9 @@
                     }
                 },
                 columnDefs: [{
-                        orderable: false,
-                        targets: [0, 7] // Checkbox and Actions columns not sortable
-                    },
-                    {
-                        orderable: true,
-                        targets: [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13]
-                    } // Other columns sortable
-                ],
+                    orderable: false,
+                    targets: [6, 7] // Actions and Checkbox columns not sortable (checkbox moved)
+                }],
                 dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rt<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
                 initComplete: function() {
                     // Ensure table wrapper has proper scroll styling after initialization
@@ -708,19 +703,18 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                                                                                <i class="fas fa-arrow-up"></i>
-                                                                                                            </button>
-                                                                                                            <button class="btn btn-danger btn-xs reject-application ml-1" data-id="${app.id}" title="Reject Application">
-                                                                                                                <i class="fas fa-times"></i>
-                                                                                                            </button>` :
+                                                                                                                    <i class="fas fa-arrow-up"></i>
+                                                                                                                </button>
+                                                                                                                <button class="btn btn-danger btn-xs reject-application ml-1" data-id="${app.id}" title="Reject Application">
+                                                                                                                    <i class="fas fa-times"></i>
+                                                                                                                </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                                                                                <i class="fas fa-arrow-down"></i>
-                                                                                                            </button>` : ''
+                                                                                                                    <i class="fas fa-arrow-down"></i>
+                                                                                                                </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
-                    `<input type="checkbox" class="application-checkbox" value="${app.id}" ${app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card' ? '' : 'disabled'}>`,
                     app.id,
                     app.person_regiment_no,
                     app.person_name,
@@ -731,6 +725,7 @@
                     `<span class="badge ${busPassTypeBadgeClass}">${app.bus_pass_type.replace(/_/g, ' ')}</span>` :
                     'N/A',
                     actionsHtml,
+                    `<input type="checkbox" class="application-checkbox" value="${app.id}" ${app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card' ? '' : 'disabled'}>`,
                     app.requested_bus_name || 'N/A',
                     app.destination_from_ahq || 'N/A',
                     app.weekend_bus_name || 'N/A',
@@ -828,19 +823,18 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                                                                                <i class="fas fa-arrow-up"></i>
-                                                                                                            </button>
-                                                                                                            <button class="btn btn-danger btn-xs reject-application ml-1" data-id="${app.id}" title="Reject Application">
-                                                                                                                <i class="fas fa-times"></i>
-                                                                                                            </button>` :
+                                                                                                                    <i class="fas fa-arrow-up"></i>
+                                                                                                                </button>
+                                                                                                                <button class="btn btn-danger btn-xs reject-application ml-1" data-id="${app.id}" title="Reject Application">
+                                                                                                                    <i class="fas fa-times"></i>
+                                                                                                                </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                                                                                <i class="fas fa-arrow-down"></i>
-                                                                                                            </button>` : ''
+                                                                                                                    <i class="fas fa-arrow-down"></i>
+                                                                                                                </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
-                    `<input type="checkbox" class="application-checkbox" value="${app.id}" ${app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card' ? '' : 'disabled'}>`,
                     app.id,
                     app.person_regiment_no,
                     app.person_name,
@@ -851,6 +845,7 @@
                     `<span class="badge ${busPassTypeBadgeClass}">${app.bus_pass_type.replace(/_/g, ' ')}</span>` :
                     'N/A',
                     actionsHtml,
+                    `<input type="checkbox" class="application-checkbox" value="${app.id}" ${app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card' ? '' : 'disabled'}>`,
                     app.requested_bus_name || 'N/A',
                     app.destination_from_ahq || 'N/A',
                     app.weekend_bus_name || 'N/A',
@@ -1233,7 +1228,7 @@
                     complete: function() {
                         $('#bulkIntegrateBtn').prop('disabled', false).html(
                             '<i class="fas fa-arrow-up"></i> Bulk Integrate Selected (<span id="selectedCount">0</span>)'
-                            );
+                        );
                     }
                 });
             }
