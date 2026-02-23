@@ -236,6 +236,23 @@
             scrollbar-width: thin;
             scrollbar-color: #888 #f1f1f1;
         }
+
+        /* Floating scrollbar container (created dynamically) */
+        .floating-scrollbar {
+            position: fixed;
+            height: 16px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            z-index: 1050;
+            display: none;
+            /* shown only when needed */
+            background: transparent;
+        }
+
+        .floating-scrollbar-inner {
+            height: 1px;
+            /* minimal height to create a horizontal scrollbar */
+        }
     </style>
 @stop
 
@@ -306,6 +323,7 @@
             window.currentRouteType = currentRouteType;
 
             initializeDataTable();
+            createFloatingScrollbar();
             loadChartData();
             loadAllApplications(); // Load all applications initially
 
@@ -643,6 +661,71 @@
             });
         }
 
+        // Floating scrollbar helpers
+        function createFloatingScrollbar() {
+            if ($('.floating-scrollbar').length === 0) {
+                $('body').append('<div class="floating-scrollbar"><div class="floating-scrollbar-inner"></div></div>');
+
+                // When floating scrollbar is scrolled, update wrapper scroll
+                $('.floating-scrollbar').on('scroll', function() {
+                    $('.applications-table-wrapper').scrollLeft($(this).scrollLeft());
+                });
+
+                // When wrapper is scrolled, update floating scrollbar
+                $('.applications-table-wrapper').on('scroll', function() {
+                    $('.floating-scrollbar').scrollLeft($(this).scrollLeft());
+                });
+
+                // Update position on resize/scroll
+                $(window).on('resize.floatingScrollbar scroll.floatingScrollbar', updateFloatingScrollbarPosition);
+            }
+            updateFloatingScrollbar();
+        }
+
+        function updateFloatingScrollbarPosition() {
+            var wrapper = $('.applications-table-wrapper');
+            var fb = $('.floating-scrollbar');
+            if (!wrapper.length || !fb.length) return;
+
+            var rect = wrapper[0].getBoundingClientRect();
+            var bottomOffset = 20; // px from bottom of viewport
+
+            // Hide if wrapper not visible in viewport
+            if (rect.bottom < 0 || rect.top > (window.innerHeight || document.documentElement.clientHeight)) {
+                fb.hide();
+                return;
+            }
+
+            fb.css({
+                left: Math.max(rect.left, 0) + 'px',
+                width: rect.width + 'px',
+                bottom: bottomOffset + 'px',
+                display: 'block'
+            });
+        }
+
+        function updateFloatingScrollbar() {
+            var table = document.getElementById('applicationsTable');
+            var wrapper = $('.applications-table-wrapper');
+            var fb = $('.floating-scrollbar');
+            if (!table || !wrapper.length) return;
+
+            // create floating scrollbar if not exists
+            if ($('.floating-scrollbar').length === 0) createFloatingScrollbar();
+
+            var tableScrollWidth = table.scrollWidth;
+            var wrapperClientWidth = wrapper[0].clientWidth;
+            var inner = $('.floating-scrollbar .floating-scrollbar-inner');
+
+            if (tableScrollWidth > wrapperClientWidth) {
+                inner.width(tableScrollWidth + 'px');
+                updateFloatingScrollbarPosition();
+                $('.floating-scrollbar').show().scrollLeft(wrapper.scrollLeft());
+            } else {
+                $('.floating-scrollbar').hide();
+            }
+        }
+
         function displayApplications(applications, establishmentName, type) {
             const title =
                 `${establishmentName} - ${type === 'pending' ? 'Pending Integration' : 'Integrated'} Applications (${applications.length})`;
@@ -703,15 +786,15 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                                                                                    <i class="fas fa-arrow-up"></i>
-                                                                                                                </button>
-                                                                                                                <button class="btn btn-danger btn-xs reject-application ml-1" data-id="${app.id}" title="Reject Application">
-                                                                                                                    <i class="fas fa-times"></i>
-                                                                                                                </button>` :
+                                                                                                                        <i class="fas fa-arrow-up"></i>
+                                                                                                                    </button>
+                                                                                                                    <button class="btn btn-danger btn-xs reject-application ml-1" data-id="${app.id}" title="Reject Application">
+                                                                                                                        <i class="fas fa-times"></i>
+                                                                                                                    </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                                                                                    <i class="fas fa-arrow-down"></i>
-                                                                                                                </button>` : ''
+                                                                                                                        <i class="fas fa-arrow-down"></i>
+                                                                                                                    </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
@@ -742,6 +825,8 @@
 
             $('#applicationsTable').show();
             updateBulkButtons(); // Update bulk action buttons
+            // Ensure floating scrollbar matches new table width
+            updateFloatingScrollbar();
         }
 
         function displayAllApplications(applications) {
@@ -823,15 +908,15 @@
                     ${canIntegrate ?
                         (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
                             `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                                                                                    <i class="fas fa-arrow-up"></i>
-                                                                                                                </button>
-                                                                                                                <button class="btn btn-danger btn-xs reject-application ml-1" data-id="${app.id}" title="Reject Application">
-                                                                                                                    <i class="fas fa-times"></i>
-                                                                                                                </button>` :
+                                                                                                                        <i class="fas fa-arrow-up"></i>
+                                                                                                                    </button>
+                                                                                                                    <button class="btn btn-danger btn-xs reject-application ml-1" data-id="${app.id}" title="Reject Application">
+                                                                                                                        <i class="fas fa-times"></i>
+                                                                                                                    </button>` :
                         (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
                             `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                                                                                    <i class="fas fa-arrow-down"></i>
-                                                                                                                </button>` : ''
+                                                                                                                        <i class="fas fa-arrow-down"></i>
+                                                                                                                    </button>` : ''
                         : ''}`;
 
                 applicationsTable.row.add([
@@ -862,6 +947,8 @@
 
             $('#applicationsTable').show();
             updateBulkButtons(); // Update bulk action buttons
+            // Ensure floating scrollbar matches new table width
+            updateFloatingScrollbar();
         }
 
         function hideApplicationsTable() {
