@@ -399,11 +399,13 @@ class BusPassIntegrationController extends Controller
      */
     public function undoIntegrate(Request $request, $id): JsonResponse
     {
-        // Only Director and Col MOV can perform undo integration
-        if (!auth()->user()->hasRole(['Col Mov (DMOV)', 'Director (DMOV)'])) {
+        // Only Director, Col MOV and Staff Officer 2 (DMOV) can perform undo integration
+        // Staff Officer 2 should not be allowed to *integrate* new applications, but
+        // they need the ability to reverse an integration they notice later on.
+        if (!auth()->user()->hasRole(['Staff Officer 2 (DMOV)', 'Col Mov (DMOV)', 'Director (DMOV)'])) {
             return response()->json([
                 'success' => false,
-                'message' => 'Access denied. Only Director and Col MOV can undo integration.'
+                'message' => 'Access denied. Only Director, Col MOV or Staff Officer 2 can undo integration.'
             ], 403);
         }
 

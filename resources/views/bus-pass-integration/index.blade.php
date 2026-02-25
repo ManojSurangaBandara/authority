@@ -5,8 +5,11 @@
 @section('content_header')
     <h1>Bus Pass Integration Dashboard</h1>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="user-role"
-        content="{{ auth()->user()->hasRole(['Col Mov (DMOV)', 'Director (DMOV)'])? 'integration_allowed': 'view_only' }}">
+    {{-- separate flags so SO2 can undo without being able to integrate/reject --}}
+    <meta name="can-integrate"
+        content="{{ auth()->user()->hasRole(['Col Mov (DMOV)', 'Director (DMOV)'])? 'true': 'false' }}">
+    <meta name="can-undo"
+        content="{{ auth()->user()->hasRole(['Staff Officer 2 (DMOV)', 'Col Mov (DMOV)', 'Director (DMOV)'])? 'true': 'false' }}">
 @stop
 
 @section('plugins.Datatables', true)
@@ -36,8 +39,13 @@
                 <div class="col-md-8">
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle"></i>
-                        <strong>Note:</strong> You have view-only access. Only Director and Col MOV can perform integration
-                        actions.
+                        @if (auth()->user()->hasRole('Staff Officer 2 (DMOV)'))
+                            <strong>Note:</strong> You can **undo** previously completed integrations, but you cannot
+                            integrate or reject new applications. Only Director and Col MOV may perform those actions.
+                        @else
+                            <strong>Note:</strong> You have view-only access. Only Director and Col MOV can perform
+                            integration actions.
+                        @endif
                     </div>
                 </div>
             @endif
@@ -292,7 +300,8 @@
         let currentEstablishmentId = null;
         let currentEstablishmentType = null;
         let currentEstablishmentName = null;
-        const canIntegrate = $('meta[name="user-role"]').attr('content') === 'integration_allowed';
+        const canIntegrate = $('meta[name="can-integrate"]').attr('content') === 'true';
+        const canUndo = $('meta[name="can-undo"]').attr('content') === 'true';
 
         // Make current route info available globally for modal
         window.currentRouteId = currentRouteId;
@@ -785,23 +794,22 @@
                     establishmentBadgeClass = colors[Math.abs(hash) % colors.length];
                 }
 
-                const actionsHtml = `
+                const actionsHtml =
+                    `
                     <button class="btn btn-info btn-xs view-application" data-id="${app.id}" title="View Details">
                         <i class="fas fa-eye"></i>
                     </button>
-                    ${canIntegrate ?
-                        (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
-                            `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                                                                                            <i class="fas fa-arrow-up"></i>
-                                                                                                                        </button>
-                                                                                                                        <button class="btn btn-danger btn-xs reject-application ml-1" data-id="${app.id}" title="Reject Application">
-                                                                                                                            <i class="fas fa-times"></i>
-                                                                                                                        </button>` :
-                        (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
-                            `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                                                                                            <i class="fas fa-arrow-down"></i>
-                                                                                                                        </button>` : ''
-                        : ''}`;
+                    ${canIntegrate && (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
+                        `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
+                                                                                                                                <i class="fas fa-arrow-up"></i>
+                                                                                                                            </button>
+                                                                                                                            <button class="btn btn-danger btn-xs reject-application ml-1" data-id="${app.id}" title="Reject Application">
+                                                                                                                                <i class="fas fa-times"></i>
+                                                                                                                            </button>` : ''}
+                    ${canUndo && (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
+                        `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
+                                                                                                                                <i class="fas fa-arrow-down"></i>
+                                                                                                                            </button>` : ''}`;
 
                 applicationsTable.row.add([
                     app.id,
@@ -909,23 +917,22 @@
                     establishmentBadgeClass = colors[Math.abs(hash) % colors.length];
                 }
 
-                const actionsHtml = `
+                const actionsHtml =
+                    `
                     <button class="btn btn-info btn-xs view-application" data-id="${app.id}" title="View Details">
                         <i class="fas fa-eye"></i>
                     </button>
-                    ${canIntegrate ?
-                        (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
-                            `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
-                                                                                                                            <i class="fas fa-arrow-up"></i>
-                                                                                                                        </button>
-                                                                                                                        <button class="btn btn-danger btn-xs reject-application ml-1" data-id="${app.id}" title="Reject Application">
-                                                                                                                            <i class="fas fa-times"></i>
-                                                                                                                        </button>` :
-                        (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
-                            `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
-                                                                                                                            <i class="fas fa-arrow-down"></i>
-                                                                                                                        </button>` : ''
-                        : ''}`;
+                    ${canIntegrate && (app.status === 'approved_for_integration' || app.status === 'approved_for_temp_card') ?
+                        `<button class="btn btn-warning btn-xs integrate-application ml-1" data-id="${app.id}" title="Integrate Application">
+                                                                                                                                <i class="fas fa-arrow-up"></i>
+                                                                                                                            </button>
+                                                                                                                            <button class="btn btn-danger btn-xs reject-application ml-1" data-id="${app.id}" title="Reject Application">
+                                                                                                                                <i class="fas fa-times"></i>
+                                                                                                                            </button>` : ''}
+                    ${canUndo && (app.status === 'integrated_to_branch_card' || app.status === 'integrated_to_temp_card') ?
+                        `<button class="btn btn-danger btn-xs undo-integration ml-1" data-id="${app.id}" title="Undo Integration">
+                                                                                                                                <i class="fas fa-arrow-down"></i>
+                                                                                                                            </button>` : ''}`;
 
                 applicationsTable.row.add([
                     app.id,
