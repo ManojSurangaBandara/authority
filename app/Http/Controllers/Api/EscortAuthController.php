@@ -1090,6 +1090,20 @@ class EscortAuthController extends Controller
             // unassigned onboardings in this time period belong to this route
             $onboardingsToUpdate = Onboarding::whereBetween('onboarded_at', [$periodStart, $periodEnd])
                 ->whereNull('trip_id')
+                ->where(function($q) use ($assignment) {
+                    if ($assignment->route_type === 'living_out') {
+                        $routeName = $assignment->busRoute?->name;
+                        $q->whereHas('busPassApplication', fn($a) => $a
+                            ->where('requested_bus_name', $routeName)
+                            ->orWhere('weekend_bus_name', $routeName)
+                        );
+                    } else {
+                        $routeName = $assignment->livingInBus?->name;
+                        $q->whereHas('busPassApplication', fn($a) => $a
+                            ->where('living_in_bus', $routeName)
+                        );
+                    }
+                })
                 ->update(['trip_id' => $trip->id]);
 
             if ($onboardingsToUpdate > 0) {
