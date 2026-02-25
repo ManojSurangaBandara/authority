@@ -34,6 +34,12 @@ class DriverController extends Controller
         // Validate input depending on driver type
         $type = $request->input('driver_type');
 
+        // normalize NIC for civil drivers only
+        if ($type === 'Civil' && $request->filled('nic')) {
+            $clean = preg_replace('/\s+/', '', $request->nic);
+            $request->merge(['nic' => strtoupper($clean)]);
+        }
+
         $rules = [
             'driver_type' => 'required|in:Army,Civil',
             'name' => 'required|max:100',
@@ -110,6 +116,11 @@ class DriverController extends Controller
 
         // Determine driver type; if not supplied fallback to existing
         $type = $request->input('driver_type', $driver->driver_type);
+        // normalize NIC for civil drivers before validation
+        if ($type === 'Civil' && $request->filled('nic')) {
+            $clean = preg_replace('/\s+/', '', $request->nic);
+            $request->merge(['nic' => strtoupper($clean)]);
+        }
 
         // Basic rules
         $rules = [

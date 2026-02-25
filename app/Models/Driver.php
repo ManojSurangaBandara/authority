@@ -33,4 +33,20 @@ class Driver extends Model
     {
         return $this->hasMany(BusDriverAssignment::class, 'driver_id');
     }
+
+    /**
+     * Normalize NIC by stripping whitespace and uppercasing.
+     */
+    public function setNicAttribute($value)
+    {
+        $this->attributes['nic'] = $value ? strtoupper(preg_replace('/\s+/', '', $value)) : null;
+    }
+
+    /**
+     * Normalize regiment number similarly.
+     */
+    public function setRegimentNoAttribute($value)
+    {
+        $this->attributes['regiment_no'] = $value ? strtoupper(preg_replace('/\s+/', '', $value)) : null;
+    }
 }
