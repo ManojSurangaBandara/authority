@@ -499,7 +499,15 @@ class BusPassApplicationController extends Controller
                     ->withInput();
             }
 
-            // If we reach here, all existing applications are either rejected or deactivated, so allow new application
+            // Block if any previous application was deactivated
+            $deactivatedApp = $existingApplications->where('status', 'deactivated')->first();
+            if ($deactivatedApp) {
+                return redirect()->back()
+                    ->withErrors(['regiment_no' => 'A previous bus pass for this person has been deactivated; a new application cannot be submitted.'])
+                    ->withInput();
+            }
+
+            // If we reach here, all existing applications are rejected, so allow new application
 
         }
 
