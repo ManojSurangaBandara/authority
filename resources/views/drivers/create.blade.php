@@ -61,7 +61,10 @@
                                     <div class="mb-3">
                                         <label for="nic">NIC:</label>
                                         <input type="text" name="nic" id="nic" class="form-control"
-                                            value="{{ old('nic') }}">
+                                            value="{{ old('nic') }}" maxlength="12" pattern="[0-9].*"
+                                            title="Maximum 12 characters; must start with a digit">
+                                        <small class="form-text text-muted">NIC must be at most 12 characters and start with
+                                            a number.</small>
                                         @error('nic')
                                             <div class="text-danger">{{ $message }}</div>
                                         @enderror

@@ -51,7 +51,8 @@ class DriverController extends Controller
             $rules['rank'] = 'required|max:50';
         } else {
             // Civil driver
-            $rules['nic'] = 'required|unique:drivers,nic|max:20';
+            // max 12 chars, must start with a number
+            $rules['nic'] = 'required|unique:drivers,nic|max:12|regex:/^[0-9].*/';
             // rank and regiment_no are not required for civil
         }
 
@@ -140,9 +141,9 @@ class DriverController extends Controller
         } else {
             // Civil
             if (!$isUsed) {
-                $rules['nic'] = 'required|max:20|unique:drivers,nic,' . $id;
+                $rules['nic'] = 'required|max:12|regex:/^[0-9].*/|unique:drivers,nic,' . $id;
             } else {
-                $rules['nic'] = 'required|max:20|in:' . $driver->nic;
+                $rules['nic'] = 'required|max:12|regex:/^[0-9].*/|in:' . $driver->nic;
             }
             // rank and regiment_no not required
         }
