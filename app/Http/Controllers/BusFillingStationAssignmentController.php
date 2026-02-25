@@ -161,7 +161,7 @@ class BusFillingStationAssignmentController extends Controller
             $existingFillingStationName = $existingFillingStation ? ($existingFillingStation->name ?? 'Unknown') : 'Unknown';
             return response()->json([
                 'success' => false,
-                'message' => "Bus {$bus->name} ({$bus->no}) already has filling station {$existingFillingStationName} assigned."
+                'message' => "Bus {$bus->no} already has filling station {$existingFillingStationName} assigned."
             ]);
         }
 
@@ -175,7 +175,7 @@ class BusFillingStationAssignmentController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "Filling station {$fillingStation->name} has been successfully assigned to bus {$bus->name} ({$bus->no})."
+            'message' => "Filling station {$fillingStation->name} has been successfully assigned to bus {$bus->no}."
         ]);
     }
 
@@ -199,7 +199,7 @@ class BusFillingStationAssignmentController extends Controller
 
         // Get filling station and bus info before updating (in case relationships become null)
         $fillingStationName = $assignment->fillingStation ? $assignment->fillingStation->name : 'Unknown Filling Station';
-        $busName = $assignment->bus ? $assignment->bus->name . ' (' . $assignment->bus->no . ')' : 'Unknown Bus';
+        $busName = $assignment->bus ? $assignment->bus->no : 'Unknown Bus';
 
         // Check if there's already an inactive assignment for this bus
         $existingInactive = BusFillingStationAssignment::where('bus_id', $assignment->bus_id)
@@ -254,7 +254,6 @@ class BusFillingStationAssignmentController extends Controller
                 'success' => true,
                 'data' => [
                     'bus_no' => $bus->no,
-                    'bus_name' => $bus->name,
                     'bus_type' => $bus->type->name ?? 'N/A'
                 ]
             ]);

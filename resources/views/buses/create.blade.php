@@ -25,13 +25,6 @@
                                         <strong>Examples:</strong> UHA-xxxx, යුහ-xxxx, ABC-xxxx
                                     </small>
                                 </div>
-                                <div class="mb-3">
-                                    <label for="">Bus Name:</label>
-                                    <input type="text" name="name" required class="form-control" />
-                                    @error('name')
-                                        <div class="text-danger">{{ $message }}</div>
-                                    @enderror
-                                </div>
 
                                 <div class="mb-3">
                                     <label for="">Bus Type: </label>

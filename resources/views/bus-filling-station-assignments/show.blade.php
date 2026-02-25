@@ -72,9 +72,6 @@
                                     </div>
                                     <div class="card-body">
                                         <dl class="row">
-                                            <dt class="col-sm-4">Bus Name:</dt>
-                                            <dd class="col-sm-8">
-                                                <strong>{{ $busFillingStationAssignment->bus->name ?? 'N/A' }}</strong></dd>
 
                                             <dt class="col-sm-4">Bus No:</dt>
                                             <dd class="col-sm-8">

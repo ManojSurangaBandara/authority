@@ -128,7 +128,6 @@ class BusDataTable extends DataTable
         return [
             Column::make('DT_RowIndex')->title('#')->searchable(false)->orderable(false),
             Column::make('no')->title('No'),
-            Column::make('name')->title('Name'),
             Column::make('type.name')->title('Type'),
             Column::make('no_of_seats')->title('No of Seats'),
             Column::make('total_capacity')->title('Total Capacity'),

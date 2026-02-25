@@ -15,7 +15,7 @@ foreach ($busTypes as $type) {
 echo "\n=== BUSES ===\n";
 $buses = App\Models\Bus::all();
 foreach ($buses as $bus) {
-    echo "ID: {$bus->id}, No: {$bus->no}, Name: {$bus->name}, Type ID: {$bus->type_id}\n";
+    echo "ID: {$bus->id}, No: {$bus->no}, Type ID: {$bus->type_id}\n";
 }
 
 echo "\n=== BUS ROUTES ===\n";

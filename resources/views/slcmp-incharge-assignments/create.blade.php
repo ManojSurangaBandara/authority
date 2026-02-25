@@ -245,7 +245,7 @@
                             if (response.success && response.data) {
                                 $('#bus_no_display').html(
                                     '<strong>' + response.data.bus_no + '</strong><br>' +
-                                    '<small class="text-muted">' + response.data.bus_name +
+                                    '<small class="text-muted">' + response.data.bus_no +
                                     ' (' + response.data.bus_type + ')</small>'
                                 );
                                 toastr.success('Bus details loaded successfully!');

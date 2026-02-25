@@ -83,8 +83,7 @@
                                             <td>{{ $route->display_name ?? $route->name }}</td>
                                             <td>
                                                 @if ($route->bus)
-                                                    {{ $route->bus->name }}<br>
-                                                    <small class="text-muted">({{ $route->bus->no }})</small>
+                                                    {{ $route->bus->no }}
                                                 @else
                                                     <span class="text-muted">No bus assigned</span>
                                                 @endif

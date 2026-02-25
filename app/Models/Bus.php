@@ -10,7 +10,6 @@ class Bus extends Model
 
     protected $fillable = [
         'no',
-        'name',
         'type_id',
         'no_of_seats',
         'total_capacity',

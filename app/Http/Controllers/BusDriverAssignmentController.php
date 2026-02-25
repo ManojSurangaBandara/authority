@@ -510,8 +510,7 @@ class BusDriverAssignmentController extends Controller
                 'success' => true,
                 'data' => [
                     'bus_no' => $busRoute->bus->no,
-                    'bus_name' => $busRoute->bus->name,
-                    'bus_type' => $busRoute->bus->type->name ?? 'N/A'
+                    'bus_type' => $busRoute->bus->type->name ?? 'N/A',
                 ]
             ]);
         }

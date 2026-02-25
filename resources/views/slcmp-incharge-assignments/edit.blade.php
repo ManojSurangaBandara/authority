@@ -57,10 +57,11 @@
                                         <label>Bus No</label>
                                         <div class="form-control" id="bus_no_display" style="background-color: #f8f9fa;">
                                             @if ($slcmpInchargeAssignment->busRoute && $slcmpInchargeAssignment->busRoute->bus)
-                                                <strong>{{ $slcmpInchargeAssignment->busRoute->bus->no }}</strong><br>
-                                                <small
-                                                    class="text-muted">{{ $slcmpInchargeAssignment->busRoute->bus->name ?? '' }}
-                                                    ({{ $slcmpInchargeAssignment->busRoute->bus->type->name ?? '' }})</small>
+                                                <strong>{{ $slcmpInchargeAssignment->busRoute->bus->no }}</strong>
+                                                @if ($slcmpInchargeAssignment->busRoute->bus->type)
+                                                    <br><small
+                                                        class="text-muted">({{ $slcmpInchargeAssignment->busRoute->bus->type->name }})</small>
+                                                @endif
                                             @else
                                                 <span class="text-muted">Select a bus route first</span>
                                             @endif
@@ -262,7 +263,7 @@
                             if (response.success && response.data) {
                                 $('#bus_no_display').html(
                                     '<strong>' + response.data.bus_no + '</strong><br>' +
-                                    '<small class="text-muted">' + response.data.bus_name +
+                                    '<small class="text-muted">' + response.data.bus_no +
                                     ' (' + response.data.bus_type + ')</small>'
                                 );
                                 toastr.success('Bus details loaded successfully!');

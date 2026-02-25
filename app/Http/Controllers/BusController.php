@@ -35,7 +35,6 @@ class BusController extends Controller
     {
         $request->validate([
             'no' => 'required|unique:buses,no|max:20|regex:/^[A-Za-z]/',
-            'name' => 'required|unique:buses,name|max:50',
             'type_id' => 'required|integer|min:1',
             'no_of_seats' => 'required|integer|min:1',
             'total_capacity' => 'required|integer|min:1',
@@ -43,7 +42,7 @@ class BusController extends Controller
             'no.regex' => 'Bus number must start with a letter (A-Z or a-z).',
         ]);
 
-        Bus::create($request->all());
+        Bus::create($request->only(['no', 'type_id', 'no_of_seats', 'total_capacity']));
 
         return redirect()->route('buses.index')
             ->with('success', 'Bus created successfully.');
@@ -119,8 +118,6 @@ class BusController extends Controller
 
         // Validation rules
         $rules = [
-            'name' => 'required|unique:buses,name,' . $id . '|max:50',
-            'type_id' => 'required|integer|min:1',
             'no_of_seats' => 'required|integer|min:1',
             'total_capacity' => 'required|integer|min:1',
         ];
@@ -138,7 +135,7 @@ class BusController extends Controller
         ]);
 
         // Prepare data for update
-        $updateData = $request->only(['name', 'type_id', 'no_of_seats', 'total_capacity']);
+        $updateData = $request->only(['type_id', 'no_of_seats', 'total_capacity']);
 
         // Only update bus number if not in use
         if (!$isUsed) {

@@ -30,17 +30,20 @@
                         <div class="card-body">
 
                             <div class="row">
-                                <!-- Bus Name Selection (Dropdown) -->
+                                <!-- Bus Selection (Dropdown) -->
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="bus_id">Bus Name <span class="text-danger">*</span></label>
+                                        <label for="bus_id">Bus <span class="text-danger">*</span></label>
                                         <select class="form-control @error('bus_id') is-invalid @enderror" id="bus_id"
                                             name="bus_id" required>
                                             <option value="">Select Bus</option>
                                             @foreach ($buses as $bus)
                                                 <option value="{{ $bus->id }}"
                                                     {{ old('bus_id') == $bus->id ? 'selected' : '' }}>
-                                                    {{ $bus->name }}
+                                                    {{ $bus->no }}
+                                                    @if ($bus->type)
+                                                        ({{ $bus->type->name }})
+                                                    @endif
                                                 </option>
                                             @endforeach
                                         </select>
@@ -215,7 +218,7 @@
                             if (response.success && response.data) {
                                 $('#bus_no_display').html(
                                     '<strong>' + response.data.bus_no + '</strong><br>' +
-                                    '<small class="text-muted">' + response.data.bus_name +
+                                    '<small class="text-muted">' + response.data.bus_type +
                                     ' (' + response.data.bus_type + ')</small>'
                                 );
                                 toastr.success('Bus details loaded successfully!');

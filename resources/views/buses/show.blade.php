@@ -22,10 +22,6 @@
                                         <td>{{ $bus->no }}</td>
                                     </tr>
                                     <tr>
-                                        <th>Bus Name</th>
-                                        <td>{{ $bus->name }}</td>
-                                    </tr>
-                                    <tr>
                                         <th>Bus Type</th>
                                         <td>
                                             {{ $bus->type ? $bus->type->name : 'Unknown' }}

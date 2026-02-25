@@ -95,7 +95,7 @@ class BusAssignmentController extends Controller
             $existingRouteName = $existingAssignment->route_name;
             return response()->json([
                 'success' => false,
-                'message' => "Bus {$bus->name} is already assigned to route '{$existingRouteName}'."
+                'message' => "Bus {$bus->no} is already assigned to route '{$existingRouteName}'."
             ]);
         }
 
@@ -109,7 +109,7 @@ class BusAssignmentController extends Controller
             $existingBus = Bus::find($existingRouteAssignment->bus_id);
             return response()->json([
                 'success' => false,
-                'message' => "Route {$route->name} is already assigned to bus {$existingBus->name}."
+                'message' => "Route {$route->name} is already assigned to bus {$existingBus->no}."
             ]);
         }
 
@@ -123,7 +123,7 @@ class BusAssignmentController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "Bus {$bus->name} has been successfully assigned to route {$route->name} ({$request->route_type})."
+            'message' => "Bus {$bus->no} has been successfully assigned to route {$route->name} ({$request->route_type})."
         ]);
     }
 
@@ -146,7 +146,7 @@ class BusAssignmentController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "Bus {$bus->name} has been successfully unassigned from route {$routeName}."
+                'message' => "Bus {$bus->no} has been successfully unassigned from route {$routeName}."
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -167,7 +167,7 @@ class BusAssignmentController extends Controller
             return [
                 'id' => $assignment->id,
                 'bus_id' => $assignment->bus_id,
-                'bus_name' => $assignment->bus->name ?? 'Unknown Bus',
+                'bus_name' => $assignment->bus->no ?? 'Unknown Bus',
                 'bus_no' => $assignment->bus->no ?? 'N/A',
                 'route_id' => $assignment->route_id,
                 'route_name' => $assignment->route_name,

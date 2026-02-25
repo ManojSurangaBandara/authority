@@ -30,19 +30,16 @@ class BusDataSeeder extends Seeder
         $buses = [
             [
                 'no' => 'BUS-001',
-                'name' => 'Colombo Express',
                 'type_id' => $expressType->id,
                 'no_of_seats' => 45,
             ],
             [
                 'no' => 'BUS-002',
-                'name' => 'Kandy Normal',
                 'type_id' => $normalType->id,
                 'no_of_seats' => 50,
             ],
             [
                 'no' => 'BUS-003',
-                'name' => 'Galle Express',
                 'type_id' => $expressType->id,
                 'no_of_seats' => 40,
             ],

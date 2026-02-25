@@ -25,7 +25,7 @@
                                         <th>Assigned Bus</th>
                                         <td>
                                             @if ($busRoute->bus)
-                                                {{ $busRoute->bus->name }} ({{ $busRoute->bus->no }})
+                                                {{ $busRoute->bus->no }}
                                                 <span class="badge badge-success ml-2">Assigned</span>
                                             @else
                                                 <span class="text-muted">No bus assigned</span>

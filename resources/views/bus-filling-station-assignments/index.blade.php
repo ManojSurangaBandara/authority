@@ -38,10 +38,7 @@
                                     <option value="">Choose a bus...</option>
                                     @foreach ($unassignedBuses as $bus)
                                         <option value="{{ $bus->id }}">
-                                            {{ $bus->name }}
-                                            @if ($bus->no)
-                                                - {{ $bus->no }}
-                                            @endif
+                                            {{ $bus->no }}
                                             @if ($bus->type)
                                                 ({{ $bus->type->name }})
                                             @endif
@@ -74,7 +71,6 @@
                             <table class="table table-striped" id="assignmentsTable">
                                 <thead>
                                     <tr>
-                                        <th>Bus Name</th>
                                         <th>Bus No</th>
                                         <th>Bus Type</th>
                                         <th>Filling Station</th>
@@ -85,7 +81,6 @@
                                 <tbody>
                                     @forelse($buses->filter(function($bus) { return $bus->fillingStationAssignment && $bus->fillingStationAssignment->fillingStation; }) as $bus)
                                         <tr id="assignment-{{ $bus->fillingStationAssignment->id }}">
-                                            <td>{{ $bus->name }}</td>
                                             <td>{{ $bus->no ?? 'N/A' }}</td>
                                             <td>
                                                 @if ($bus->type)
@@ -108,7 +103,7 @@
                                                 @if ($bus->fillingStationAssignment && $bus->fillingStationAssignment->fillingStation)
                                                     <button type="button" class="btn btn-sm btn-warning unassign-btn"
                                                         data-assignment-id="{{ $bus->fillingStationAssignment->id }}"
-                                                        data-bus-name="{{ $bus->name }} ({{ $bus->no ?? 'N/A' }})"
+                                                        data-bus-no="{{ $bus->no ?? 'N/A' }}"
                                                         data-filling-station-name="{{ $bus->fillingStationAssignment->fillingStation->name ?? 'Unknown' }}">
                                                         <i class="fas fa-times"></i> Unassign
                                                     </button>
@@ -265,11 +260,11 @@
             // Unassign Button Click
             $(document).on('click', '.unassign-btn', function() {
                 let assignmentId = $(this).data('assignment-id');
-                let busName = $(this).data('bus-name');
+                let busNo = $(this).data('bus-no');
                 let fillingStationName = $(this).data('filling-station-name');
 
                 if (confirm(
-                        `Are you sure you want to unassign filling station "${fillingStationName}" from bus "${busName}"?`
+                        `Are you sure you want to unassign filling station "${fillingStationName}" from bus "${busNo}"?`
                     )) {
                     $.ajax({
                         url: '{{ route('bus-filling-station-assignments.unassign') }}',

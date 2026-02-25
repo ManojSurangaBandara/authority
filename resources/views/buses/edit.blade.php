@@ -42,14 +42,6 @@
                                         </small>
                                     @endif
                                 </div>
-                                <div class="mb-3">
-                                    <label for="">Bus Name:</label>
-                                    <input type="text" name="name" required class="form-control"
-                                        value="{{ $bus->name }}" />
-                                    @error('name')
-                                        <div class="text-danger">{{ $message }}</div>
-                                    @enderror
-                                </div>
 
                                 <div class="mb-3">
                                     <label for="">Bus Type: </label>

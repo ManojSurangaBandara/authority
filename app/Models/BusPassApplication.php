@@ -573,7 +573,6 @@ class BusPassApplication extends Model
             return [
                 'seats' => $assignment->bus->no_of_seats,
                 'total_capacity' => $assignment->bus->total_capacity,
-                'bus_name' => $assignment->bus->name,
                 'bus_no' => $assignment->bus->no
             ];
         }

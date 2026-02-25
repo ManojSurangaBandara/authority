@@ -486,7 +486,6 @@ class SlcmpInchargeAssignmentController extends Controller
                     'success' => true,
                     'data' => [
                         'bus_no' => $route->bus->no,
-                        'bus_name' => $route->bus->name,
                         'bus_type' => $route->bus->type->name ?? 'N/A'
                     ]
                 ]);
@@ -504,7 +503,6 @@ class SlcmpInchargeAssignmentController extends Controller
                     'success' => true,
                     'data' => [
                         'bus_no' => $assignment->bus->no,
-                        'bus_name' => $assignment->bus->name,
                         'bus_type' => $assignment->bus->type->name ?? 'N/A'
                     ]
                 ]);

@@ -25,9 +25,8 @@
                                 <select id="bus_select" name="bus_id" class="form-control">
                                     <option value="">Choose a bus...</option>
                                     @foreach ($unassignedBuses as $bus)
-                                        <option value="{{ $bus->id }}" data-bus-no="{{ $bus->no }}"
-                                            data-bus-name="{{ $bus->name }}">
-                                            {{ $bus->name }} ({{ $bus->no }}) - {{ $bus->no_of_seats }} seats
+                                        <option value="{{ $bus->id }}" data-bus-no="{{ $bus->no }}">
+                                            {{ $bus->no }} - {{ $bus->no_of_seats }} seats
                                         </option>
                                     @endforeach
                                 </select>
@@ -71,7 +70,6 @@
                                     <tr>
                                         <th>Route Name</th>
                                         <th>Route Type</th>
-                                        <th>Bus Name</th>
                                         <th>Bus Number</th>
                                         <th>Seats</th>
                                         <th>Total Capacity</th>
@@ -88,7 +86,6 @@
                                                     {{ ucfirst(str_replace('_', ' ', $assignment->route_type)) }}
                                                 </span>
                                             </td>
-                                            <td>{{ $assignment->bus->name ?? 'N/A' }}</td>
                                             <td>{{ $assignment->bus->no ?? 'N/A' }}</td>
                                             <td>{{ $assignment->bus->no_of_seats ?? 'N/A' }}</td>
                                             <td>{{ $assignment->bus->total_capacity ?? 'N/A' }}</td>
@@ -96,7 +93,7 @@
                                                 <button type="button" class="btn btn-sm btn-warning unassign-btn"
                                                     data-assignment-id="{{ $assignment->id }}"
                                                     data-route-name="{{ $assignment->route_name }}"
-                                                    data-bus-name="{{ $assignment->bus->name ?? '' }}">
+                                                    data-bus-no="{{ $assignment->bus->no ?? '' }}">
                                                     <i class="fas fa-unlink"></i> Unassign
                                                 </button>
                                             </td>
@@ -247,10 +244,10 @@
             $(document).on('click', '.unassign-btn', function() {
                 let assignmentId = $(this).data('assignment-id');
                 let routeName = $(this).data('route-name');
-                let busName = $(this).data('bus-name');
+                let busNo = $(this).data('bus-no');
 
                 if (confirm(
-                        `Are you sure you want to unassign bus "${busName}" from route "${routeName}"?`)) {
+                        `Are you sure you want to unassign bus "${busNo}" from route "${routeName}"?`)) {
                     $.ajax({
                         url: '{{ route('bus-assignments.unassign') }}',
                         method: 'POST',
