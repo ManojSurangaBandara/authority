@@ -14,7 +14,7 @@
             <div class="card mt-3">
                 <div class="card card-teal">
                     <div class="card-header">
-                        <i class="nav-icon fas fa-bus"></i> Living In Buses
+                        <i class="nav-icon fas fa-bus"></i> Living In Bus Routes
                         <a href="{{ route('living-in-buses.create') }}" class="btn btn-sm btn-primary float-right">Add New</a>
                     </div>
 

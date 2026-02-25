@@ -89,7 +89,7 @@ class LivingInBusesDataTable extends DataTable
     {
         return [
             Column::make('DT_RowIndex')->title('#')->searchable(false)->orderable(false),
-            Column::make('name')->title('Bus Name'),
+            Column::make('name')->title('Route Name'),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
