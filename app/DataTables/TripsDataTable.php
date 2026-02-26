@@ -78,6 +78,26 @@ class TripsDataTable extends DataTable
                 return $btn;
             })
             ->filter(function ($query) {
+                // global search box
+                if ($search = request('search.value')) {
+                    $query->where(function ($q) use ($search) {
+                        $q->whereHas('escort', function ($escort) use ($search) {
+                            $escort->where('escorts.name', 'like', "%{$search}%");
+                        })
+                            ->orWhereHas('driver', function ($driver) use ($search) {
+                                $driver->where('drivers.name', 'like', "%{$search}%");
+                            })
+                            ->orWhereHas('bus', function ($bus) use ($search) {
+                                $bus->where('buses.no', 'like', "%{$search}%");
+                            })
+                            ->orWhereHas('slcmpIncharge', function ($sl) use ($search) {
+                                $sl->where('slcmp_incharges.name', 'like', "%{$search}%");
+                            })
+                            ->orWhere('bus_routes.name', 'like', "%{$search}%")
+                            ->orWhere('living_in_buses.name', 'like', "%{$search}%");
+                    });
+                }
+
                 if ($date = request('date')) {
                     $query->whereDate('trips.trip_start_time', $date);
                 }
