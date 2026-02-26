@@ -70,17 +70,16 @@ class IncidentReportsDataTable extends DataTable
                     $query->where(function ($q) use ($search) {
                         $q->where('incidents.description', 'like', "%{$search}%")
                             ->orWhereHas('incidentType', function ($incidentType) use ($search) {
-                                $incidentType->where('name', 'like', "%{$search}%");
+                                $incidentType->where('incident_types.name', 'like', "%{$search}%");
                             })
                             ->orWhereHas('trip.escort', function ($escort) use ($search) {
-                                $escort->where('name', 'like', "%{$search}%");
+                                $escort->where('escorts.name', 'like', "%{$search}%");
                             })
                             ->orWhereHas('trip.driver', function ($driver) use ($search) {
-                                $driver->where('name', 'like', "%{$search}%");
+                                $driver->where('drivers.name', 'like', "%{$search}%");
                             })
                             ->orWhereHas('trip.bus', function ($bus) use ($search) {
-                                $bus->where('no', 'like', "%{$search}%")
-                                    ->orWhere('name', 'like', "%{$search}%");
+                                $bus->where('buses.no', 'like', "%{$search}%");
                             });
                     });
                 }
