@@ -247,7 +247,7 @@ class BusPassApplicationController extends Controller
             $validationRules['weekend_destination'] = 'required|string|max:200';
         } elseif ($request->bus_pass_type === 'living_in_only') {
             $validationRules['living_in_bus'] = 'required|string|max:100';
-            $validationRules['destination_location_ahq'] = 'required|exists:destination_locations,id';
+            $validationRules['destination_location_ahq'] = 'required|string|max:200';
         } elseif ($request->bus_pass_type === 'weekend_only') {
             $validationRules['weekend_bus_name'] = 'required|string|max:100';
             $validationRules['weekend_destination'] = 'required|string|max:200';

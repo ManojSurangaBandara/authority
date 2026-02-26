@@ -1268,8 +1268,8 @@
                             var currentValue =
                                 '{{ old('destination_location_ahq', $bus_pass_application->destination_location_ahq ?? '') }}';
                             $.each(response.data, function(index, location) {
-                                var selected = (currentValue == location.id) ? 'selected' : '';
-                                options += '<option value="' + location.id + '" ' + selected +
+                                var selected = (currentValue == location.name) ? 'selected' : '';
+                                options += '<option value="' + location.name + '" ' + selected +
                                     '>' + location.name + '</option>';
                             });
                             $('#destination_location_living_in_edit').html(options);

@@ -1101,7 +1101,7 @@
                         if (response.success && response.data) {
                             var options = '<option value="">Select Destination Location</option>';
                             $.each(response.data, function(index, location) {
-                                options += '<option value="' + location.id + '">' + location
+                                options += '<option value="' + location.name + '">' + location
                                     .name + '</option>';
                             });
                             $('#destination_location_living_in').html(options);
