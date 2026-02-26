@@ -10,7 +10,7 @@
                 @endif
                 <div class="card mt-3">
                     <div class="card card-teal">
-                        <div class="card-header"><i class="nav-icon fas fa-road"></i> {{ __('Add New Bus Route') }}</div>
+                        <div class="card-header"><i class="nav-icon fas fa-road"></i> {{ __('Add New Living Out Bus Route') }}</div>
                         <div class="card-body">
                             <form action="{{ route('bus-routes.store') }}" method="POST">
                                 @csrf

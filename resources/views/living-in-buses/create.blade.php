@@ -12,14 +12,14 @@
             <div class="card mt-3">
                 <div class="card card-teal">
                     <div class="card-header">
-                        <i class="nav-icon fas fa-bus"></i> Add New Living In Bus
+                        <i class="nav-icon fas fa-bus"></i> Add New Living In Bus Route
                     </div>
                     <div class="card-body">
                         <form action="{{ route('living-in-buses.store') }}" method="POST">
                             @csrf
                             <div class="mb-3">
-                                <label for="name">Name <span class="text-danger">*</span></label>
-                                <input type="text" name="name" class="form-control" placeholder="Enter Name" required>
+                                <label for="name">Route Name <span class="text-danger">*</span></label>
+                                <input type="text" name="name" class="form-control" placeholder="Enter Route Name" required>
                                 @error('name')
                                     <div class="text-danger">{{ $message }}</div>
                                 @enderror

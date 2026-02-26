@@ -11,9 +11,8 @@
 
                 <div class="card mt-3">
                     <div class="card card-teal">
-                        <div class="card-header"><i class="nav-icon fas fa-road nav-icon"></i> {{ __('Bus Routes') }} <a
-                                href="{{ route('bus-routes.create') }}" class="btn btn-sm btn-primary float-right">Add New
-                                Route</a>
+                        <div class="card-header"><i class="nav-icon fas fa-road nav-icon"></i> {{ __('Living Out Bus Routes') }} <a
+                                href="{{ route('bus-routes.create') }}" class="btn btn-sm btn-primary float-right">Add New</a>
                         </div>
 
                         <div class="card-body">
