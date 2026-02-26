@@ -212,10 +212,15 @@
                                         <div class="form-group">
                                             <label for="blood_group">Blood Group <span
                                                     class="text-danger">*</span></label>
-                                            <input type="text"
-                                                class="form-control @error('blood_group') is-invalid @enderror"
-                                                id="blood_group" name="blood_group" value="{{ old('blood_group') }}"
-                                                placeholder="e.g., A+, B-, O+" required>
+                                            <select class="form-control @error('blood_group') is-invalid @enderror"
+                                                id="blood_group" name="blood_group" required>
+                                                <option value="">Select blood group</option>
+                                                @foreach (['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'] as $grp)
+                                                    <option value="{{ $grp }}"
+                                                        {{ old('blood_group') === $grp ? 'selected' : '' }}>
+                                                        {{ $grp }}</option>
+                                                @endforeach
+                                            </select>
                                             @error('blood_group')
                                                 <span class="invalid-feedback">{{ $message }}</span>
                                             @enderror
