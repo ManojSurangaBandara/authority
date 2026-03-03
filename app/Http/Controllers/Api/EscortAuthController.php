@@ -372,22 +372,43 @@ class EscortAuthController extends Controller
                 return $this->errorResponse('Invalid QR code', 400);
             }
 
-            // Check if branch card exists and is valid
-            $busPassApplication = BusPassApplication::where('branch_card_id', $branchCardId)
-                ->whereIn('status', ['integrated_to_branch_card', 'temp_card_handed_over'])
-                ->first();
+            // Load the application with relationships
+            $busPassApplication = BusPassApplication::where('branch_card_id', $branchCardId)->first();
 
             if (!$busPassApplication) {
-                Log::warning('Boarding validation failed - Branch card not found or invalid', [
+                Log::warning('Boarding validation failed - Bus Pass Not Found', [
                     'escort_id' => $escortId,
                     'branch_card_id' => $branchCardId,
-                    'serial_number' => $request->serial_number,
                 ]);
+
                 return $this->successResponse([
                     'allowed' => false,
-                    'reason' => 'Branch card not found or invalid'
+                    'reason' => 'Bus Pass Not Found'
+                ], 'Boarding not allowed');
+            } elseif ($busPassApplication->status === 'deactivated') {
+                return $this->successResponse([
+                    'allowed' => false,
+                    'reason' => 'Bus Pass Is Deactivated'
+                ], 'Boarding not allowed');
+            }elseif ($busPassApplication->status === 'clearance') {
+                return $this->successResponse([
+                    'allowed' => false,
+                    'reason' => 'Bus Pass Is Clearance'
+                ], 'Boarding not allowed');
+            }elseif ($busPassApplication->status === 'rejected') {
+                return $this->successResponse([
+                    'allowed' => false,
+                    'reason' => 'Bus Pass Is Rejected'
+                ], 'Boarding not allowed');
+            }elseif ($busPassApplication->status !== 'integrated_to_branch_card') {
+                return $this->successResponse([
+                    'allowed' => false,
+                    'reason' => 'Bus Pass Not Integrated'
                 ], 'Boarding not allowed');
             }
+
+
+
 
             // Check if the branch card is allowed for the escort's assigned route
             $isAllowed = false;
