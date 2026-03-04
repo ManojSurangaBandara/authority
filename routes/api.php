@@ -87,6 +87,3 @@ Route::middleware(['escort.auth'])->prefix('escort')->group(function () {
     // Route::post('/scan-qr', [EscortController::class, 'scanQr']);
     // Route::get('/onboard-persons', [EscortController::class, 'getOnboardPersons']);
 });
-
-// Internal routes for API server to web server communication
-Route::post('/internal/upload-incident-image', [IncidentApiController::class, 'uploadImage']);
