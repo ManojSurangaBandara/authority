@@ -214,6 +214,29 @@
                             </div>
                         @endif
 
+                        @if ($bus_pass_application->bus_pass_type === 'weekend_only')
+                            <div class="row mb-4 mt-4">
+                                <div class="col-12">
+                                    <h4 class="text-success border-bottom pb-2">Weekend Only Travel Information</h4>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                @if ($bus_pass_application->weekend_bus_name)
+                                    <div class="col-md-6">
+                                        <strong>Weekend Bus Name:</strong><br>
+                                        {{ $bus_pass_application->weekend_bus_name }}
+                                    </div>
+                                @endif
+                                @if ($bus_pass_application->weekend_destination)
+                                    <div class="col-md-6">
+                                        <strong>Weekend Destination:</strong><br>
+                                        {{ $bus_pass_application->weekend_destination }}
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
+
                         <!-- Documents Section -->
                         <div class="row mb-4 mt-5">
                             <div class="col-12">
