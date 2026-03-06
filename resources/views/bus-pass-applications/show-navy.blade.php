@@ -454,6 +454,36 @@
                             </div>
                         </div>
                     @endif
+
+                    @if ($bus_pass_application->status === 'deactivated' || $bus_pass_application->status === 'clearance')
+                        @php
+                            if ($bus_pass_application->status === 'deactivated') {
+                                $entry = $bus_pass_application
+                                    ->approvalHistory()
+                                    ->where('action', 'deactivated')
+                                    ->latest('action_date')
+                                    ->first();
+                                $label = 'Deactivation Remarks';
+                            } else {
+                                $entry = $bus_pass_application
+                                    ->approvalHistory()
+                                    ->where('action', 'clearance')
+                                    ->latest('action_date')
+                                    ->first();
+                                $label = 'Clearance Remarks';
+                            }
+                        @endphp
+                        @if (isset($entry) && $entry && $entry->remarks)
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <strong>{{ $label }}:</strong><br>
+                                    <div class="alert alert-info">
+                                        {{ $entry->remarks }}
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    @endif
                 </div>
 
                 <div class="card-footer">
