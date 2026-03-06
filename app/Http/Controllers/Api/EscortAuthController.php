@@ -364,6 +364,11 @@ class EscortAuthController extends Controller
             // Decrypt the serial number to get branch card ID
             $branchCardId = $this->decryptSerialNumber($request->serial_number);
 
+            // strip any accidental spaces that might have crept in
+            if ($branchCardId !== null) {
+                $branchCardId = str_replace(' ', '', $branchCardId);
+            }
+
             if (!$branchCardId) {
                 Log::warning('Boarding validation failed - Invalid serial number', [
                     'escort_id' => $escortId,
@@ -390,17 +395,17 @@ class EscortAuthController extends Controller
                     'allowed' => false,
                     'reason' => 'Bus Pass Is Deactivated'
                 ], 'Boarding not allowed');
-            }elseif ($busPassApplication->status === 'clearance') {
+            } elseif ($busPassApplication->status === 'clearance') {
                 return $this->successResponse([
                     'allowed' => false,
                     'reason' => 'Bus Pass Is Clearance'
                 ], 'Boarding not allowed');
-            }elseif ($busPassApplication->status === 'rejected') {
+            } elseif ($busPassApplication->status === 'rejected') {
                 return $this->successResponse([
                     'allowed' => false,
                     'reason' => 'Bus Pass Is Rejected'
                 ], 'Boarding not allowed');
-            }elseif ($busPassApplication->status !== 'integrated_to_branch_card') {
+            } elseif ($busPassApplication->status !== 'integrated_to_branch_card') {
                 return $this->successResponse([
                     'allowed' => false,
                     'reason' => 'Bus Pass Not Integrated'
@@ -631,6 +636,9 @@ class EscortAuthController extends Controller
         try {
             // Define the encryption key (should match the key used for encryption)
             $key = 'a12b34c56i78m90s'; // Replace with your actual encryption key
+
+            // remove any spaces that might have been introduced in the QR scan
+            $serialNumber = str_replace(' ', '', $serialNumber);
 
             $parts = explode(':', $serialNumber);
 
@@ -1111,17 +1119,21 @@ class EscortAuthController extends Controller
             // unassigned onboardings in this time period belong to this route
             $onboardingsToUpdate = Onboarding::whereBetween('onboarded_at', [$periodStart, $periodEnd])
                 ->whereNull('trip_id')
-                ->where(function($q) use ($assignment) {
+                ->where(function ($q) use ($assignment) {
                     if ($assignment->route_type === 'living_out') {
                         $routeName = $assignment->busRoute?->name;
-                        $q->whereHas('busPassApplication', fn($a) => $a
-                            ->where('requested_bus_name', $routeName)
-                            ->orWhere('weekend_bus_name', $routeName)
+                        $q->whereHas(
+                            'busPassApplication',
+                            fn($a) => $a
+                                ->where('requested_bus_name', $routeName)
+                                ->orWhere('weekend_bus_name', $routeName)
                         );
                     } else {
                         $routeName = $assignment->livingInBus?->name;
-                        $q->whereHas('busPassApplication', fn($a) => $a
-                            ->where('living_in_bus', $routeName)
+                        $q->whereHas(
+                            'busPassApplication',
+                            fn($a) => $a
+                                ->where('living_in_bus', $routeName)
                         );
                     }
                 })
