@@ -378,7 +378,10 @@ class EscortAuthController extends Controller
             }
 
             // Load the application with relationships
-            $busPassApplication = BusPassApplication::where('branch_card_id', $branchCardId)->first();
+            $busPassApplication = BusPassApplication::where('branch_card_id', $branchCardId)
+                ->where('status', 'integrated_to_branch_card')
+                ->with(['person', 'establishment'])
+                ->first();
 
             if (!$busPassApplication) {
                 Log::warning('Boarding validation failed - Bus Pass Not Found', [
