@@ -94,17 +94,30 @@ class BusPassApprovalDataTable extends DataTable
                 // Determine modal target based on person type
                 $modalTarget = '#viewModal' . $row->id; // Default modal
 
-                $html = '<div class="btn-group" role="group">';
+                $html = '<div class="btn-group btn-group-sm" role="group">';
                 $html .= '<button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="' . $modalTarget . '" title="View"><i class="fas fa-eye"></i></button>';
 
-                // Add edit button for branch clerk on returned applications (from DMOV, branch staff officer, or integration)
+                // Add edit/delete buttons for branch clerk on returned applications (from DMOV, branch staff officer, or integration)
                 $user = Auth::user();
                 if ($user && $user->hasRole('Bus Pass Subject Clerk (Branch)')) {
                     $hasDmovReturned = method_exists($row, 'wasRecentlyDmovNotRecommended') && $row->wasRecentlyDmovNotRecommended();
                     $hasBranchReturned = method_exists($row, 'wasRecentlyNotRecommended') && $row->wasRecentlyNotRecommended();
                     $hasIntegrationReturned = method_exists($row, 'wasRecentlyRejectedFromIntegration') && $row->wasRecentlyRejectedFromIntegration();
+
+                    // Show edit button for returned applications
                     if ($hasDmovReturned || $hasBranchReturned || $hasIntegrationReturned) {
                         $html .= '<a href="' . route('bus-pass-applications.edit', $row->id) . '" class="btn btn-sm btn-warning" title="Edit Application"><i class="fas fa-edit"></i></a>';
+                    }
+
+                    // Show delete button only for truly fresh applications (not returned from integration)
+                    if ($row->status === 'pending_subject_clerk' && ! $hasIntegrationReturned) {
+                        $formId = 'deleteForm' . $row->id;
+                        $html .= '<button type="button" class="btn btn-sm btn-danger" title="Delete" onclick="if(confirm(\'Are you sure you want to delete this application?\')) document.getElementById(\'' . $formId . '\').submit();"><i class="fas fa-trash"></i></button>';
+
+                        // Hidden form for delete submission (keeps button size consistent)
+                        $html .= '<form id="' . $formId . '" action="' . route('bus-pass-applications.destroy', $row->id) . '" method="POST" style="display:none">'
+                            . csrf_field() . method_field('DELETE') .
+                            '</form>';
                     }
                 }
 

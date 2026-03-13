@@ -57,19 +57,26 @@ class BusPassApplicationDataTable extends DataTable
                 $user = Auth::user();
                 $viewBtn = '<a href="' . route('bus-pass-applications.show', $row->id) . '" class="btn btn-xs btn-info" title="View"><i class="fas fa-eye"></i></a>';
 
-                // Check if edit and delete buttons should be shown
-                $showEditDelete = false; // Default to false, only show for specific conditions
+                // Determine whether edit and delete buttons should be shown. They are
+                // evaluated separately because edit remains allowed for returned
+                // applications while delete does not.
+                $showEdit = false;
+                $showDelete = false;
 
-                // Only Bus Pass Subject Clerk (Branch) should be able to edit/delete applications
+                // Only Bus Pass Subject Clerk (Branch) should be able to perform these
+                // actions, and only on applications still in the subject‑clerk queue.
                 if ($user) {
                     // Load user with roles for proper role checking
                     $userWithRoles = User::with('roles')->find($user->id);
                     $hasSubjectClerkRole = $userWithRoles->hasRole('Bus Pass Subject Clerk (Branch)');
 
-                    if ($hasSubjectClerkRole) {
-                        // Show edit/delete only if status is 'pending_subject_clerk' (before forwarding)
-                        if ($row->status === 'pending_subject_clerk') {
-                            $showEditDelete = true;
+                    if ($hasSubjectClerkRole && $row->status === 'pending_subject_clerk') {
+                        // always allow editing while pending
+                        $showEdit = true;
+
+                        // only allow deleting if it hasn't been returned from integration
+                        if (! $row->wasRecentlyRejectedFromIntegration()) {
+                            $showDelete = true;
                         }
                     }
                 }
@@ -77,8 +84,11 @@ class BusPassApplicationDataTable extends DataTable
                 $editBtn = '';
                 $deleteBtn = '';
 
-                if ($showEditDelete) {
+                if ($showEdit) {
                     $editBtn = '<a href="' . route('bus-pass-applications.edit', $row->id) . '" class="btn btn-xs btn-primary mx-1" title="Edit"><i class="fas fa-edit"></i></a>';
+                }
+
+                if ($showDelete) {
                     $deleteBtn = '<form action="' . route('bus-pass-applications.destroy', $row->id) . '" method="POST" style="display:inline">
                         ' . csrf_field() . '
                         ' . method_field("DELETE") . '

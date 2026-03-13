@@ -1161,6 +1161,18 @@ class BusPassApplicationController extends Controller
      */
     public function destroy(BusPassApplication $bus_pass_application)
     {
+        // Prevent deletion of applications that were returned from integration.
+        // These records may still have status `pending_subject_clerk` but should
+        // only be edited (not removed) so we enforce the same guard as the
+        // DataTable.
+        if (
+            $bus_pass_application->status !== 'pending_subject_clerk' ||
+            $bus_pass_application->wasRecentlyRejectedFromIntegration()
+        ) {
+            return redirect()->route('bus-pass-applications.index')
+                ->with('error', 'Only newly created applications can be deleted.');
+        }
+
         // Delete associated files
         if ($bus_pass_application->grama_niladari_certificate) {
             Storage::disk('public')->delete($bus_pass_application->grama_niladari_certificate);
