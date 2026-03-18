@@ -471,8 +471,7 @@ class BusPassApplicationController extends Controller
                 'approved_for_integration',
                 'approved_for_temp_card',
                 'integrated_to_branch_card',
-                'temp_card_printed',
-                'temp_card_handed_over'
+                'integrated_to_temp_card'
             ])->first();
 
             if ($activeBusPass) {
@@ -512,15 +511,16 @@ class BusPassApplicationController extends Controller
         }
 
         // Check for duplicate branch card ID if provided
+        // Allow reuse of the same Branch Card ID after an application has been cleared
         if ($request->branch_card_availability === 'has_branch_card' && $request->branch_card_id) {
             $existingBranchCardApplication = BusPassApplication::where('branch_card_id', $request->branch_card_id)
                 ->whereNotNull('branch_card_id')
-                ->where('status', '!=', 'rejected') // Exclude rejected applications
+                ->whereNotIn('status', ['rejected', 'clearance']) // Exclude applications that are no longer active
                 ->first();
 
             if ($existingBranchCardApplication) {
                 return redirect()->back()
-                    ->withErrors(['branch_card_id' => 'This Branch Card ID is already associated with another active application. Each Branch Card ID can only be used once.'])
+                    ->withErrors(['branch_card_id' => 'This Branch Card ID is already associated with another application.'])
                     ->withInput();
             }
         }
