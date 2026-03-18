@@ -452,6 +452,7 @@ class EscortAuthController extends Controller
                 'application_id' => $busPassApplication->id,
                 'branch_card_id' => $branchCardId,
                 'passenger_name' => $busPassApplication->person->name ?? 'Unknown',
+                'passenger_rank' => $busPassApplication->person->rank ?? null,
                 'passenger_image_url' => $personImageUrl,
                 'bus_route' => $routeName,
                 'reason' => $isAllowed ? null : 'Branch card not authorized for this route'
@@ -808,6 +809,7 @@ class EscortAuthController extends Controller
                 'allowed' => $isAllowed,
                 'application_id' => $busPassApplication->id,
                 'passenger_name' => $busPassApplication->person->name ?? 'Unknown',
+                'passenger_rank' => $busPassApplication->person->rank ?? null,
                 'passenger_image_url' => $personImageUrl,
                 'bus_route' => $routeName,
                 'reason' => $isAllowed ? null : 'Temporary card not authorized for this route'
