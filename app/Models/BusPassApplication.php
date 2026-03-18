@@ -144,7 +144,8 @@ class BusPassApplication extends Model
                 'temp_card_handed_over',
                 'rejected',
                 'rejected_for_integration',
-                'deactivated'
+                'deactivated',
+                'clearance'
             ];
             if (!in_array($this->status, $allowedStatuses)) {
                 return '<span class="badge badge-secondary">Submitted</span>';
