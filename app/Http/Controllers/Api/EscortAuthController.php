@@ -447,6 +447,8 @@ class EscortAuthController extends Controller
                 $personImageUrl = asset('storage/' . $busPassApplication->person_image);
             }
 
+            $allowedRoutes = $this->getAllowedRoutesForApplication($busPassApplication);
+
             return $this->successResponse([
                 'allowed' => $isAllowed,
                 'application_id' => $busPassApplication->id,
@@ -455,6 +457,8 @@ class EscortAuthController extends Controller
                 'passenger_rank' => $busPassApplication->person->rank ?? null,
                 'passenger_image_url' => $personImageUrl,
                 'bus_route' => $routeName,
+                'allowed_route' => $allowedRoutes[0] ?? null,
+                'allowed_routes' => $allowedRoutes,
                 'reason' => $isAllowed ? null : 'Branch card not authorized for this route'
             ], $isAllowed ? 'Boarding allowed' : 'Boarding not allowed');
         } catch (JWTException $e) {
@@ -805,6 +809,8 @@ class EscortAuthController extends Controller
                 $personImageUrl = asset('storage/' . $busPassApplication->person_image);
             }
 
+            $allowedRoutes = $this->getAllowedRoutesForApplication($busPassApplication);
+
             return $this->successResponse([
                 'allowed' => $isAllowed,
                 'application_id' => $busPassApplication->id,
@@ -812,6 +818,8 @@ class EscortAuthController extends Controller
                 'passenger_rank' => $busPassApplication->person->rank ?? null,
                 'passenger_image_url' => $personImageUrl,
                 'bus_route' => $routeName,
+                'allowed_route' => $allowedRoutes[0] ?? null,
+                'allowed_routes' => $allowedRoutes,
                 'reason' => $isAllowed ? null : 'Temporary card not authorized for this route'
             ], $isAllowed ? 'Boarding allowed' : 'Boarding not allowed');
         } catch (JWTException $e) {
@@ -855,6 +863,30 @@ class EscortAuthController extends Controller
         }
 
         return false;
+    }
+
+    /**
+     * Get allowed route(s) for a given bus pass application.
+     *
+     * @return string[]
+     */
+    protected function getAllowedRoutesForApplication(BusPassApplication $application): array
+    {
+        $routes = [];
+
+        if ($application->living_in_bus) {
+            $routes[] = $application->living_in_bus;
+        }
+
+        if ($application->requested_bus_name) {
+            $routes[] = $application->requested_bus_name;
+        }
+
+        if ($application->weekend_bus_name) {
+            $routes[] = $application->weekend_bus_name;
+        }
+
+        return array_values(array_unique(array_filter($routes)));
     }
 
     /**
