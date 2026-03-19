@@ -445,6 +445,10 @@ class EscortAuthController extends Controller
 
             $allowedRoutes = $this->getAllowedRoutesForApplication($busPassApplication);
 
+            $message = $isAllowed
+                ? 'Boarding allowed'
+                : 'Boarding not allowed' . (count($allowedRoutes) ? ' (Allowed routes: ' . implode(', ', $allowedRoutes) . ')' : '');
+
             return $this->successResponse([
                 'allowed' => $isAllowed,
                 'application_id' => $busPassApplication->id,
@@ -456,7 +460,7 @@ class EscortAuthController extends Controller
                 'allowed_route' => $allowedRoutes[0] ?? null,
                 'allowed_routes' => $allowedRoutes,
                 'reason' => $isAllowed ? null : 'Branch card not authorized for this route'
-            ], $isAllowed ? 'Boarding allowed' : 'Boarding not allowed');
+            ], $message);
         } catch (JWTException $e) {
             return $this->unauthorizedResponse('Token invalid or expired');
         } catch (\Exception $e) {
@@ -840,6 +844,10 @@ class EscortAuthController extends Controller
 
             $allowedRoutes = $this->getAllowedRoutesForApplication($busPassApplication);
 
+            $message = $isAllowed
+                ? 'Boarding allowed'
+                : 'Boarding not allowed' . (count($allowedRoutes) ? ' (Allowed routes: ' . implode(', ', $allowedRoutes) . ')' : '');
+
             return $this->successResponse([
                 'allowed' => $isAllowed,
                 'application_id' => $busPassApplication->id,
@@ -850,7 +858,7 @@ class EscortAuthController extends Controller
                 'allowed_route' => $allowedRoutes[0] ?? null,
                 'allowed_routes' => $allowedRoutes,
                 'reason' => $isAllowed ? null : 'Temporary card not authorized for this route'
-            ], $isAllowed ? 'Boarding allowed' : 'Boarding not allowed');
+            ], $message);
         } catch (JWTException $e) {
             return $this->unauthorizedResponse('Token invalid or expired');
         } catch (\Exception $e) {
