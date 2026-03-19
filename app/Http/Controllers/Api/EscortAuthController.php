@@ -362,12 +362,8 @@ class EscortAuthController extends Controller
             $assignment = $escort->escortAssignment;
 
             // Decrypt the serial number to get branch card ID
-            $branchCardId = $this->decryptSerialNumber($request->serial_number);
-
-            // strip any accidental spaces that might have crept in
-            if ($branchCardId !== null) {
-                $branchCardId = str_replace(' ', '', $branchCardId);
-            }
+            // Normalize inputs like OR0031 -> DOPS-S-0031, OF0031 -> DOPS-O-0031, C0031 -> DOPS-C-0031
+            $branchCardId = $this->normalizeBranchCardId($this->decryptSerialNumber($request->serial_number));
 
             if (!$branchCardId) {
                 Log::warning('Boarding validation failed - Invalid serial number', [
@@ -683,6 +679,39 @@ class EscortAuthController extends Controller
             ]);
             return null;
         }
+    }
+
+    /**
+     * Normalize raw branch card IDs that may be provided in legacy formats (In Dte of Ops).
+     *
+     * Supported conversions:
+     *   ORnnnn -> DOPS-S-nnnn
+     *   OFnnnn -> DOPS-O-nnnn
+     *   Cnnnn  -> DOPS-C-nnnn
+     */
+    protected function normalizeBranchCardId(?string $branchCardId): ?string
+    {
+        if (!$branchCardId) {
+            return $branchCardId;
+        }
+
+        // Remove spaces from scanned string
+        $branchCardId = str_replace(' ', '', $branchCardId);
+
+        if (preg_match('/^(OR|OF|C)(\d+)$/i', $branchCardId, $matches)) {
+            $prefix = strtoupper($matches[1]);
+            $number = str_pad($matches[2], 4, '0', STR_PAD_LEFT);
+
+            $map = [
+                'OR' => 'DOPS-S-',
+                'OF' => 'DOPS-O-',
+                'C'  => 'DOPS-C-',
+            ];
+
+            return ($map[$prefix] ?? '') . $number;
+        }
+
+        return $branchCardId;
     }
 
     /**
