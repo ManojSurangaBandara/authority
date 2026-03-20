@@ -150,6 +150,7 @@ class IncidentReportsDataTable extends DataTable
         return $this->builder()
             ->setTableId('incident-reports-table')
             ->columns($this->getColumns())
+            ->dom('lBfrtip')
             ->ajax([
                 'url' => route('incident-reports.index'),
                 'type' => 'GET',

@@ -153,6 +153,7 @@ class TripsDataTable extends DataTable
         return $this->builder()
             ->setTableId('trips-table')
             ->columns($this->getColumns())
+            ->dom('lBfrtip')
             ->ajax([
                 'url' => route('trips.index'),
                 'type' => 'GET',

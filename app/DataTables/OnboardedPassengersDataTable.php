@@ -123,7 +123,7 @@ class OnboardedPassengersDataTable extends DataTable
             ->columns($this->getColumns())
             ->minifiedAjax()
             ->selectStyleSingle()
-            ->dom('Bfrtip')
+            ->dom('lBfrtip')
             ->buttons([
                 Button::make('excel'),
                 Button::make('csv'),
