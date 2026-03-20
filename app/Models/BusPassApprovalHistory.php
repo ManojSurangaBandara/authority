@@ -58,7 +58,8 @@ class BusPassApprovalHistory extends Model
             'not_recommended' => 'warning',
             'deactivated' => 'dark',
             'reactivated' => 'success',
-            'clearance' => 'warning'
+            'clearance' => 'warning',
+            'integrated' => 'info'
         ];
 
         $labels = [
@@ -69,7 +70,8 @@ class BusPassApprovalHistory extends Model
             'not_recommended' => 'Not Recommended',
             'deactivated' => 'Deactivated',
             'reactivated' => 'Reactivated',
-            'clearance' => 'Cleared'
+            'clearance' => 'Cleared',
+            'integrated' => 'Integrated'
         ];
 
         $color = $colors[$this->action] ?? 'secondary';

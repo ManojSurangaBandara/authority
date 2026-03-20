@@ -283,6 +283,9 @@ class BusPassIntegrationController extends Controller
         try {
             $application = BusPassApplication::findOrFail($id);
 
+            // Track the status before changing for history
+            $previousStatus = $application->status;
+
             DB::beginTransaction();
 
             if ($application->status === 'approved_for_integration') {
@@ -300,6 +303,16 @@ class BusPassIntegrationController extends Controller
             }
 
             $application->save();
+
+            // Record integrated action in approval history
+            $application->approvalHistory()->create([
+                'user_id' => auth()->id(),
+                'action' => 'integrated',
+                'previous_status' => $previousStatus,
+                'new_status' => $application->status,
+                'remarks' => $application->status === 'integrated_to_temp_card' ? 'Temp card issued' : 'Branch card integrated',
+                'action_date' => now()
+            ]);
 
             DB::commit();
 
