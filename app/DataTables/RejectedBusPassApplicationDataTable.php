@@ -36,6 +36,23 @@ class RejectedBusPassApplicationDataTable extends DataTable
             ->addColumn('person_rank', function ($row) {
                 return $row->person ? $row->person->rank : '';
             })
+            ->addColumn('allowed_route', function ($row) {
+                $routes = [];
+
+                if ($row->requested_bus_name) {
+                    $routes[] = '<span class="badge badge-primary">' . $row->requested_bus_name . '</span>';
+                }
+
+                if ($row->weekend_bus_name) {
+                    $routes[] = '<span class="badge badge-success">' . $row->weekend_bus_name . '</span>';
+                }
+
+                if ($row->living_in_bus) {
+                    $routes[] = '<span class="badge badge-info">' . $row->living_in_bus . '</span>';
+                }
+
+                return !empty($routes) ? implode(' ', $routes) : '<small class="text-muted">N/A</small>';
+            })
             ->addColumn('action', function ($row) {
                 $viewBtn = '<a href="' . route('bus-pass-applications.show', $row->id) . '" class="btn btn-xs btn-info" title="View Application"><i class="fas fa-eye"></i></a>';
                 return $viewBtn;
@@ -56,11 +73,14 @@ class RejectedBusPassApplicationDataTable extends DataTable
                             })
                             ->orWhereHas('establishment', function ($establishmentQuery) use ($searchValue) {
                                 $establishmentQuery->where('name', 'LIKE', "%{$searchValue}%");
-                            });
+                            })
+                            ->orWhere('requested_bus_name', 'LIKE', "%{$searchValue}%")
+                            ->orWhere('weekend_bus_name', 'LIKE', "%{$searchValue}%")
+                            ->orWhere('living_in_bus', 'LIKE', "%{$searchValue}%");
                     });
                 }
             })
-            ->rawColumns(['action', 'status_badge', 'type_label', 'applied_date', 'person_rank'])
+            ->rawColumns(['action', 'status_badge', 'type_label', 'applied_date', 'person_rank', 'allowed_route'])
             ->setRowId('id');
     }
 
@@ -125,7 +145,7 @@ class RejectedBusPassApplicationDataTable extends DataTable
             Column::make('person.regiment_no')->title('Regiment No')->name('person.regiment_no')->searchable(true),
             Column::make('person.name')->title('Name')->name('person.name')->searchable(true),
             Column::make('person_rank')->title('Rank')->searchable(false),
-            Column::make('establishment.name')->title('Establishment')->name('establishment.name')->searchable(true),
+            Column::make('allowed_route')->title('Allowed Route')->searchable(false)->orderable(false),
             Column::make('type_label')->title('Pass Type')->searchable(false),
             Column::make('status_badge')->title('Status')->searchable(false)->orderable(false),
             Column::make('applied_date')->title('Applied Date')->searchable(false)->orderable(false),
