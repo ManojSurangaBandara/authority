@@ -82,6 +82,13 @@ class IntegratedBusPassApplicationDataTable extends DataTable
                     $q->where('name', 'like', "%{$keyword}%");
                 });
             })
+            ->filterColumn('allowed_route', function ($query, $keyword) {
+                $query->where(function ($q) use ($keyword) {
+                    $q->where('requested_bus_name', 'like', "%{$keyword}%")
+                        ->orWhere('weekend_bus_name', 'like', "%{$keyword}%")
+                        ->orWhere('living_in_bus', 'like', "%{$keyword}%");
+                });
+            })
             ->filter(function ($query) {
                 if ($estId = request('establishment_id')) {
                     $query->where('establishment_id', $estId);
@@ -98,7 +105,10 @@ class IntegratedBusPassApplicationDataTable extends DataTable
                             })
                             ->orWhereHas('establishment', function ($establishmentQuery) use ($searchValue) {
                                 $establishmentQuery->where('name', 'LIKE', "%{$searchValue}%");
-                            });
+                            })
+                            ->orWhere('requested_bus_name', 'LIKE', "%{$searchValue}%")
+                            ->orWhere('weekend_bus_name', 'LIKE', "%{$searchValue}%")
+                            ->orWhere('living_in_bus', 'LIKE', "%{$searchValue}%");
                     });
                 }
             })
