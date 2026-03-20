@@ -109,7 +109,10 @@ class DeactivatedBusPassApplicationDataTable extends DataTable
                             })
                             ->orWhereHas('establishment', function ($establishmentQuery) use ($searchValue) {
                                 $establishmentQuery->where('name', 'LIKE', "%{$searchValue}%");
-                            });
+                            })
+                            ->orWhere('requested_bus_name', 'LIKE', "%{$searchValue}%")
+                            ->orWhere('weekend_bus_name', 'LIKE', "%{$searchValue}%")
+                            ->orWhere('living_in_bus', 'LIKE', "%{$searchValue}%");
                     });
                 }
             })
