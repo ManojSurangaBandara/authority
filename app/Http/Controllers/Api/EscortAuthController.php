@@ -73,6 +73,15 @@ class EscortAuthController extends Controller
                 'livingInBus.assignedBus'
             ])->first();
 
+            // If no route assignment, inform the client explicitly so UI can stop loading
+            if (!$assignment) {
+                Log::warning('Escort login failed - No active route assignment', [
+                    'escort_id' => $escort->id,
+                ]);
+
+                return $this->errorResponse('The escort has no assigned bus route', 403);
+            }
+
             // Step 4: Generate JWT token for escort
             $customClaims = [
                 'escort_id' => $escort->id,
