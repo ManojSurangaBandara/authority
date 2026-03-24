@@ -1055,6 +1055,7 @@ class EscortAuthController extends Controller
                 return [
                     'onboarding_id' => $onboarding->id,
                     'passenger_name' => $onboarding->busPassApplication->person?->name ?? 'N/A',
+                    'passenger_rank' => $onboarding->busPassApplication->person?->rank ?? 'N/A',
                     'regiment_no' => $onboarding->busPassApplication->person?->regiment_no ?? 'N/A',
                     'establishment_name' => $onboarding->busPassApplication->establishment?->name ?? 'N/A',
                     'bus_pass_type' => $onboarding->busPassApplication->bus_pass_type,
