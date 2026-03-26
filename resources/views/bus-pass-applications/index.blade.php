@@ -66,10 +66,10 @@
                                                         'Approved for Branch Card Integration',
                                                     'approved_for_temp_card' => 'Approved for Temporary Card',
                                                     'integrated_to_branch_card' => 'Integrated to Branch Card',
-                                                    'temp_card_printed' => 'Temporary Card Printed',
-                                                    'temp_card_handed_over' => 'Temporary Card Handed Over',
+                                                    'integrated_to_temp_card' => 'Integrated to Temporary Card',
                                                     'rejected' => 'Rejected',
                                                     'deactivated' => 'Deactivated',
+                                                    'clearance' => 'Clearance',
                                                 ];
                                             @endphp
                                             @foreach ($statuses as $key => $label)
