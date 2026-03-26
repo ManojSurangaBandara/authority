@@ -949,16 +949,8 @@ class EscortAuthController extends Controller
      */
     protected function isTempCardAllowedForRoute(BusPassApplication $application, $assignedRoute): bool
     {
-        // Check if the application's bus matches the assigned route
-        if ($application->requested_bus_name && $application->requested_bus_name === $assignedRoute->name) {
-            return true;
-        }
-
-        if ($application->weekend_bus_name && $application->weekend_bus_name === $assignedRoute->name) {
-            return true;
-        }
-
-        return false;
+        // Use route matching and group membership rules same as branch card validation
+        return $this->isRouteAllowedForAssignment($application, $assignedRoute->name, 'living_out', $assignedRoute->id);
     }
 
     /**
@@ -966,12 +958,8 @@ class EscortAuthController extends Controller
      */
     protected function isTempCardAllowedForLivingInRoute(BusPassApplication $application, $assignedLivingInBus): bool
     {
-        // For living in routes, check the living_in_bus field
-        if ($application->living_in_bus) {
-            return $application->living_in_bus === $assignedLivingInBus->name;
-        }
-
-        return false;
+        // Use route matching and group membership rules same as branch card validation
+        return $this->isRouteAllowedForAssignment($application, $assignedLivingInBus->name, 'living_in', $assignedLivingInBus->id);
     }
 
     /**
