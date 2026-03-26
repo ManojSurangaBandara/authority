@@ -407,6 +407,14 @@ return [
                         'living-in-buses*',
                     ],
                 ],
+                [
+                    'text' => 'Bus Route Groups',
+                    'url' => 'route-groups',
+                    'icon' => 'fas fa-fw fa-layer-group',
+                    'active' => [
+                        'route-groups*',
+                    ],
+                ],
                 // [
                 //     'text' => 'Bus Pass Statuses',
                 //     'url' => 'bus-pass-statuses',

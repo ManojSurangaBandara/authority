@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponseTrait;
 use App\Models\BusPassApplication;
 use App\Models\BusRoute;
+use App\Models\RouteGroupMember;
 use App\Models\BusEscortAssignment;
 use App\Models\BusDriverAssignment;
 use App\Models\BusRouteAssignment;
@@ -728,25 +729,92 @@ class EscortAuthController extends Controller
     }
 
     /**
+     * Get route group IDs for a specific route.
+     */
+    protected function getGroupIdsForRoute(string $routeType, int $routeId): array
+    {
+        return RouteGroupMember::where('route_type', $routeType)
+            ->where('route_id', $routeId)
+            ->pluck('route_group_id')
+            ->toArray();
+    }
+
+    /**
+     * Get route names from application fields.
+     */
+    protected function getKnownRouteNames(BusPassApplication $application): array
+    {
+        $routes = [];
+
+        if ($application->living_in_bus) {
+            $routes[] = $application->living_in_bus;
+        }
+
+        if ($application->requested_bus_name) {
+            $routes[] = $application->requested_bus_name;
+        }
+
+        if ($application->weekend_bus_name) {
+            $routes[] = $application->weekend_bus_name;
+        }
+
+        return array_values(array_unique(array_filter($routes)));
+    }
+
+    /**
+     * Get all group IDs related to the application routes.
+     */
+    protected function getGroupIdsForApplication(BusPassApplication $application): array
+    {
+        $routeNames = $this->getKnownRouteNames($application);
+        $groupIds = [];
+
+        if (count($routeNames) > 0) {
+            $livingOutIds = BusRoute::whereIn('name', $routeNames)->pluck('id')->toArray();
+            $livingInIds = LivingInBuses::whereIn('name', $routeNames)->pluck('id')->toArray();
+
+            if (count($livingOutIds) > 0) {
+                $groupIds = array_merge($groupIds, RouteGroupMember::where('route_type', 'living_out')->whereIn('route_id', $livingOutIds)->pluck('route_group_id')->toArray());
+            }
+
+            if (count($livingInIds) > 0) {
+                $groupIds = array_merge($groupIds, RouteGroupMember::where('route_type', 'living_in')->whereIn('route_id', $livingInIds)->pluck('route_group_id')->toArray());
+            }
+        }
+
+        return array_values(array_unique($groupIds));
+    }
+
+    /**
+     * Check if a route assignment is allowed by name or by group membership.
+     */
+    protected function isRouteAllowedForAssignment(BusPassApplication $application, string $assignedRouteName, ?string $assignedRouteType = null, ?int $assignedRouteId = null): bool
+    {
+        $allowedRoutes = $this->getAllowedRoutesForApplication($application);
+
+        if (in_array($assignedRouteName, $allowedRoutes)) {
+            return true;
+        }
+
+        if (!$assignedRouteType || !$assignedRouteId) {
+            return false;
+        }
+
+        $applicationGroupIds = $this->getGroupIdsForApplication($application);
+        if (empty($applicationGroupIds)) {
+            return false;
+        }
+
+        $assignedGroupIds = $this->getGroupIdsForRoute($assignedRouteType, $assignedRouteId);
+        return count(array_intersect($applicationGroupIds, $assignedGroupIds)) > 0;
+    }
+
+    /**
      * Check if branch card is allowed for the escort's assigned bus route (living out)
      */
     protected function isBranchCardAllowedForRoute(BusPassApplication $application, BusRoute $assignedBusRoute): bool
     {
-        // Check if the application has routes that match the assigned bus route
-        $applicationRoutes = [];
-
-        // Check requested bus name (for living out)
-        if ($application->requested_bus_name) {
-            $applicationRoutes[] = $application->requested_bus_name;
-        }
-
-        // Check weekend bus name (for living out)
-        if ($application->weekend_bus_name) {
-            $applicationRoutes[] = $application->weekend_bus_name;
-        }
-
-        // Check if any of the application routes match the assigned bus route
-        return in_array($assignedBusRoute->name, $applicationRoutes);
+        return $this->isRouteAllowedForAssignment($application, $assignedBusRoute->name, 'living_out', $assignedBusRoute->id);
     }
 
     /**
@@ -754,12 +822,7 @@ class EscortAuthController extends Controller
      */
     protected function isBranchCardAllowedForLivingInRoute(BusPassApplication $application, $assignedLivingInBus): bool
     {
-        // For living in routes, check the living_in_bus field
-        if ($application->living_in_bus) {
-            return $application->living_in_bus === $assignedLivingInBus->name;
-        }
-
-        return false;
+        return $this->isRouteAllowedForAssignment($application, $assignedLivingInBus->name, 'living_in', $assignedLivingInBus->id);
     }
 
     /**

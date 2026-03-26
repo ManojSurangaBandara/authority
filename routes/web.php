@@ -33,6 +33,8 @@ use App\Http\Controllers\DistrictController;
 use App\Http\Controllers\GsDivisionController;
 use App\Http\Controllers\PoliceStationController;
 use App\Http\Controllers\IncidentTypeController;
+use App\Http\Controllers\RouteGroupController;
+
 
 Route::get('/', function () {
     return view('auth.login');
@@ -57,6 +59,7 @@ Route::middleware('auth')->group(function () {
     // Add other protected routes here
     Route::resource('buses', BusController::class);
     Route::resource('bus-routes', BusRouteController::class);
+    Route::resource('route-groups', RouteGroupController::class);
 
     // Bus Assignment routes
     Route::get('bus-assignments', [BusAssignmentController::class, 'index'])->name('bus-assignments.index');
