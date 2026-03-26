@@ -21,11 +21,6 @@
 
                             <input type="hidden" id="group_id" name="group_id" value="">
 
-                            <div class="form-group">
-                                <label for="name">Group Name</label>
-                                <input type="text" name="name" id="name" class="form-control" required>
-                            </div>
-
 
                             <div class="form-group">
                                 <label>Select Routes</label>
@@ -86,7 +81,6 @@
                         <table class="table table-striped" id="route-groups-table">
                             <thead>
                                 <tr>
-                                    <th>Name</th>
                                     <th>Routes</th>
                                     <th>Actions</th>
                                 </tr>
@@ -94,7 +88,6 @@
                             <tbody>
                                 @foreach ($groups as $group)
                                     <tr data-group-id="{{ $group->id }}" data-group-name="{{ $group->name }}">
-                                        <td>{{ $group->name }}</td>
                                         <td>
                                             @foreach ($group->members as $member)
                                                 @if ($member->route_type === 'living_out')

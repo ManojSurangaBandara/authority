@@ -23,14 +23,12 @@ class RouteGroupController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:150|unique:route_groups,name',
             'members' => 'required|array|min:1',
             'members.*' => 'required|string',
         ]);
 
-        $group = RouteGroup::create([
-            'name' => $request->name,
-        ]);
+        $generatedName = 'route-group-' . now()->format('YmdHis') . '-' . substr(uniqid(), -5);
+        $group = RouteGroup::create(['name' => $generatedName]);
 
         foreach ($request->members as $memberValue) {
             [$routeType, $routeId] = explode(':', $memberValue);
@@ -49,14 +47,11 @@ class RouteGroupController extends Controller
         $group = RouteGroup::findOrFail($id);
 
         $request->validate([
-            'name' => 'required|string|max:150|unique:route_groups,name,' . $group->id,
             'members' => 'required|array|min:1',
             'members.*' => 'required|string',
         ]);
 
-        $group->update([
-            'name' => $request->name,
-        ]);
+        $group->update([]);
 
         // Replace members with current selection (clear then set to avoid stale routes)
         $group->members()->delete();
