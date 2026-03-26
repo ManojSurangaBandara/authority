@@ -20,14 +20,16 @@ class BusDriverAssignmentController extends Controller
     public function index()
     {
         // Get all routes (both living_out and living_in) with their assigned drivers
-        $livingOutRoutes = BusRoute::with(['bus', 'driverAssignment.driver'])->get();
-        $livingInRoutes = LivingInBuses::with(['driverAssignment.driver'])->get();
+        $livingOutRoutes = BusRoute::with(['assignedBus', 'bus', 'driverAssignment.driver'])->get();
+        $livingInRoutes = LivingInBuses::with(['assignedBus', 'driverAssignment.driver'])->get();
 
         // Combine routes with type indicators
         $routes = collect();
         foreach ($livingOutRoutes as $route) {
             $route->route_type = 'living_out';
-            $route->display_name = $route->name . ' (Living Out)' . ($route->bus ? ' - ' . $route->bus->name . ' (' . $route->bus->no . ')' : '');
+            $bus = $route->assignedBus ?? $route->bus;
+            $route->display_name = $route->name . ' (Living Out)'
+                . ($bus ? ' - ' . $bus->name . ' (' . $bus->no . ')' : '');
             $routes->push($route);
         }
         foreach ($livingInRoutes as $route) {
@@ -62,12 +64,13 @@ class BusDriverAssignmentController extends Controller
 
         // Add living out routes to dropdown
         foreach ($unassignedLivingOutRoutes as $route) {
+            $bus = $route->assignedBus ?? $route->bus;
             $unassignedRoutes->push((object) [
                 'id' => $route->id,
                 'name' => $route->name,
                 'type' => 'living_out',
-                'bus' => $route->bus,
-                'display_name' => $route->name . ' (Living Out)' . ($route->bus ? ' - ' . $route->bus->name . ' (' . $route->bus->no . ')' : '')
+                'bus' => $bus,
+                'display_name' => $route->name . ' (Living Out)' . ($bus ? ' - ' . $bus->name . ' (' . $bus->no . ')' : '')
             ]);
         }
 
@@ -409,14 +412,16 @@ class BusDriverAssignmentController extends Controller
     public function getAssignmentData()
     {
         // Get all routes (both living_out and living_in) with their assigned drivers
-        $livingOutRoutes = BusRoute::with(['bus', 'driverAssignment.driver'])->get();
-        $livingInRoutes = LivingInBuses::with(['driverAssignment.driver'])->get();
+        $livingOutRoutes = BusRoute::with(['assignedBus', 'bus', 'driverAssignment.driver'])->get();
+        $livingInRoutes = LivingInBuses::with(['assignedBus', 'driverAssignment.driver'])->get();
 
         // Combine routes with type indicators
         $routes = collect();
         foreach ($livingOutRoutes as $route) {
             $route->route_type = 'living_out';
-            $route->display_name = $route->name . ' (Living Out)' . ($route->bus ? ' - ' . $route->bus->name . ' (' . $route->bus->no . ')' : '');
+            $bus = $route->assignedBus ?? $route->bus;
+            $route->display_name = $route->name . ' (Living Out)'
+                . ($bus ? ' - ' . $bus->name . ' (' . $bus->no . ')' : '');
             $routes->push($route);
         }
         foreach ($livingInRoutes as $route) {
@@ -503,14 +508,15 @@ class BusDriverAssignmentController extends Controller
             'bus_route_id' => 'required|exists:bus_routes,id'
         ]);
 
-        $busRoute = BusRoute::with('bus')->find($request->bus_route_id);
+        $busRoute = BusRoute::with(['assignedBus', 'bus'])->find($request->bus_route_id);
+        $bus = $busRoute->assignedBus ?? ($busRoute->bus ?? null);
 
-        if ($busRoute && $busRoute->bus) {
+        if ($busRoute && $bus) {
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'bus_no' => $busRoute->bus->no,
-                    'bus_type' => $busRoute->bus->type->name ?? 'N/A',
+                    'bus_no' => $bus->no,
+                    'bus_type' => $bus->type->name ?? 'N/A',
                 ]
             ]);
         }

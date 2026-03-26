@@ -84,9 +84,12 @@
                                         <tr id="assignment-{{ $route->driverAssignment->id }}">
                                             <td>{{ $route->display_name ?? $route->name }}</td>
                                             <td>
-                                                @if ($route->bus)
-                                                    {{ $route->bus->name }}<br>
-                                                    <small class="text-muted">({{ $route->bus->no }})</small>
+                                                @php
+                                                    $assignedBus = $route->assignedBus ?? ($route->bus ?? null);
+                                                @endphp
+                                                @if ($assignedBus)
+                                                    {{ $assignedBus->name }}<br>
+                                                    <small class="text-muted">({{ $assignedBus->no }})</small>
                                                 @else
                                                     <span class="text-muted">No bus assigned</span>
                                                 @endif
