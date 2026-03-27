@@ -1057,9 +1057,36 @@ class EscortAuthController extends Controller
                 $routeName = $livingInBus?->name;
             }
 
+            // Determine all allowed route names for this assignment, including group members
+            $allowedRouteNames = [$routeName];
+            $groupIds = RouteGroupMember::where('route_type', $routeType)
+                ->where('route_id', $routeId)
+                ->pluck('route_group_id')
+                ->toArray();
+
+            if (!empty($groupIds)) {
+                if ($routeType === 'living_out') {
+                    $groupRouteIds = RouteGroupMember::where('route_type', 'living_out')
+                        ->whereIn('route_group_id', $groupIds)
+                        ->pluck('route_id')
+                        ->toArray();
+
+                    $allowedRouteNames = array_merge($allowedRouteNames, BusRoute::whereIn('id', $groupRouteIds)->pluck('name')->toArray());
+                } else {
+                    $groupRouteIds = RouteGroupMember::where('route_type', 'living_in')
+                        ->whereIn('route_group_id', $groupIds)
+                        ->pluck('route_id')
+                        ->toArray();
+
+                    $allowedRouteNames = array_merge($allowedRouteNames, LivingInBuses::whereIn('id', $groupRouteIds)->pluck('name')->toArray());
+                }
+            }
+
+            $allowedRouteNames = array_values(array_unique(array_filter($allowedRouteNames)));
+
             // Query onboardings based on route type and time period
             // Include both: onboardings with matching trip OR onboardings without trip but matching route
-            $query = Onboarding::where(function ($q) use ($escortId, $routeType, $routeId, $routeName) {
+            $query = Onboarding::where(function ($q) use ($escortId, $routeType, $routeId, $routeName, $allowedRouteNames) {
                 // Onboardings with a matching trip
                 $q->whereHas('trip', function ($trip) use ($escortId, $routeType, $routeId) {
                     $trip->where('escort_id', $escortId)
@@ -1067,16 +1094,16 @@ class EscortAuthController extends Controller
                         ->where('bus_route_id', $routeId);
                 })
                     // OR onboardings without a trip but matching the route via bus pass application
-                    ->orWhere(function ($subQ) use ($routeType, $routeName) {
+                    ->orWhere(function ($subQ) use ($routeType, $routeName, $allowedRouteNames) {
                         $subQ->whereNull('trip_id')
-                            ->whereHas('busPassApplication', function ($appQ) use ($routeType, $routeName) {
+                            ->whereHas('busPassApplication', function ($appQ) use ($routeType, $allowedRouteNames) {
                                 if ($routeType === 'living_out') {
-                                    $appQ->where(function ($routeQ) use ($routeName) {
-                                        $routeQ->where('requested_bus_name', $routeName)
-                                            ->orWhere('weekend_bus_name', $routeName);
+                                    $appQ->where(function ($routeQ) use ($allowedRouteNames) {
+                                        $routeQ->whereIn('requested_bus_name', $allowedRouteNames)
+                                            ->orWhereIn('weekend_bus_name', $allowedRouteNames);
                                     });
                                 } else {
-                                    $appQ->where('living_in_bus', $routeName);
+                                    $appQ->whereIn('living_in_bus', $allowedRouteNames);
                                 }
                             });
                     });
