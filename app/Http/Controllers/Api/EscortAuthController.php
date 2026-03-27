@@ -455,6 +455,8 @@ class EscortAuthController extends Controller
 
             $allowedRoutes = $this->getAllowedRoutesForApplication($busPassApplication);
 
+            $busRoute = implode(',', $allowedRoutes);
+
             $message = $isAllowed
                 ? 'Boarding allowed'
                 : 'Boarding not allowed' . (count($allowedRoutes) ? ' (Allowed routes: ' . implode(', ', $allowedRoutes) . ')' : '');
@@ -466,7 +468,7 @@ class EscortAuthController extends Controller
                 'passenger_name' => $busPassApplication->person->name ?? 'Unknown',
                 'passenger_rank' => $busPassApplication->person->rank ?? null,
                 'passenger_image_url' => $personImageUrl,
-                'bus_route' => $allowedRoutes[0] ?? null,
+                'bus_route' => $busRoute,
                 'allowed_route' => $allowedRoutes[0] ?? null,
                 'allowed_routes' => $allowedRoutes,
                 'reason' => $isAllowed ? null : 'Branch card not authorized for this route'
