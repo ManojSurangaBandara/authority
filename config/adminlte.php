@@ -407,14 +407,7 @@ return [
                         'living-in-buses*',
                     ],
                 ],
-                [
-                    'text' => 'Bus Route Groups',
-                    'url' => 'route-groups',
-                    'icon' => 'fas fa-fw fa-layer-group',
-                    'active' => [
-                        'route-groups*',
-                    ],
-                ],
+                // Bus Route Groups removed from Master Data submenu (moved to Bus Pass Integration area for specific roles)
                 // [
                 //     'text' => 'Bus Pass Statuses',
                 //     'url' => 'bus-pass-statuses',
@@ -566,6 +559,16 @@ return [
                 'bus-pass-integration*',
             ],
             'classes' => 'bus-pass-integration-menu',
+        ],
+
+        [
+            'text' => 'Bus Route Groups',
+            'url' => 'route-groups',
+            'icon' => 'fas fa-fw fa-layer-group',
+            'can' => 'access_bus_route_groups',
+            'active' => [
+                'route-groups*',
+            ],
         ],
 
         [

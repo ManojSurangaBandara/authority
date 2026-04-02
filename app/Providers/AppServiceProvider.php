@@ -84,6 +84,14 @@ class AppServiceProvider extends ServiceProvider
             ]);
         });
 
+        // Gate for bus route groups menu - Col MOV and Director MOV only
+        Gate::define('access_bus_route_groups', function ($user) {
+            return $user->hasAnyRole([
+                'Col Mov (DMOV)',
+                'Director (DMOV)'
+            ]);
+        });
+
         // Individual role gates for more granular control if needed
         Gate::define('bus_pass_subject_clerk_branch', function ($user) {
             return $user->hasRole('Bus Pass Subject Clerk (Branch)');
